@@ -13,28 +13,20 @@ struct Stop {
 
 struct Bus {
     int no;
-    std::vector<std::string> stops_names;
+    std::vector<std::string> stops;
 };
 
 class TransportCatalogue {
 public:
-    inline void AddBus(Bus& bus) {
-        buses_.push_back(std::move(bus));
-    }
-
-    inline void AddStop(Stop& stop) {
+    inline void AddStop(Stop&& stop) {
         stops_.push_back(std::move(stop));
     }
 
-    inline size_t CountBuses() {
-        return buses_.size();
-    }
-
-    inline size_t CountStops() {
-        return stops_.size();
+    inline void AddBus(Bus&& bus) {
+        buses_.push_back(std::move(bus));
     }
 
 private:
-    std::deque<Bus> buses_;
     std::deque<Stop> stops_;
+    std::deque<Bus> buses_;
 };

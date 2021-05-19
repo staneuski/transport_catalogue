@@ -1,10 +1,14 @@
+#pragma once
 #include <iostream>
-#include <regex>
 #include <string>
+#include <vector>
 
 #include "transport_catalogue.h"
 
-using namespace std::literals;
+struct Request {
+    std::string description;
+    std::string content;
+};
 
 std::string ReadLine() {
     std::string s;
@@ -19,49 +23,74 @@ int ReadLineWithNumber() {
     return result;
 }
 
-std::vector<std::string> SplitIntoStopsNames(std::string_view sv) {
-    static std::regex const stop_regex("\\s+(>|-)\\s+");
-    std::regex_token_iterator<std::string_view::iterator> i(
-        sv.begin(),
-        sv.end(),
-        stop_regex,
-        -1
-    );
-    std::regex_token_iterator<std::string_view::iterator> end;
-
-    std::vector<std::string> stops_names;
-    while (i != end)
-        stops_names.push_back(*i++);
-    return stops_names;
+Request ReadRequest(const std::string& delimiter = ": ") {
+    std::string s = ReadLine();
+    size_t pos = s.find(delimiter);
+    return {
+        s.substr(0, pos),
+        (pos != std::string::npos) ? s.substr(pos + delimiter.size()) : ""
+    };
 }
 
-void FillFromInput(TransportCatalogue& transport_catalogue) {
-    const int inputs_count = ReadLineWithNumber();
-    for (int i = 0; i < inputs_count; ++i) {
-        std::string line = ReadLine();
-        if (std::cin) {
-            static std::regex const stop_matcher(
-                R"^(Stop\s*([^,]*):\s*(\d+.\d+),\s*(\d+.\d+))^"
-            );
-            static std::regex const bus_matcher(R"^(Bus\s*(\d+):\s*(.*?))^");
-            std::smatch capture;
+std::vector<Request> ReadRequests() {
+    const int count = ReadLineWithNumber();
+    std::vector<Request> requests;
+    requests.reserve(count);
+    for (int i = 0; i < count; ++i)
+        requests.push_back(ReadRequest());
+    return requests;
+}
 
-            if (std::regex_match(line, capture, stop_matcher)) {
-                Stop stop;
-                stop.name = capture[1];
-                stop.coords.lat = std::stod(capture[2]);
-                stop.coords.lng = std::stod(capture[3]);
+std::vector<std::string> Split(std::string& s,
+                               const std::string& delimiter = " ") {
+    std::vector<std::string> tokens;
 
-                transport_catalogue.AddStop(stop);
-            } else if (std::regex_match(line, capture, bus_matcher)) {
-                Bus bus;
-                bus.no = std::stoi(capture[1]);
-                bus.stops_names = SplitIntoStopsNames(capture.str(2));
+    size_t pos = s.find(delimiter);
+    if (pos == std::string::npos)
+        return tokens;
 
-                transport_catalogue.AddBus(bus);
-            } else {
-                std::cin.setstate(std::ios_base::failbit);
-            }
-        }
+    std::string token;
+    while (pos != std::string::npos) {
+        tokens.push_back(s.substr(0, pos));
+        s.erase(0, pos + delimiter.length());
+        pos = s.find(delimiter);
     }
+    tokens.push_back(s.substr(0, pos));
+    s.erase();
+
+    return tokens;
+}
+
+Stop ParseStop(Request& request) {
+    std::vector<std::string> coords{Split(request.content, ", ")};
+    return {
+        request.description.substr(request.description.find(" ") + 1),
+        {std::stod(coords[0]), std::stod(coords[1])}
+    };
+}
+
+Bus ParseBus(Request& request) {
+    std::vector<std::string> route{Split(request.content, " > ")};
+    if (route.empty())
+        route = Split(request.content, " - ");
+
+    if (route.front() == route.back() && route.size() > 1)
+        route.pop_back();
+
+    return {
+        std::stoi(request.description.substr(request.description.find(" ") + 1)),
+        route
+    };
+}
+
+void Fill(TransportCatalogue& transport_catalogue) {
+    std::vector<Request> requests{ReadRequests()};
+
+    for (Request& request : requests)
+        if (request.description.substr(0, 4) == "Stop")
+            transport_catalogue.AddStop(ParseStop(request));
+
+    for (Request& request : requests)
+        if (request.description.substr(0, 3) == "Bus")
+            transport_catalogue.AddBus(ParseBus(request));
 }

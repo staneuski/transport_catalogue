@@ -7,12 +7,7 @@ int main() {
     using namespace std;
 
     TransportCatalogue transport_catalogue;
-
-    FillFromInput(ReadLineWithNumber(), transport_catalogue);
-
-    cout << "{ stops: " << transport_catalogue.CountStops()
-         << ", buses: " << transport_catalogue.CountBuses()
-         << " } " << endl;
+    Fill(transport_catalogue);
 
     return 0;
 }
