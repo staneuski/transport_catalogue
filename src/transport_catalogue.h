@@ -8,12 +8,12 @@
 
 struct Stop {
     std::string name;
-    Coordinates coordinates;
+    Coordinates coords;
 };
 
 struct Bus {
     int no;
-    std::vector<Stop> stops;
+    std::vector<std::string> stops_names;
 };
 
 class TransportCatalogue {
@@ -24,6 +24,14 @@ public:
 
     inline void AddStop(Stop& stop) {
         stops_.push_back(std::move(stop));
+    }
+
+    inline size_t CountBuses() {
+        return buses_.size();
+    }
+
+    inline size_t CountStops() {
+        return stops_.size();
     }
 
 private:

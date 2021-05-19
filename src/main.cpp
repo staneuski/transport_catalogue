@@ -1,16 +1,18 @@
-#include <iostream>
 #include <string>
 
+#include "input_reader.h"
 #include "transport_catalogue.h"
 
 int main() {
     using namespace std;
 
-    Stop stop{"Tolstopaltsevo", {55.611087, 37.208290}};
-
     TransportCatalogue transport_catalogue;
 
-    transport_catalogue.AddStop(stop);
+    FillFromInput(ReadLineWithNumber(), transport_catalogue);
+
+    cout << "{ stops: " << transport_catalogue.CountStops()
+         << ", buses: " << transport_catalogue.CountBuses()
+         << " } " << endl;
 
     return 0;
 }
