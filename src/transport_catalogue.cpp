@@ -1,6 +1,6 @@
 #include "transport_catalogue.h"
 
-void TransportCatalogue::AddBus(const int number,
+void TransportCatalogue::AddBus(const std::string& bus_name,
                                 const bool is_circular,
                                 const std::vector<std::string>& route) {
     std::vector<const Stop*> stops;
@@ -8,13 +8,13 @@ void TransportCatalogue::AddBus(const int number,
     for (const std::string& stop_name : route)
         stops.push_back(SearchStop(stop_name));
 
-    AddBus({number, is_circular, stops});
+    AddBus({bus_name, is_circular, stops});
 }
 
-Route TransportCatalogue::GetRoute(const int bus_number) const {
-    const Bus* bus_ptr{SearchBus(bus_number)};
+Route TransportCatalogue::GetRoute(const std::string& bus_name) const {
+    const Bus* bus_ptr{SearchBus(bus_name)};
     if (!bus_ptr)
-        return {bus_ptr, bus_number, 0, 0, .0};
+        return {bus_name, bus_ptr, 0, 0, .0};
 
     const std::vector<const Stop*>& stops = bus_ptr->stops;
     const std::unordered_set<const Stop*> unique_stops{stops.begin(), stops.end()};
@@ -24,8 +24,8 @@ Route TransportCatalogue::GetRoute(const int bus_number) const {
         route_len += ComputeDistance(stops.at(i)->coords, stops.at(i + 1u)->coords);
 
     return {
+        bus_name,
         bus_ptr,
-        bus_number,
         unique_stops.size(),
         bus_ptr->is_circular ? stops.size() : (2*stops.size() - 1),
         bus_ptr->is_circular ? route_len : 2*route_len

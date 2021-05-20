@@ -6,7 +6,7 @@
 
 #include "transport_catalogue.h"
 
-using BusRoute = std::tuple<int, bool, std::vector<std::string>>;
+using BusRoute = std::tuple<const std::string, bool, std::vector<std::string>>;
 
 struct Request {
     std::string description;
@@ -82,7 +82,7 @@ BusRoute ParseBus(Request& request) {
     }
 
     return {
-        std::stoi(request.description.substr(request.description.find(" ") + 1)),
+        request.description.substr(request.description.find(" ") + 1),
         is_circular,
         route
     };

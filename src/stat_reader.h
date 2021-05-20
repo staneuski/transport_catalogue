@@ -6,7 +6,7 @@
 #include "transport_catalogue.h"
 
 std::ostream& operator<<(std::ostream& out, const Route& route) {
-    out << "Bus " << route.bus_number;
+    out << "Bus " << route.name;
 
     if (route.bus_ptr)
         out << ": " << route.stops << " stops on route"

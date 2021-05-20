@@ -14,14 +14,14 @@ struct Stop {
 };
 
 struct Bus {
-    int no;
+    std::string name;
     bool is_circular;
     std::vector<const Stop*> stops;
 };
 
 struct Route {
+    std::string name;
     const Bus* bus_ptr;
-    int bus_number;
     size_t unique_stops, stops;
     double length;
 };
@@ -35,30 +35,30 @@ public:
 
     inline void AddBus(Bus&& bus) {
         buses_.push_back(std::move(bus));
-        bus_numbers_[buses_.back().no] = &buses_.back();
+        bus_names_[buses_.back().name] = &buses_.back();
     }
 
-    void AddBus(const int number,
+    void AddBus(const std::string& bus_name,
                 const bool is_circular,
                 const std::vector<std::string>& route);
 
-    inline const Stop* SearchStop(const std::string& stop_name) const {
+    inline const Stop* SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
                ? stop_names_.at(stop_name)
                : nullptr;
     }
 
-    inline const Bus* SearchBus(const int bus_number) const {
-        return (bus_numbers_.find(bus_number) != bus_numbers_.end())
-               ? bus_numbers_.at(bus_number)
+    inline const Bus* SearchBus(const std::string_view& bus_name) const {
+        return (bus_names_.find(bus_name) != bus_names_.end())
+               ? bus_names_.at(bus_name)
                : nullptr;
     }
 
-    Route GetRoute(const int bus_number) const;
+    Route GetRoute(const std::string& name) const;
 
 private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
     std::unordered_map<std::string_view, const Stop*> stop_names_;
-    std::unordered_map<int, const Bus*> bus_numbers_;
+    std::unordered_map<std::string_view, const Bus*> bus_names_;
 };
