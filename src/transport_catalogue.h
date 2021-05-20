@@ -2,7 +2,6 @@
 #include <deque>
 #include <functional>
 #include <string>
-#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -18,6 +17,13 @@ struct Bus {
     int no;
     bool is_circular;
     std::vector<const Stop*> stops;
+};
+
+struct Route {
+    const Bus* bus_ptr;
+    int bus_number;
+    size_t unique_stops, stops;
+    double length;
 };
 
 class TransportCatalogue {
