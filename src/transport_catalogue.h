@@ -21,9 +21,15 @@ struct Bus {
 
 class TransportCatalogue {
 public:
-    void AddStop(Stop&& stop);
+    inline void AddStop(Stop&& stop) {
+        stops_.push_back(std::move(stop));
+        stop_names_[stops_.back().name] = &stops_.back();
+    }
 
-    void AddBus(Bus&& bus);
+    inline void AddBus(Bus&& bus) {
+        buses_.push_back(std::move(bus));
+        bus_numbers_[buses_.back().no] = &buses_.back();
+    }
 
     inline const Stop* GetStop(const std::string& stop_name) {
         return (stop_names_.find(stop_name) != stop_names_.end())
