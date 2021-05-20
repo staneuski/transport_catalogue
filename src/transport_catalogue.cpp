@@ -8,7 +8,7 @@ void TransportCatalogue::AddBus(const int number,
         route.begin(),
         route.front() == route.back() ? std::prev(route.end()) : route.end(),
         [this, &stops](const std::string& stop_name) {
-            stops.push_back(GetStop(stop_name));
+            stops.push_back(SearchStop(stop_name));
         }
     );
 

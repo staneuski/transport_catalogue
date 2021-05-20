@@ -36,15 +36,15 @@ TransportCatalogue InitialiseCatalogue() {
     return transport_catalogue;
 }
 
-TEST(TransportCatalogue, GetStop) {
+TEST(TransportCatalogue, SearchStop) {
     TransportCatalogue transport_catalogue;
-    ASSERT_EQ(transport_catalogue.GetStop("Tolstopaltsevo"), nullptr);
+    ASSERT_EQ(transport_catalogue.SearchStop("Tolstopaltsevo"), nullptr);
 }
 
 TEST(TransportCatalogue, AddStop) {
     TransportCatalogue transport_catalogue;
     transport_catalogue.AddStop({"Tolstopaltsevo", {55.611087, 37.208290}});
-    const Stop* ptr{transport_catalogue.GetStop("Tolstopaltsevo")};
+    const Stop* ptr{transport_catalogue.SearchStop("Tolstopaltsevo")};
 
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(ptr->name, "Tolstopaltsevo");
@@ -55,7 +55,7 @@ TEST(TransportCatalogue, AddStop) {
 TEST(TransportCatalogue, AddBus) {
     TransportCatalogue transport_catalogue;
     transport_catalogue.AddStop({"Tolstopaltsevo", {55.611087, 37.208290}});
-    const Stop* ptr{transport_catalogue.GetStop("Tolstopaltsevo")};
+    const Stop* ptr{transport_catalogue.SearchStop("Tolstopaltsevo")};
 
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(ptr->name, "Tolstopaltsevo");

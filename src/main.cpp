@@ -8,7 +8,7 @@ int main() {
 
     TransportCatalogue transport_catalogue;
     transport_catalogue.AddStop({"Tolstopaltsevo", {55.611087, 37.208290}});
-    cout << transport_catalogue.GetStop("Tolstopaltsevo")->name << endl;
+    cout << transport_catalogue.SearchStop("Tolstopaltsevo")->name << endl;
 
     return 0;
 }

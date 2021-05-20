@@ -32,13 +32,13 @@ public:
 
     void AddBus(const int number, const std::vector<std::string>& route);
 
-    inline const Stop* GetStop(const std::string& stop_name) {
+    inline const Stop* SearchStop(const std::string& stop_name) {
         return (stop_names_.find(stop_name) != stop_names_.end())
                ? stop_names_.at(stop_name)
                : nullptr;
     }
 
-    inline const Bus* GetBus(const int bus_number) {
+    inline const Bus* SearchBus(const int bus_number) {
         return (bus_numbers_.find(bus_number) != bus_numbers_.end())
                ? bus_numbers_.at(bus_number)
                : nullptr;
