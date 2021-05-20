@@ -80,10 +80,6 @@ BusRoute ParseBus(Request& request) {
         route = Split(request.content, " - ");
         is_circular = false;
     }
-    
-
-    if (route.front() == route.back() && route.size() > 1)
-        route.pop_back();
 
     return {
         std::stoi(request.description.substr(request.description.find(" ") + 1)),
