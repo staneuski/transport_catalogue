@@ -5,6 +5,8 @@
 
 #include "transport_catalogue.h"
 
+using BusRoute = std::pair<int, std::vector<std::string>>;
+
 struct Request {
     std::string description;
     std::string content;
@@ -69,7 +71,7 @@ Stop ParseStop(Request& request) {
     };
 }
 
-std::pair<int, std::vector<std::string>> ParseBus(Request& request) {
+BusRoute ParseBus(Request& request) {
     std::vector<std::string> route{Split(request.content, " > ")};
     if (route.empty())
         route = Split(request.content, " - ");
