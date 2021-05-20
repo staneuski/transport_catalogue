@@ -1,11 +1,12 @@
 #pragma once
 #include <iostream>
+#include <tuple>
 #include <string>
 #include <vector>
 
 #include "transport_catalogue.h"
 
-using BusRoute = std::pair<int, std::vector<std::string>>;
+using BusRoute = std::tuple<int, bool, std::vector<std::string>>;
 
 struct Request {
     std::string description;
@@ -73,14 +74,20 @@ Stop ParseStop(Request& request) {
 
 BusRoute ParseBus(Request& request) {
     std::vector<std::string> route{Split(request.content, " > ")};
-    if (route.empty())
+    bool is_circular = true;
+
+    if (route.empty()) {
         route = Split(request.content, " - ");
+        is_circular = false;
+    }
+    
 
     if (route.front() == route.back() && route.size() > 1)
         route.pop_back();
 
     return {
         std::stoi(request.description.substr(request.description.find(" ") + 1)),
+        is_circular,
         route
     };
 }
@@ -94,7 +101,7 @@ void Fill(TransportCatalogue& transport_catalogue) {
 
     for (Request& request : requests)
         if (request.description.substr(0, 3) == "Bus") {
-            const auto& [number, route] = ParseBus(request);
-            transport_catalogue.AddBus(number, route);
+            const auto& [number, is_circular, route] = ParseBus(request);
+            transport_catalogue.AddBus(number, is_circular, route);
         }
 }

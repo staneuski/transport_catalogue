@@ -1,16 +1,12 @@
 #include "transport_catalogue.h"
 
 void TransportCatalogue::AddBus(const int number,
+                                const bool is_circular,
                                 const std::vector<std::string>& route) {
     std::vector<const Stop*> stops;
     stops.reserve(route.size());
-    std::for_each(
-        route.begin(),
-        route.front() == route.back() ? std::prev(route.end()) : route.end(),
-        [this, &stops](const std::string& stop_name) {
-            stops.push_back(SearchStop(stop_name));
-        }
-    );
+    for (const std::string& stop_name : route)
+        stops.push_back(SearchStop(stop_name));
 
-    AddBus({number, stops});
+    AddBus({number, is_circular, stops});
 }
