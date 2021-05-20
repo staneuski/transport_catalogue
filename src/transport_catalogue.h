@@ -1,7 +1,6 @@
 #pragma once
 #include <deque>
 #include <functional>
-#include <set>
 #include <string>
 #include <map>
 #include <unordered_map>
@@ -31,6 +30,8 @@ public:
         bus_numbers_[buses_.back().no] = &buses_.back();
     }
 
+    void AddBus(const int number, const std::vector<std::string>& route);
+
     inline const Stop* GetStop(const std::string& stop_name) {
         return (stop_names_.find(stop_name) != stop_names_.end())
                ? stop_names_.at(stop_name)
@@ -42,8 +43,6 @@ public:
                ? bus_numbers_.at(bus_number)
                : nullptr;
     }
-
-    void AddBus(const int number, const std::vector<std::string>& route);
 
 private:
     std::deque<Stop> stops_;
