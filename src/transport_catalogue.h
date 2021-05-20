@@ -16,7 +16,7 @@ struct Stop {
 
 struct Bus {
     int no;
-    std::vector<std::string> stops;
+    std::vector<const Stop*> stops;
 };
 
 class TransportCatalogue {
@@ -42,6 +42,8 @@ public:
                ? bus_numbers_.at(bus_number)
                : nullptr;
     }
+
+    void AddBus(const int number, const std::vector<std::string>& route);
 
 private:
     std::deque<Stop> stops_;

@@ -69,7 +69,7 @@ Stop ParseStop(Request& request) {
     };
 }
 
-Bus ParseBus(Request& request) {
+std::pair<int, std::vector<std::string>> ParseBus(Request& request) {
     std::vector<std::string> route{Split(request.content, " > ")};
     if (route.empty())
         route = Split(request.content, " - ");
@@ -91,6 +91,8 @@ void Fill(TransportCatalogue& transport_catalogue) {
             transport_catalogue.AddStop(ParseStop(request));
 
     for (Request& request : requests)
-        if (request.description.substr(0, 3) == "Bus")
-            transport_catalogue.AddBus(ParseBus(request));
+        if (request.description.substr(0, 3) == "Bus") {
+            const auto& [number, route] = ParseBus(request);
+            transport_catalogue.AddBus(number, route);
+        }
 }
