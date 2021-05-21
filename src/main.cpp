@@ -16,6 +16,7 @@ TransportCatalogue InitialiseCatalogue() {
     transport_catalogue.AddStop({"F", {55.587655, 37.645687}});
     transport_catalogue.AddStop({"G", {55.592028, 37.653656}});
     transport_catalogue.AddStop({"H", {55.580999, 37.659164}});
+    transport_catalogue.AddStop({"I", {55.580999, 37.659164}});
 
     transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
     transport_catalogue.AddBus("750", false, {"A", "B", "C"});
@@ -28,8 +29,7 @@ int main() {
     using namespace std;
 
     TransportCatalogue transport_catalogue = InitialiseCatalogue();
-    const StopStat stop_stat = transport_catalogue.GetStop("D");
-    cout << stop_stat.unique_buses.size() << endl;
+    cout << transport_catalogue.GetStop("I") << endl;
 
     // TransportCatalogue transport_catalogue;
     // Fill(transport_catalogue);
