@@ -14,15 +14,13 @@ void TransportCatalogue::AddBus(Bus&& bus) {
         stop_to_buses_.at(stop_ptr).insert(&buses_.back());
 }
 
-void TransportCatalogue::AddBus(const std::string& bus_name,
-                                const bool is_circular,
-                                const std::vector<std::string>& route) {
+void TransportCatalogue::AddBus(const Request& request) {
     std::vector<const Stop*> stops;
-    stops.reserve(route.size());
-    for (const std::string& stop_name : route)
+    stops.reserve(request.contents.size());
+    for (const std::string& stop_name : request.contents)
         stops.push_back(SearchStop(stop_name));
 
-    AddBus({bus_name, is_circular, stops});
+    AddBus({request.name, request.delimiter == " > ", stops});
 }
 
 Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {

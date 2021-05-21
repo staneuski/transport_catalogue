@@ -36,13 +36,10 @@ std::ostream& operator<<(std::ostream& out, const StopStat& stop_stat) {
 
 void Search(const TransportCatalogue& transport_catalogue) {
     std::vector<Request> requests{ReadRequests()};
-    for (Request& request : requests) {
-        if (request.first.substr(0, 3) == "Bus") {
-            const auto& [number, is_circular, _] = ParseBus(request);
-            std::cout << transport_catalogue.GetRoute(number) << std::endl;
-        } else if (request.first.substr(0, 4) == "Stop") {
-            std::cout << transport_catalogue.GetStop(ParseStop(request).name)
-                      << std::endl;
-        }
+    for (const Request& request : requests) {
+        if (IsBus(request))
+            std::cout << transport_catalogue.GetRoute(request.name) << std::endl;
+        else if (IsStop(request))
+            std::cout << transport_catalogue.GetStop(request.name) << std::endl;
     }
 }

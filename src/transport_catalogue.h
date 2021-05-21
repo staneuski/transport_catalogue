@@ -9,6 +9,12 @@
 
 #include "geo.h"
 
+struct Request {
+    std::string name;
+    std::vector<std::string> contents;
+    std::string delimiter;
+};
+
 struct Stop {
     std::string name;
     Coordinates coords;
@@ -45,9 +51,14 @@ public:
 
     void AddBus(Bus&& bus);
 
-    void AddBus(const std::string& bus_name,
-                const bool is_circular,
-                const std::vector<std::string>& route);
+    inline void AddStop(const Request& request) {
+        AddStop({
+            request.name,
+            {std::stod(request.contents[0]), std::stod(request.contents[1])}
+        });
+    }
+
+    void AddBus(const Request& request);
 
     inline const Stop* SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())

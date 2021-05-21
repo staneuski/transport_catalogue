@@ -6,30 +6,34 @@
 #include "transport_catalogue.h"
 
 TransportCatalogue InitialiseCatalogue() {
+    const std::vector<Request> stop_requests{
+        {"A", {"55.611087", "37.208290"}, ", "},
+        {"B", {"55.595884", "37.209755"}, ", "},
+        {"C", {"55.632761", "37.333324"}, ", "},
+        {"D", {"55.574371", "37.651700"}, ", "},
+        {"E", {"55.581065", "37.648390"}, ", "},
+        {"F", {"55.587655", "37.645687"}, ", "},
+        {"G", {"55.592028", "37.653656"}, ", "},
+        {"H", {"55.580999", "37.659164"}, ", "},
+        {"I", {"55.581102", "37.659203"}, ", "}
+    };
+    const std::vector<Request> bus_requests{
+        {"828", {"D", "F", "H", "D"}, " > "},
+        {"750", {"A", "B", "C"}, " - "},
+        {"256", {"D", "E", "F", "G", "H", "D"}, " > "},
+        {"11", {"A", "A", "B", "B"}, " - "},
+        {"22", {"B", "A", "B", "A"}, " - "},
+        {"33t", {"A", "A", "A", "A"}, " > "},
+        {"33f", {"A", "A", "A", "A"}, " - "},
+        {"44t", {"A", "B", "B", "A"}, " > "},
+        {"66f", {"A", "B", "B", "A"}, " - "}
+    };
+
     TransportCatalogue transport_catalogue;
-
-    transport_catalogue.AddStop({"A", {55.611087, 37.208290}});
-    transport_catalogue.AddStop({"B", {55.595884, 37.209755}});
-    transport_catalogue.AddStop({"C", {55.632761, 37.333324}});
-    transport_catalogue.AddStop({"D", {55.574371, 37.651700}});
-    transport_catalogue.AddStop({"E", {55.581065, 37.648390}});
-    transport_catalogue.AddStop({"F", {55.587655, 37.645687}});
-    transport_catalogue.AddStop({"G", {55.592028, 37.653656}});
-    transport_catalogue.AddStop({"H", {55.580999, 37.659164}});
-    transport_catalogue.AddStop({"I", {55.580999, 37.659164}});
-
-    transport_catalogue.AddBus("828", true, {"D", "F", "H", "D"});
-    transport_catalogue.AddBus("750", false, {"A", "B", "C"});
-    transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
-
-    transport_catalogue.AddBus("11", false, {"A", "A", "B", "B"});
-    transport_catalogue.AddBus("22", false, {"B", "A", "B", "A"});
-
-    transport_catalogue.AddBus("33t", true, {"A", "A", "A", "A"});
-    transport_catalogue.AddBus("33f", false, {"A", "A", "A", "A"});
-
-    transport_catalogue.AddBus("44t", true, {"A", "B", "B", "A"});
-    transport_catalogue.AddBus("66f", false, {"A", "B", "B", "A"});
+    for (const Request& request : stop_requests)
+        transport_catalogue.AddStop(request);
+    for (const Request& request : bus_requests)
+        transport_catalogue.AddBus(request);
 
     return transport_catalogue;
 }
