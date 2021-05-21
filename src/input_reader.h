@@ -7,11 +7,7 @@
 #include "transport_catalogue.h"
 
 using BusRoute = std::tuple<const std::string, bool, std::vector<std::string>>;
-
-struct Request {
-    std::string description;
-    std::string content;
-};
+using Request = std::pair<std::string, std::string>;
 
 std::string ReadLine() {
     std::string s;
@@ -65,25 +61,25 @@ std::vector<std::string> Split(std::string& s,
 }
 
 Stop ParseStop(Request& request) {
-    std::vector<std::string> coords{Split(request.content, ", ")};
+    std::vector<std::string> coords{Split(request.second, ", ")};
     return {
-        request.description.substr(request.description.find(" ") + 1),
+        request.first.substr(request.first.find(" ") + 1),
         coords.empty() ? Coordinates()
                        : Coordinates({std::stod(coords[0]), std::stod(coords[1])})
     };
 }
 
 BusRoute ParseBus(Request& request) {
-    std::vector<std::string> route{Split(request.content, " > ")};
+    std::vector<std::string> route{Split(request.second, " > ")};
     bool is_circular = true;
 
     if (route.empty()) {
-        route = Split(request.content, " - ");
+        route = Split(request.second, " - ");
         is_circular = false;
     }
 
     return {
-        request.description.substr(request.description.find(" ") + 1),
+        request.first.substr(request.first.find(" ") + 1),
         is_circular,
         route
     };
@@ -93,11 +89,11 @@ void Fill(TransportCatalogue& transport_catalogue) {
     std::vector<Request> requests{ReadRequests()};
 
     for (Request& request : requests)
-        if (request.description.substr(0, 4) == "Stop")
+        if (request.first.substr(0, 4) == "Stop")
             transport_catalogue.AddStop(ParseStop(request));
 
     for (Request& request : requests)
-        if (request.description.substr(0, 3) == "Bus") {
+        if (request.first.substr(0, 3) == "Bus") {
             const auto& [number, is_circular, route] = ParseBus(request);
             transport_catalogue.AddBus(number, is_circular, route);
         }
