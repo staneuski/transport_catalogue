@@ -47,7 +47,7 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
 }
 
 StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
-    const static std::set<const Bus*> empty_stop;
+    const static std::set<const Bus*, LessBusPtr> empty_stop;
     const Stop* stop_ptr{SearchStop(stop_name)};
     return {
         stop_name,

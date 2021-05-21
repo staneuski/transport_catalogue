@@ -18,9 +18,9 @@ TransportCatalogue InitialiseCatalogue() {
     transport_catalogue.AddStop({"H", {55.580999, 37.659164}});
     transport_catalogue.AddStop({"I", {55.580999, 37.659164}});
 
-    transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
-    transport_catalogue.AddBus("750", false, {"A", "B", "C"});
     transport_catalogue.AddBus("828", true, {"D", "F", "H", "D"});
+    transport_catalogue.AddBus("750", false, {"A", "B", "C"});
+    transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
 
     transport_catalogue.AddBus("11", false, {"A", "A", "B", "B"});
     transport_catalogue.AddBus("22", false, {"B", "A", "B", "A"});

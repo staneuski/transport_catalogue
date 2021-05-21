@@ -18,9 +18,9 @@ TransportCatalogue InitialiseCatalogue() {
     transport_catalogue.AddStop({"H", {55.580999, 37.659164}});
     transport_catalogue.AddStop({"I", {55.580999, 37.659164}});
 
-    transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
     transport_catalogue.AddBus("750", false, {"A", "B", "C"});
     transport_catalogue.AddBus("828", true, {"D", "F", "H", "D"});
+    transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
 
     return transport_catalogue;
 }
@@ -29,7 +29,7 @@ int main() {
     using namespace std;
 
     // TransportCatalogue transport_catalogue = InitialiseCatalogue();
-    // cout << transport_catalogue.GetStop("I") << endl;
+    // cout << transport_catalogue.GetStop("D") << endl;
 
     TransportCatalogue transport_catalogue;
     Fill(transport_catalogue);

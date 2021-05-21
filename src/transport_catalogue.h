@@ -20,6 +20,12 @@ struct Bus {
     std::vector<const Stop*> stops;
 };
 
+struct LessBusPtr {
+    inline bool operator()(const Bus* lhs, const Bus* rhs) const {
+        return lhs->name < rhs->name;
+    }
+};
+
 struct Route {
     std::string_view name;
     const Bus* ptr;
@@ -30,7 +36,7 @@ struct Route {
 struct StopStat {
     std::string_view name;
     const Stop* ptr;
-    const std::set<const Bus*>& unique_buses;
+    const std::set<const Bus*, LessBusPtr>& unique_buses;
 };
 
 class TransportCatalogue {
@@ -64,5 +70,5 @@ private:
     std::deque<Bus> buses_;
     std::unordered_map<std::string_view, const Stop*> stop_names_;
     std::unordered_map<std::string_view, const Bus*> bus_names_;
-    std::unordered_map<const Stop*, std::set<const Bus*>> stop_to_buses_;
+    std::unordered_map<const Stop*, std::set<const Bus*, LessBusPtr>> stop_to_buses_;
 };
