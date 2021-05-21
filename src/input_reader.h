@@ -68,7 +68,8 @@ Stop ParseStop(Request& request) {
     std::vector<std::string> coords{Split(request.content, ", ")};
     return {
         request.description.substr(request.description.find(" ") + 1),
-        {std::stod(coords[0]), std::stod(coords[1])}
+        coords.empty() ? Coordinates()
+                       : Coordinates({std::stod(coords[0]), std::stod(coords[1])})
     };
 }
 

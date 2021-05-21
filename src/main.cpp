@@ -28,12 +28,12 @@ TransportCatalogue InitialiseCatalogue() {
 int main() {
     using namespace std;
 
-    TransportCatalogue transport_catalogue = InitialiseCatalogue();
-    cout << transport_catalogue.GetStop("I") << endl;
+    // TransportCatalogue transport_catalogue = InitialiseCatalogue();
+    // cout << transport_catalogue.GetStop("I") << endl;
 
-    // TransportCatalogue transport_catalogue;
-    // Fill(transport_catalogue);
-    // Search(transport_catalogue);
+    TransportCatalogue transport_catalogue;
+    Fill(transport_catalogue);
+    Search(transport_catalogue);
 
     return 0;
 }
