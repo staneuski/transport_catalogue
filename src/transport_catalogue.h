@@ -1,6 +1,7 @@
 #pragma once
 #include <deque>
 #include <functional>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -19,24 +20,30 @@ struct Bus {
     std::vector<const Stop*> stops;
 };
 
+struct LessBusPtr {
+    inline bool operator()(const Bus* lhs, const Bus* rhs) const {
+        return lhs->name < rhs->name;
+    }
+};
+
 struct Route {
-    std::string name;
-    const Bus* bus_ptr;
-    size_t unique_stops, stops;
+    std::string_view name;
+    const Bus* ptr;
+    size_t unique_stops_count, stops_count;
     double length;
+};
+
+struct StopStat {
+    std::string_view name;
+    const Stop* ptr;
+    const std::set<const Bus*, LessBusPtr>& unique_buses;
 };
 
 class TransportCatalogue {
 public:
-    inline void AddStop(Stop&& stop) {
-        stops_.push_back(std::move(stop));
-        stop_names_[stops_.back().name] = &stops_.back();
-    }
+    void AddStop(Stop&& stop);
 
-    inline void AddBus(Bus&& bus) {
-        buses_.push_back(std::move(bus));
-        bus_names_[buses_.back().name] = &buses_.back();
-    }
+    void AddBus(Bus&& bus);
 
     void AddBus(const std::string& bus_name,
                 const bool is_circular,
@@ -54,11 +61,14 @@ public:
                : nullptr;
     }
 
-    Route GetRoute(const std::string& name) const;
+    Route GetRoute(const std::string_view& bus_name) const;
+
+    StopStat GetStop(const std::string_view& stop_name) const;
 
 private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
     std::unordered_map<std::string_view, const Stop*> stop_names_;
     std::unordered_map<std::string_view, const Bus*> bus_names_;
+    std::unordered_map<const Stop*, std::set<const Bus*, LessBusPtr>> stop_to_buses_;
 };
