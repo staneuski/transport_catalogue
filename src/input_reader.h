@@ -6,13 +6,6 @@
 
 #include "transport_catalogue.h"
 
-using BusRoute = std::tuple<const std::string, bool, std::vector<std::string>>;
-
-struct Request {
-    std::string description;
-    std::string content;
-};
-
 std::string ReadLine() {
     std::string s;
     std::getline(std::cin, s);
@@ -26,13 +19,44 @@ int ReadLineWithNumber() {
     return result;
 }
 
-Request ReadRequest(const std::string& delimiter = ": ") {
+std::vector<std::string> Split(std::string_view sv,
+                               const std::string& delimiter = " ") {
+    std::vector<std::string> cells;
+
+    while (true) {
+        size_t pos = sv.find(delimiter);
+
+        const std::string_view& cell = sv.substr(0, pos);
+        cells.push_back({cell.begin(), cell.end()});
+
+        if (pos == sv.npos)
+            break;
+        else
+            sv.remove_prefix(pos + delimiter.size());
+    }
+
+    return cells;
+}
+
+Request ReadRequest(const std::string delimiter = ": ") {
     std::string s = ReadLine();
-    size_t pos = s.find(delimiter);
-    return {
-        s.substr(0, pos),
-        (pos != std::string::npos) ? s.substr(pos + delimiter.size()) : ""
-    };
+
+    Request request;
+    const size_t pos = s.find(delimiter);
+    if ("Stop" == s.substr(0, 4)) {
+        request.name = s.substr(5, pos - 5);
+        request.delimiter = ", ";
+    } else if ("Bus" == s.substr(0, 3)) {
+        request.name = s.substr(4, pos - 4);
+        request.delimiter = (s.find(" > ") != std::string::npos) ? " > " : " - ";
+    }
+
+    request.contents = Split(
+        s.substr(pos + delimiter.size()),
+        request.delimiter
+    );
+
+    return request;
 }
 
 std::vector<Request> ReadRequests() {
@@ -44,61 +68,26 @@ std::vector<Request> ReadRequests() {
     return requests;
 }
 
-std::vector<std::string> Split(std::string& s,
-                               const std::string& delimiter = " ") {
-    std::vector<std::string> tokens;
-
-    size_t pos = s.find(delimiter);
-    if (pos == std::string::npos)
-        return tokens;
-
-    std::string token;
-    while (pos != std::string::npos) {
-        tokens.push_back(s.substr(0, pos));
-        s.erase(0, pos + delimiter.length());
-        pos = s.find(delimiter);
-    }
-    tokens.push_back(s.substr(0, pos));
-    s.erase();
-
-    return tokens;
+inline bool IsStop(const Request& request) {
+    return request.delimiter == ", ";
 }
 
-Stop ParseStop(Request& request) {
-    std::vector<std::string> coords{Split(request.content, ", ")};
-    return {
-        request.description.substr(request.description.find(" ") + 1),
-        coords.empty() ? Coordinates()
-                       : Coordinates({std::stod(coords[0]), std::stod(coords[1])})
-    };
-}
-
-BusRoute ParseBus(Request& request) {
-    std::vector<std::string> route{Split(request.content, " > ")};
-    bool is_circular = true;
-
-    if (route.empty()) {
-        route = Split(request.content, " - ");
-        is_circular = false;
-    }
-
-    return {
-        request.description.substr(request.description.find(" ") + 1),
-        is_circular,
-        route
-    };
+inline bool IsBus(const Request& request) {
+    return request.delimiter == " > " || request.delimiter == " - ";
 }
 
 void Fill(TransportCatalogue& transport_catalogue) {
     std::vector<Request> requests{ReadRequests()};
 
-    for (Request& request : requests)
-        if (request.description.substr(0, 4) == "Stop")
-            transport_catalogue.AddStop(ParseStop(request));
+    for (const Request& request : requests)
+        if (IsStop(request))
+            transport_catalogue.AddStop(request);
 
-    for (Request& request : requests)
-        if (request.description.substr(0, 3) == "Bus") {
-            const auto& [number, is_circular, route] = ParseBus(request);
-            transport_catalogue.AddBus(number, is_circular, route);
-        }
+    for (const Request& request : requests)
+        if (IsStop(request))
+            transport_catalogue.AbutStops(request);
+
+    for (const Request& request : requests)
+        if (IsBus(request))
+            transport_catalogue.AddBus(request);
 }

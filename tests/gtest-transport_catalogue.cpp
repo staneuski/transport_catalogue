@@ -6,30 +6,32 @@
 #include "transport_catalogue.h"
 
 TransportCatalogue InitialiseCatalogue() {
+    const std::vector<Request> stop_requests{
+        {"A", {"55.611087", "37.20829", "3900m to B"}, ", "},
+        {"B", {"55.595884", "37.209755", "9900m to C", "100m to B"}, ", "},
+        {"C", {"55.632761", "37.333324", "9500m to B"}, ", "},
+        {"D", {"55.574371", "37.6517", "7500m to I", "1800m to E", "2400m to F"}, ", "},
+        {"E", {"55.581065", "37.64839", "750m to F"}, ", "},
+        {"F", {"55.587655", "37.645687", "5600m to I", "900m to G"}, ", "},
+        {"G", {"55.592028", "37.653656", "1300m to H"}, ", "},
+        {"H", {"55.580999", "37.659164", "1200m to D"}, ", "},
+        {"I", {"55.595579", "37.605757"}, ", "},
+        {"J", {"55.611678", "37.603831"}, ", "}
+    };
+
+    const std::vector<Request> bus_requests{
+        {"828", {"D", "F", "I", "D"}, " > "},
+        {"256", {"D", "E", "F", "G", "H", "D"}, " > "},
+        {"750", {"A", "B", "B", "C"}, " - "}
+    };
+
     TransportCatalogue transport_catalogue;
-
-    transport_catalogue.AddStop({"A", {55.611087, 37.208290}});
-    transport_catalogue.AddStop({"B", {55.595884, 37.209755}});
-    transport_catalogue.AddStop({"C", {55.632761, 37.333324}});
-    transport_catalogue.AddStop({"D", {55.574371, 37.651700}});
-    transport_catalogue.AddStop({"E", {55.581065, 37.648390}});
-    transport_catalogue.AddStop({"F", {55.587655, 37.645687}});
-    transport_catalogue.AddStop({"G", {55.592028, 37.653656}});
-    transport_catalogue.AddStop({"H", {55.580999, 37.659164}});
-    transport_catalogue.AddStop({"I", {55.580999, 37.659164}});
-
-    transport_catalogue.AddBus("828", true, {"D", "F", "H", "D"});
-    transport_catalogue.AddBus("750", false, {"A", "B", "C"});
-    transport_catalogue.AddBus("256", true, {"D", "E", "F", "G", "H", "D"});
-
-    transport_catalogue.AddBus("11", false, {"A", "A", "B", "B"});
-    transport_catalogue.AddBus("22", false, {"B", "A", "B", "A"});
-
-    transport_catalogue.AddBus("33t", true, {"A", "A", "A", "A"});
-    transport_catalogue.AddBus("33f", false, {"A", "A", "A", "A"});
-
-    transport_catalogue.AddBus("44t", true, {"A", "B", "B", "A"});
-    transport_catalogue.AddBus("66f", false, {"A", "B", "B", "A"});
+    for (const Request& request : stop_requests)
+        transport_catalogue.AddStop(request);
+    for (const Request& request : stop_requests)
+        transport_catalogue.AbutStops(request);
+    for (const Request& request : bus_requests)
+        transport_catalogue.AddBus(request);
 
     return transport_catalogue;
 }
@@ -58,91 +60,30 @@ TEST(TransportCatalogue, GetRouteNotExist) {
 }
 
 TEST(TransportCatalogue, GetRouteCircular) {
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("256")};
+    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const Route route{transport_catalogue.GetRoute("256")};
 
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "256");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 6);
-        ASSERT_EQ(route.unique_stops_count, 5);
-        ASSERT_NEAR(route.length, 4371.0172, 1e-4);
-    }
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("33t")};
+    ASSERT_NE(route.ptr, nullptr);
+    ASSERT_EQ(route.ptr->name, "256");
+    ASSERT_EQ(route.ptr->name, route.name);
+    ASSERT_EQ(route.stops_count, 6);
+    ASSERT_EQ(route.unique_stops_count, 5);
+    ASSERT_EQ(route.length, 5950);
+    ASSERT_NEAR(route.curvature, 1.36124, 1e-5);
 
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "33t");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 4);
-        ASSERT_EQ(route.unique_stops_count, 1);
-    }
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("44t")};
-
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "44t");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 4);
-        ASSERT_EQ(route.unique_stops_count, 2);
-    }
 }
 
 TEST(TransportCatalogue, GetRouteNotCircular) {
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("750")};
+    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const Route route{transport_catalogue.GetRoute("750")};
 
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "750");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 5);
-        ASSERT_EQ(route.unique_stops_count, 3);
-        ASSERT_NEAR(route.length, 20939.483, 1e-4);
-    }
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("11")};
-
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "11");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 7);
-        ASSERT_EQ(route.unique_stops_count, 2);
-    }
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("22")};
-
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "22");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 7);
-        ASSERT_EQ(route.unique_stops_count, 2);
-    }
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("33f")};
-
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "33f");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 7);
-        ASSERT_EQ(route.unique_stops_count, 1);
-    }
-    {
-        const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-        const Route route{transport_catalogue.GetRoute("66f")};
-
-        ASSERT_NE(route.ptr, nullptr);
-        ASSERT_EQ(route.ptr->name, "66f");
-        ASSERT_EQ(route.ptr->name, route.name);
-        ASSERT_EQ(route.stops_count, 7);
-        ASSERT_EQ(route.unique_stops_count, 2);
-    }
+    ASSERT_NE(route.ptr, nullptr);
+    ASSERT_EQ(route.ptr->name, "750");
+    ASSERT_EQ(route.ptr->name, route.name);
+    ASSERT_EQ(route.stops_count, 7);
+    ASSERT_EQ(route.unique_stops_count, 3);
+    ASSERT_EQ(route.length, 27400);
+    ASSERT_NEAR(route.curvature, 1.30853, 1e-5);
 }
 
 TEST(TransportCatalogue, GetStopNotExist) {
@@ -154,12 +95,11 @@ TEST(TransportCatalogue, GetStopNotExist) {
     ASSERT_TRUE(stop_stat.unique_buses.empty());
 }
 
-
 TEST(TransportCatalogue, GetStopWithoutBuses) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    StopStat stop_stat = transport_catalogue.GetStop("I");
+    StopStat stop_stat = transport_catalogue.GetStop("J");
 
-    ASSERT_EQ(stop_stat.name, "I");
+    ASSERT_EQ(stop_stat.name, "J");
     ASSERT_NE(stop_stat.ptr, nullptr);
     ASSERT_TRUE(stop_stat.unique_buses.empty());
 }

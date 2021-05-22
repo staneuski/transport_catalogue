@@ -14,36 +14,73 @@ void TransportCatalogue::AddBus(Bus&& bus) {
         stop_to_buses_.at(stop_ptr).insert(&buses_.back());
 }
 
-void TransportCatalogue::AddBus(const std::string& bus_name,
-                                const bool is_circular,
-                                const std::vector<std::string>& route) {
+void TransportCatalogue::AddBus(const Request& request) {
     std::vector<const Stop*> stops;
-    stops.reserve(route.size());
-    for (const std::string& stop_name : route)
+    stops.reserve(request.contents.size());
+    for (const std::string& stop_name : request.contents)
         stops.push_back(SearchStop(stop_name));
 
-    AddBus({bus_name, is_circular, stops});
+    AddBus({request.name, request.delimiter == " > ", stops});
+}
+
+void TransportCatalogue::AbutStop(const Stop* stop,
+                                  const Stop* adjacent_stop,
+                                  const int metres) {
+    const auto it = stops_to_distance_.find({adjacent_stop, stop});
+    if (it != stops_to_distance_.end() && it->second == metres)
+        return;
+
+    stops_to_distance_[{stop, adjacent_stop}] = metres;
+}
+
+void TransportCatalogue::AbutStops(const Request& request,
+                                   const std::string_view delimiter) {
+    const Stop* stop = SearchStop(request.name);
+    std::for_each(
+        request.contents.begin() + 2,
+        request.contents.end(),
+        [&](const std::string& s) {
+            const size_t pos = s.find(delimiter);
+            AbutStop(
+                stop,
+                SearchStop(s.substr(pos + delimiter.size())),
+                std::stoi(s.substr(0, pos))
+            );
+        }
+    );
 }
 
 Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
-    const Bus* bus_ptr{SearchBus(bus_name)};
-    if (!bus_ptr)
-        return {bus_name, bus_ptr, 0, 0, .0};
+    Route route;
+    route.name = bus_name;
+    route.ptr = SearchBus(bus_name);
+    if (!route.ptr)
+        return route;
 
-    const std::vector<const Stop*>& stops = bus_ptr->stops;
-    const std::unordered_set<const Stop*> unique_stops_t{stops.begin(), stops.end()};
+    const std::vector<const Stop*>& stops = route.ptr->stops;
+    route.stops_count = stops.size();
 
-    double route_len = .0;
-    for (size_t i = 0; i + 1 < stops.size(); ++i)
-        route_len += ComputeDistance(stops.at(i)->coords, stops.at(i + 1u)->coords);
+    const std::unordered_set<const Stop*> unique_stops{stops.begin(), stops.end()};
+    route.unique_stops_count = unique_stops.size();
 
-    return {
-        bus_name,
-        bus_ptr,
-        unique_stops_t.size(),
-        bus_ptr->is_circular ? stops.size() : (2*stops.size() - 1),
-        bus_ptr->is_circular ? route_len : 2*route_len
+    double distance = 0;
+    const auto ComputeRoute = [&](const Stop* stop, const Stop* next_stop) {
+        distance += ComputeDistance(stop->coords, next_stop->coords);
+        route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
+                        ? stops_to_distance_.at({stop, next_stop})
+                        : stops_to_distance_.at({next_stop, stop});
     };
+
+    for (auto it = stops.begin(); it + 1 != stops.end(); ++it)
+        ComputeRoute(*it, *std::next(it));
+
+    if (!route.ptr->is_circular) {
+        route.stops_count = 2*route.stops_count - 1;
+        for (auto it = stops.rbegin(); it + 1 != stops.rend(); ++it)
+            ComputeRoute(*it, *std::next(it));
+    }
+    route.curvature = route.length/distance;
+    return route;
 }
 
 StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
