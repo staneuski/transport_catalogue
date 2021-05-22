@@ -35,8 +35,8 @@ struct LessBusPtr {
 struct Route {
     std::string_view name;
     const Bus* ptr;
-    size_t unique_stops_count, stops_count;
-    double length;
+    size_t stops_count, unique_stops_count;
+    double length = .0;
 };
 
 struct StopStat {
