@@ -11,7 +11,8 @@ std::ostream& operator<<(std::ostream& out, const Route& route) {
     if (route.ptr)
         out << ": " << route.stops_count << " stops on route"
             << ", " << route.unique_stops_count << " unique stops"
-            << ", " << std::setprecision(6) << route.length << " route length";
+            << ", " << route.length << " route length"
+            << ", " << std::setprecision(6) << route.curvature << " curvature";
     else
         out << ": not found";
 

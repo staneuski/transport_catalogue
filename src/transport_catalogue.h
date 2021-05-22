@@ -7,6 +7,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <iostream>
+
 #include "geo.h"
 
 struct Request {
@@ -36,7 +38,8 @@ struct Route {
     std::string_view name;
     const Bus* ptr;
     size_t stops_count, unique_stops_count;
-    double length = .0;
+    int length = 0;
+    double curvature = 1.;
 };
 
 struct StopStat {

@@ -63,17 +63,23 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
     const std::unordered_set<const Stop*> unique_stops{stops.begin(), stops.end()};
     route.unique_stops_count = unique_stops.size();
 
-    for (size_t i = 0; i + 1 < stops.size(); ++i) {
-        const Stop* stop = stops.at(i);
-        const Stop* next_stop = stops.at(i + 1u);
+    double distance = 0;
+    const auto ComputeRoute = [&](const Stop* stop, const Stop* next_stop) {
+        distance += ComputeDistance(stop->coords, next_stop->coords);
+        route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
+                        ? stops_to_distance_.at({stop, next_stop})
+                        : stops_to_distance_.at({next_stop, stop});
+    };
 
-        route.length += ComputeDistance(stop->coords, next_stop->coords);
-    }
+    for (auto it = stops.begin(); it + 1 != stops.end(); ++it)
+        ComputeRoute(*it, *std::next(it));
 
     if (!route.ptr->is_circular) {
-        route.length *= 2;
         route.stops_count = 2*route.stops_count - 1;
+        for (auto it = stops.rbegin(); it + 1 != stops.rend(); ++it)
+            ComputeRoute(*it, *std::next(it));
     }
+    route.curvature = route.length/distance;
     return route;
 }
 
