@@ -19,7 +19,7 @@ struct Request {
 
 struct Stop {
     std::string name;
-    Coordinates coords;
+    geo::Coordinates coords;
 };
 
 struct Bus {

@@ -65,7 +65,7 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
 
     double distance = 0;
     const auto ComputeRoute = [&](const Stop* stop, const Stop* next_stop) {
-        distance += ComputeDistance(stop->coords, next_stop->coords);
+        distance += geo::ComputeDistance(stop->coords, next_stop->coords);
         route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
                         ? stops_to_distance_.at({stop, next_stop})
                         : stops_to_distance_.at({next_stop, stop});
