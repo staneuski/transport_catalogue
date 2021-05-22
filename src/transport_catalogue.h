@@ -83,10 +83,9 @@ public:
                : nullptr;
     }
 
-    inline void AbutStop(const Stop* stop, const Stop* adjacent_stop, const int metres) {
-        if (stops_to_distance_.find({adjacent_stop, stop})->second != metres)
-                stops_to_distance_[{stop, adjacent_stop}] = metres;
-    }
+    void AbutStop(const Stop* stop,
+                  const Stop* adjacent_stop,
+                  const int distance);
 
     void AbutStops(const Request& request,
                    const std::string_view delimiter = "m to ");

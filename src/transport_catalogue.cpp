@@ -23,6 +23,16 @@ void TransportCatalogue::AddBus(const Request& request) {
     AddBus({request.name, request.delimiter == " > ", stops});
 }
 
+void TransportCatalogue::AbutStop(const Stop* stop,
+                                  const Stop* adjacent_stop,
+                                  const int metres) {
+    const auto it = stops_to_distance_.find({adjacent_stop, stop});
+    if (it != stops_to_distance_.end() && it->second == metres)
+        return;
+
+    stops_to_distance_[{stop, adjacent_stop}] = metres;
+}
+
 void TransportCatalogue::AbutStops(const Request& request,
                                    const std::string_view delimiter) {
     const Stop* stop = SearchStop(request.name);
@@ -56,6 +66,7 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
     for (size_t i = 0; i + 1 < stops.size(); ++i) {
         const Stop* stop = stops.at(i);
         const Stop* next_stop = stops.at(i + 1u);
+
         route.length += ComputeDistance(stop->coords, next_stop->coords);
     }
 
