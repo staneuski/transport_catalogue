@@ -5,7 +5,7 @@
 #include "input_reader.h"
 #include "transport_catalogue.h"
 
-std::ostream& operator<<(std::ostream& out, const Route& route) {
+std::ostream& operator<<(std::ostream& out, const domain::Route& route) {
     out << "Bus " << route.name;
 
     if (route.ptr)
@@ -19,12 +19,12 @@ std::ostream& operator<<(std::ostream& out, const Route& route) {
     return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const StopStat& stop_stat) {
+std::ostream& operator<<(std::ostream& out, const domain::StopStat& stop_stat) {
     out << "Stop " << stop_stat.name;
 
     if (stop_stat.ptr && !stop_stat.unique_buses.empty()) {
         out << ": buses";
-        for (const Bus* bus : stop_stat.unique_buses)
+        for (const domain::Bus* bus : stop_stat.unique_buses)
             out << ' ' << bus->name;
     } else if (stop_stat.ptr && stop_stat.unique_buses.empty()) {
         out << ": no buses";

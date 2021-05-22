@@ -5,6 +5,8 @@
 #include "input_reader.h"
 #include "transport_catalogue.h"
 
+using domain::Bus, domain::Stop, domain::Route, domain::StopStat;
+
 TransportCatalogue InitialiseCatalogue() {
     const std::vector<Request> stop_requests{
         {"A", {"55.611087", "37.20829", "3900m to B"}, ", "},

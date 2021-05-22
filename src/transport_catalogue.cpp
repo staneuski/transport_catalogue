@@ -1,5 +1,7 @@
 #include "transport_catalogue.h"
 
+using domain::Bus, domain::Stop;
+
 void TransportCatalogue::AddStop(Stop&& stop) {
     stops_.push_back(std::move(stop));
     stop_names_[stops_.back().name] = &stops_.back();
@@ -50,8 +52,8 @@ void TransportCatalogue::AbutStops(const Request& request,
     );
 }
 
-Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
-    Route route;
+domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
+    domain::Route route;
     route.name = bus_name;
     route.ptr = SearchBus(bus_name);
     if (!route.ptr)
@@ -83,8 +85,8 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
     return route;
 }
 
-StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
-    const static std::set<const Bus*, LessBusPtr> empty_stop;
+domain::StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
+    const static std::set<const Bus*, domain::LessBusPtr> empty_stop;
     const Stop* stop_ptr{SearchStop(stop_name)};
     return {
         stop_name,
