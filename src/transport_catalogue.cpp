@@ -23,6 +23,23 @@ void TransportCatalogue::AddBus(const Request& request) {
     AddBus({request.name, request.delimiter == " > ", stops});
 }
 
+void TransportCatalogue::AbutStops(const Request& request,
+                                   const std::string_view delimiter) {
+    const Stop* stop = SearchStop(request.name);
+    std::for_each(
+        request.contents.begin() + 2,
+        request.contents.end(),
+        [&](const std::string& s) {
+            const size_t pos = s.find(delimiter);
+            AbutStop(
+                stop,
+                SearchStop(s.substr(pos + delimiter.size())),
+                std::stoi(s.substr(0, pos))
+            );
+        }
+    );
+}
+
 Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
     const Bus* bus_ptr{SearchBus(bus_name)};
     if (!bus_ptr)

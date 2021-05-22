@@ -84,6 +84,10 @@ void Fill(TransportCatalogue& transport_catalogue) {
             transport_catalogue.AddStop(request);
 
     for (const Request& request : requests)
+        if (IsStop(request))
+            transport_catalogue.AbutStops(request);
+
+    for (const Request& request : requests)
         if (IsBus(request))
             transport_catalogue.AddBus(request);
 }

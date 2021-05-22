@@ -46,10 +46,19 @@ struct StopStat {
 };
 
 class TransportCatalogue {
+    using AdjacentStops = std::pair<const Stop*, const Stop*>;
+
+    class AdjacentStopsHasher {
+    public:
+        inline size_t operator()(const AdjacentStops adjacent_stops) const {
+            return hash_(adjacent_stops.first) + hash_(adjacent_stops.first)*37;
+        }
+    private:
+        std::hash<const void*> hash_;
+    };
+
 public:
     void AddStop(Stop&& stop);
-
-    void AddBus(Bus&& bus);
 
     inline void AddStop(const Request& request) {
         AddStop({
@@ -57,6 +66,8 @@ public:
             {std::stod(request.contents[0]), std::stod(request.contents[1])}
         });
     }
+
+    void AddBus(Bus&& bus);
 
     void AddBus(const Request& request);
 
@@ -72,6 +83,14 @@ public:
                : nullptr;
     }
 
+    inline void AbutStop(const Stop* stop, const Stop* adjacent_stop, const int metres) {
+        if (stops_to_distance_.find({adjacent_stop, stop})->second != metres)
+                stops_to_distance_[{stop, adjacent_stop}] = metres;
+    }
+
+    void AbutStops(const Request& request,
+                   const std::string_view delimiter = "m to ");
+
     Route GetRoute(const std::string_view& bus_name) const;
 
     StopStat GetStop(const std::string_view& stop_name) const;
@@ -82,4 +101,5 @@ private:
     std::unordered_map<std::string_view, const Stop*> stop_names_;
     std::unordered_map<std::string_view, const Bus*> bus_names_;
     std::unordered_map<const Stop*, std::set<const Bus*, LessBusPtr>> stop_to_buses_;
+    std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
 };
