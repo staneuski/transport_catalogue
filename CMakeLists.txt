@@ -10,6 +10,7 @@ add_compile_options(-Wall -Wextra -Werror)
 
 include_directories(src tests)
 set(SRC
+    src/input_reader.cpp
     src/transport_catalogue.cpp)
 
 #######################################
