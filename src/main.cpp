@@ -5,8 +5,8 @@
 #include "stat_reader.h"
 #include "transport_catalogue.h"
 
-TransportCatalogue InitialiseCatalogue() {
-    const std::vector<Request> stop_requests{
+transport::TransportCatalogue InitialiseCatalogue() {
+    const std::vector<transport::io::Request> stop_requests{
         {"A", {"55.611087", "37.20829", "3900m to B"}, ", "},
         {"B", {"55.595884", "37.209755", "9900m to C", "100m to B"}, ", "},
         {"C", {"55.632761", "37.333324", "9500m to B"}, ", "},
@@ -19,18 +19,18 @@ TransportCatalogue InitialiseCatalogue() {
         {"J", {"55.611678", "37.603831"}, ", "}
     };
 
-    const std::vector<Request> bus_requests{
+    const std::vector<transport::io::Request> bus_requests{
         {"828", {"D", "F", "I", "D"}, " > "},
         {"256", {"D", "E", "F", "G", "H", "D"}, " > "},
         {"750", {"A", "B", "B", "C"}, " - "}
     };
 
-    TransportCatalogue transport_catalogue;
-    for (const Request& request : stop_requests)
+    transport::TransportCatalogue transport_catalogue;
+    for (const transport::io::Request& request : stop_requests)
         transport_catalogue.AddStop(request);
-    for (const Request& request : stop_requests)
+    for (const transport::io::Request& request : stop_requests)
         transport_catalogue.AbutStops(request);
-    for (const Request& request : bus_requests)
+    for (const transport::io::Request& request : bus_requests)
         transport_catalogue.AddBus(request);
 
     return transport_catalogue;
@@ -38,20 +38,21 @@ TransportCatalogue InitialiseCatalogue() {
 
 int main(int argc, char* argv[]) {
     using namespace std;
+    using namespace transport::io;
 
     if (argc <= 1 && !argv[1]) {
-        TransportCatalogue transport_catalogue;
+        transport::TransportCatalogue transport_catalogue;
         Fill(transport_catalogue);
         Search(transport_catalogue);
     } else {
         const vector<string> stop_names{"A", "B", "D", "E", "F", "H", "I"};
         const vector<string> bus_names{"828", "750", "256", "751"};
 
-        TransportCatalogue transport_catalogue = InitialiseCatalogue();
+        transport::TransportCatalogue transport_catalogue{InitialiseCatalogue()};
         for (const auto& name : stop_names)
-            std::cout << transport_catalogue.GetStop(name) << std::endl;
+            cout << transport_catalogue.GetStop(name) << endl;
         for (const auto& name : bus_names)
-            std::cout << transport_catalogue.GetRoute(name) << std::endl;
+            cout << transport_catalogue.GetRoute(name) << endl;
     }
 
     return 0;

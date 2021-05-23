@@ -1,5 +1,9 @@
 #include "transport_catalogue.h"
 
+namespace transport {
+
+using domain::Bus, domain::Stop;
+
 void TransportCatalogue::AddStop(Stop&& stop) {
     stops_.push_back(std::move(stop));
     stop_names_[stops_.back().name] = &stops_.back();
@@ -14,7 +18,7 @@ void TransportCatalogue::AddBus(Bus&& bus) {
         stop_to_buses_.at(stop_ptr).insert(&buses_.back());
 }
 
-void TransportCatalogue::AddBus(const Request& request) {
+void TransportCatalogue::AddBus(const io::Request& request) {
     std::vector<const Stop*> stops;
     stops.reserve(request.contents.size());
     for (const std::string& stop_name : request.contents)
@@ -33,7 +37,7 @@ void TransportCatalogue::AbutStop(const Stop* stop,
     stops_to_distance_[{stop, adjacent_stop}] = metres;
 }
 
-void TransportCatalogue::AbutStops(const Request& request,
+void TransportCatalogue::AbutStops(const io::Request& request,
                                    const std::string_view delimiter) {
     const Stop* stop = SearchStop(request.name);
     std::for_each(
@@ -50,8 +54,8 @@ void TransportCatalogue::AbutStops(const Request& request,
     );
 }
 
-Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
-    Route route;
+domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
+    domain::Route route;
     route.name = bus_name;
     route.ptr = SearchBus(bus_name);
     if (!route.ptr)
@@ -65,7 +69,7 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
 
     double distance = 0;
     const auto ComputeRoute = [&](const Stop* stop, const Stop* next_stop) {
-        distance += ComputeDistance(stop->coords, next_stop->coords);
+        distance += geo::ComputeDistance(stop->coords, next_stop->coords);
         route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
                         ? stops_to_distance_.at({stop, next_stop})
                         : stops_to_distance_.at({next_stop, stop});
@@ -83,8 +87,8 @@ Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
     return route;
 }
 
-StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
-    const static std::set<const Bus*, LessBusPtr> empty_stop;
+domain::StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
+    const static std::set<const Bus*, domain::LessBusPtr> empty_stop;
     const Stop* stop_ptr{SearchStop(stop_name)};
     return {
         stop_name,
@@ -92,3 +96,5 @@ StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
         stop_ptr ? stop_to_buses_.at(stop_ptr) : empty_stop
     };
 }
+
+} // end namespace transport

@@ -5,7 +5,10 @@
 #include "input_reader.h"
 #include "transport_catalogue.h"
 
-std::ostream& operator<<(std::ostream& out, const Route& route) {
+namespace transport {
+namespace io {
+
+std::ostream& operator<<(std::ostream& out, const domain::Route& route) {
     out << "Bus " << route.name;
 
     if (route.ptr)
@@ -19,12 +22,12 @@ std::ostream& operator<<(std::ostream& out, const Route& route) {
     return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const StopStat& stop_stat) {
+std::ostream& operator<<(std::ostream& out, const domain::StopStat& stop_stat) {
     out << "Stop " << stop_stat.name;
 
     if (stop_stat.ptr && !stop_stat.unique_buses.empty()) {
         out << ": buses";
-        for (const Bus* bus : stop_stat.unique_buses)
+        for (const domain::Bus* bus : stop_stat.unique_buses)
             out << ' ' << bus->name;
     } else if (stop_stat.ptr && stop_stat.unique_buses.empty()) {
         out << ": no buses";
@@ -36,11 +39,14 @@ std::ostream& operator<<(std::ostream& out, const StopStat& stop_stat) {
 }
 
 void Search(const TransportCatalogue& transport_catalogue) {
-    std::vector<Request> requests{ReadRequests()};
-    for (const Request& request : requests) {
+    std::vector<io::Request> requests{ReadRequests()};
+    for (const io::Request& request : requests) {
         if (IsBus(request))
             std::cout << transport_catalogue.GetRoute(request.name) << std::endl;
         else if (IsStop(request))
             std::cout << transport_catalogue.GetStop(request.name) << std::endl;
     }
 }
+
+} // end namespace io
+} // end namespace transport
