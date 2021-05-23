@@ -65,7 +65,7 @@ class TransportCatalogue {
     };
 
 public:
-    void AddStop(domain::Stop&& stop);
+    void AddStop(domain::Stop stop);
 
     inline void AddStop(const domain::Request& request) {
         AddStop({
@@ -74,7 +74,7 @@ public:
         });
     }
 
-    void AddBus(domain::Bus&& bus);
+    void AddBus(domain::Bus bus);
 
     void AddBus(const domain::Request& request);
 

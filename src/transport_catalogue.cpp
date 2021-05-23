@@ -4,13 +4,13 @@ namespace transport {
 
 using domain::Bus, domain::Stop;
 
-void TransportCatalogue::AddStop(Stop&& stop) {
+void TransportCatalogue::AddStop(Stop stop) {
     stops_.push_back(std::move(stop));
     stop_names_[stops_.back().name] = &stops_.back();
     stop_to_buses_[&stops_.back()];
 }
 
-void TransportCatalogue::AddBus(Bus&& bus) {
+void TransportCatalogue::AddBus(Bus bus) {
     buses_.push_back(std::move(bus));
     bus_names_[buses_.back().name] = &buses_.back();
 
@@ -87,7 +87,10 @@ domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) con
     return route;
 }
 
-domain::StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) const {
+domain::StopStat TransportCatalogue::GetStop(
+    const std::string_view& stop_name
+) const
+{
     const static std::set<const Bus*, domain::LessBusPtr> empty_stop;
     const Stop* stop_ptr{SearchStop(stop_name)};
     return {
