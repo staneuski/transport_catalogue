@@ -7,8 +7,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include <iostream>
-
 #include "geo.h"
 
 namespace transport {
@@ -92,12 +90,12 @@ public:
                : nullptr;
     }
 
-    void AbutStop(const domain::Stop* stop,
-                  const domain::Stop* adjacent_stop,
-                  const int distance);
+    void MakeAdjacent(const domain::Stop* stop,
+                      const domain::Stop* adjacent_stop,
+                      const int distance);
 
-    void AbutStops(const domain::Request& request,
-                   const std::string_view delimiter = "m to ");
+    void MakeAdjacent(const domain::Request& request,
+                      const std::string_view delimiter = "m to ");
 
     domain::Route GetRoute(const std::string_view& bus_name) const;
 

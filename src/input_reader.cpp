@@ -77,7 +77,7 @@ void io::Fill(TransportCatalogue& transport_catalogue) {
 
     for (const domain::Request& request : requests)
         if (IsStop(request))
-            transport_catalogue.AbutStops(request);
+            transport_catalogue.MakeAdjacent(request);
 
     for (const domain::Request& request : requests)
         if (IsBus(request))

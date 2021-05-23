@@ -29,7 +29,7 @@ transport::TransportCatalogue InitialiseCatalogue() {
     for (const transport::domain::Request& request : stop_requests)
         transport_catalogue.AddStop(request);
     for (const transport::domain::Request& request : stop_requests)
-        transport_catalogue.AbutStops(request);
+        transport_catalogue.MakeAdjacent(request);
     for (const transport::domain::Request& request : bus_requests)
         transport_catalogue.AddBus(request);
 

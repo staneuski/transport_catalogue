@@ -27,7 +27,7 @@ void TransportCatalogue::AddBus(const domain::Request& request) {
     AddBus({request.name, request.delimiter == " > ", stops});
 }
 
-void TransportCatalogue::AbutStop(const Stop* stop,
+void TransportCatalogue::MakeAdjacent(const Stop* stop,
                                   const Stop* adjacent_stop,
                                   const int metres) {
     const auto it = stops_to_distance_.find({adjacent_stop, stop});
@@ -37,15 +37,15 @@ void TransportCatalogue::AbutStop(const Stop* stop,
     stops_to_distance_[{stop, adjacent_stop}] = metres;
 }
 
-void TransportCatalogue::AbutStops(const domain::Request& request,
-                                   const std::string_view delimiter) {
+void TransportCatalogue::MakeAdjacent(const domain::Request& request,
+                                      const std::string_view delimiter) {
     const Stop* stop = SearchStop(request.name);
     std::for_each(
         request.contents.begin() + 2,
         request.contents.end(),
         [&](const std::string& s) {
             const size_t pos = s.find(delimiter);
-            AbutStop(
+            MakeAdjacent(
                 stop,
                 SearchStop(s.substr(pos + delimiter.size())),
                 std::stoi(s.substr(0, pos))
