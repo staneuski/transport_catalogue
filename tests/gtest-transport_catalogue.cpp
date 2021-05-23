@@ -5,7 +5,8 @@
 #include "input_reader.h"
 #include "transport_catalogue.h"
 
-using domain::Bus, domain::Stop, domain::Route, domain::StopStat;
+using transport::domain::Bus, transport::domain::Stop;
+using transport::TransportCatalogue;
 
 TransportCatalogue InitialiseCatalogue() {
     const std::vector<Request> stop_requests{
@@ -56,14 +57,14 @@ TEST(TransportCatalogue, AddStop) {
 
 TEST(TransportCatalogue, GetRouteNotExist) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    const Route route{transport_catalogue.GetRoute("751")};
+    const transport::domain::Route route{transport_catalogue.GetRoute("751")};
 
     ASSERT_EQ(route.ptr, nullptr);
 }
 
 TEST(TransportCatalogue, GetRouteCircular) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    const Route route{transport_catalogue.GetRoute("256")};
+    const transport::domain::Route route{transport_catalogue.GetRoute("256")};
 
     ASSERT_NE(route.ptr, nullptr);
     ASSERT_EQ(route.ptr->name, "256");
@@ -77,7 +78,7 @@ TEST(TransportCatalogue, GetRouteCircular) {
 
 TEST(TransportCatalogue, GetRouteNotCircular) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    const Route route{transport_catalogue.GetRoute("750")};
+    const transport::domain::Route route{transport_catalogue.GetRoute("750")};
 
     ASSERT_NE(route.ptr, nullptr);
     ASSERT_EQ(route.ptr->name, "750");
@@ -90,7 +91,7 @@ TEST(TransportCatalogue, GetRouteNotCircular) {
 
 TEST(TransportCatalogue, GetStopNotExist) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    StopStat stop_stat = transport_catalogue.GetStop("Z");
+    transport::domain::StopStat stop_stat = transport_catalogue.GetStop("Z");
 
     ASSERT_EQ(stop_stat.name, "Z");
     ASSERT_EQ(stop_stat.ptr, nullptr);
@@ -99,7 +100,7 @@ TEST(TransportCatalogue, GetStopNotExist) {
 
 TEST(TransportCatalogue, GetStopWithoutBuses) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    StopStat stop_stat = transport_catalogue.GetStop("J");
+    transport::domain::StopStat stop_stat = transport_catalogue.GetStop("J");
 
     ASSERT_EQ(stop_stat.name, "J");
     ASSERT_NE(stop_stat.ptr, nullptr);
@@ -108,7 +109,7 @@ TEST(TransportCatalogue, GetStopWithoutBuses) {
 
 TEST(TransportCatalogue, GetStop) {
     const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
-    StopStat stop_stat = transport_catalogue.GetStop("D");
+    transport::domain::StopStat stop_stat = transport_catalogue.GetStop("D");
 
     std::vector<std::string> bus_names;
     bus_names.reserve(stop_stat.unique_buses.size());

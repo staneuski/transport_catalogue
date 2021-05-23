@@ -38,6 +38,8 @@ std::vector<std::string> Split(std::string_view sv,
     return cells;
 }
 
+namespace transport {
+
 Request ReadRequest(const std::string delimiter = ": ") {
     std::string s = ReadLine();
 
@@ -91,3 +93,5 @@ void Fill(TransportCatalogue& transport_catalogue) {
         if (IsBus(request))
             transport_catalogue.AddBus(request);
 }
+
+} // end namespace transport

@@ -1,5 +1,7 @@
 #include "transport_catalogue.h"
 
+namespace transport {
+
 using domain::Bus, domain::Stop;
 
 void TransportCatalogue::AddStop(Stop&& stop) {
@@ -94,3 +96,5 @@ domain::StopStat TransportCatalogue::GetStop(const std::string_view& stop_name) 
         stop_ptr ? stop_to_buses_.at(stop_ptr) : empty_stop
     };
 }
+
+} // end namespace transport

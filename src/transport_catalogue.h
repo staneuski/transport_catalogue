@@ -17,6 +17,8 @@ struct Request {
     std::string delimiter;
 };
 
+namespace transport {
+
 namespace domain {
 
 struct Stop {
@@ -109,3 +111,5 @@ private:
     std::unordered_map<const domain::Stop*, std::set<const domain::Bus*, domain::LessBusPtr>> stop_to_buses_;
     std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
 };
+
+} // end namespace transport

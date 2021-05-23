@@ -5,6 +5,8 @@
 #include "input_reader.h"
 #include "transport_catalogue.h"
 
+namespace transport {
+
 std::ostream& operator<<(std::ostream& out, const domain::Route& route) {
     out << "Bus " << route.name;
 
@@ -44,3 +46,5 @@ void Search(const TransportCatalogue& transport_catalogue) {
             std::cout << transport_catalogue.GetStop(request.name) << std::endl;
     }
 }
+
+} // end namespace transport

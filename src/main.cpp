@@ -5,7 +5,7 @@
 #include "stat_reader.h"
 #include "transport_catalogue.h"
 
-TransportCatalogue InitialiseCatalogue() {
+transport::TransportCatalogue InitialiseCatalogue() {
     const std::vector<Request> stop_requests{
         {"A", {"55.611087", "37.20829", "3900m to B"}, ", "},
         {"B", {"55.595884", "37.209755", "9900m to C", "100m to B"}, ", "},
@@ -25,7 +25,7 @@ TransportCatalogue InitialiseCatalogue() {
         {"750", {"A", "B", "B", "C"}, " - "}
     };
 
-    TransportCatalogue transport_catalogue;
+    transport::TransportCatalogue transport_catalogue;
     for (const Request& request : stop_requests)
         transport_catalogue.AddStop(request);
     for (const Request& request : stop_requests)
@@ -38,6 +38,7 @@ TransportCatalogue InitialiseCatalogue() {
 
 int main(int argc, char* argv[]) {
     using namespace std;
+    using namespace transport;
 
     if (argc <= 1 && !argv[1]) {
         TransportCatalogue transport_catalogue;
@@ -49,9 +50,9 @@ int main(int argc, char* argv[]) {
 
         TransportCatalogue transport_catalogue = InitialiseCatalogue();
         for (const auto& name : stop_names)
-            std::cout << transport_catalogue.GetStop(name) << std::endl;
+            cout << transport_catalogue.GetStop(name) << endl;
         for (const auto& name : bus_names)
-            std::cout << transport_catalogue.GetRoute(name) << std::endl;
+            cout << transport_catalogue.GetRoute(name) << endl;
     }
 
     return 0;
