@@ -6,6 +6,7 @@
 #include "transport_catalogue.h"
 
 namespace transport {
+namespace io {
 
 std::ostream& operator<<(std::ostream& out, const domain::Route& route) {
     out << "Bus " << route.name;
@@ -38,8 +39,8 @@ std::ostream& operator<<(std::ostream& out, const domain::StopStat& stop_stat) {
 }
 
 void Search(const TransportCatalogue& transport_catalogue) {
-    std::vector<Request> requests{ReadRequests()};
-    for (const Request& request : requests) {
+    std::vector<io::Request> requests{ReadRequests()};
+    for (const io::Request& request : requests) {
         if (IsBus(request))
             std::cout << transport_catalogue.GetRoute(request.name) << std::endl;
         else if (IsStop(request))
@@ -47,4 +48,5 @@ void Search(const TransportCatalogue& transport_catalogue) {
     }
 }
 
+} // end namespace io
 } // end namespace transport

@@ -9,7 +9,7 @@ using transport::domain::Bus, transport::domain::Stop;
 using transport::TransportCatalogue;
 
 TransportCatalogue InitialiseCatalogue() {
-    const std::vector<Request> stop_requests{
+    const std::vector<transport::io::Request> stop_requests{
         {"A", {"55.611087", "37.20829", "3900m to B"}, ", "},
         {"B", {"55.595884", "37.209755", "9900m to C", "100m to B"}, ", "},
         {"C", {"55.632761", "37.333324", "9500m to B"}, ", "},
@@ -22,18 +22,18 @@ TransportCatalogue InitialiseCatalogue() {
         {"J", {"55.611678", "37.603831"}, ", "}
     };
 
-    const std::vector<Request> bus_requests{
+    const std::vector<transport::io::Request> bus_requests{
         {"828", {"D", "F", "I", "D"}, " > "},
         {"256", {"D", "E", "F", "G", "H", "D"}, " > "},
         {"750", {"A", "B", "B", "C"}, " - "}
     };
 
     TransportCatalogue transport_catalogue;
-    for (const Request& request : stop_requests)
+    for (const transport::io::Request& request : stop_requests)
         transport_catalogue.AddStop(request);
-    for (const Request& request : stop_requests)
+    for (const transport::io::Request& request : stop_requests)
         transport_catalogue.AbutStops(request);
-    for (const Request& request : bus_requests)
+    for (const transport::io::Request& request : bus_requests)
         transport_catalogue.AddBus(request);
 
     return transport_catalogue;

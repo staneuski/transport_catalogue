@@ -43,11 +43,12 @@ std::vector<std::string> Split(std::string_view sv,
 } // end namespace string_processing
 
 namespace transport {
+namespace io {
 
-Request ReadRequest(const std::string delimiter = ": ") {
+io::Request ReadRequest(const std::string delimiter = ": ") {
     std::string s = string_processing::ReadLine();
 
-    Request request;
+    io::Request request;
     const size_t pos = s.find(delimiter);
     if ("Stop" == s.substr(0, 4)) {
         request.name = s.substr(5, pos - 5);
@@ -65,37 +66,38 @@ Request ReadRequest(const std::string delimiter = ": ") {
     return request;
 }
 
-std::vector<Request> ReadRequests() {
+std::vector<io::Request> ReadRequests() {
     const int count = string_processing::ReadLineWithNumber();
-    std::vector<Request> requests;
+    std::vector<io::Request> requests;
     requests.reserve(count);
     for (int i = 0; i < count; ++i)
         requests.push_back(ReadRequest());
     return requests;
 }
 
-inline bool IsStop(const Request& request) {
+inline bool IsStop(const io::Request& request) {
     return request.delimiter == ", ";
 }
 
-inline bool IsBus(const Request& request) {
+inline bool IsBus(const io::Request& request) {
     return request.delimiter == " > " || request.delimiter == " - ";
 }
 
 void Fill(TransportCatalogue& transport_catalogue) {
-    std::vector<Request> requests{ReadRequests()};
+    std::vector<io::Request> requests{ReadRequests()};
 
-    for (const Request& request : requests)
+    for (const io::Request& request : requests)
         if (IsStop(request))
             transport_catalogue.AddStop(request);
 
-    for (const Request& request : requests)
+    for (const io::Request& request : requests)
         if (IsStop(request))
             transport_catalogue.AbutStops(request);
 
-    for (const Request& request : requests)
+    for (const io::Request& request : requests)
         if (IsBus(request))
             transport_catalogue.AddBus(request);
 }
 
+} // end namespace io
 } // end namespace transport
