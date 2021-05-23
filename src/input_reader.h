@@ -6,6 +6,8 @@
 
 #include "transport_catalogue.h"
 
+namespace string_processing {
+
 std::string ReadLine() {
     std::string s;
     std::getline(std::cin, s);
@@ -38,10 +40,12 @@ std::vector<std::string> Split(std::string_view sv,
     return cells;
 }
 
+} // end namespace string_processing
+
 namespace transport {
 
 Request ReadRequest(const std::string delimiter = ": ") {
-    std::string s = ReadLine();
+    std::string s = string_processing::ReadLine();
 
     Request request;
     const size_t pos = s.find(delimiter);
@@ -53,7 +57,7 @@ Request ReadRequest(const std::string delimiter = ": ") {
         request.delimiter = (s.find(" > ") != std::string::npos) ? " > " : " - ";
     }
 
-    request.contents = Split(
+    request.contents = string_processing::Split(
         s.substr(pos + delimiter.size()),
         request.delimiter
     );
@@ -62,7 +66,7 @@ Request ReadRequest(const std::string delimiter = ": ") {
 }
 
 std::vector<Request> ReadRequests() {
-    const int count = ReadLineWithNumber();
+    const int count = string_processing::ReadLineWithNumber();
     std::vector<Request> requests;
     requests.reserve(count);
     for (int i = 0; i < count; ++i)
