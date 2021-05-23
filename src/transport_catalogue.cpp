@@ -18,7 +18,7 @@ void TransportCatalogue::AddBus(Bus&& bus) {
         stop_to_buses_.at(stop_ptr).insert(&buses_.back());
 }
 
-void TransportCatalogue::AddBus(const io::Request& request) {
+void TransportCatalogue::AddBus(const domain::Request& request) {
     std::vector<const Stop*> stops;
     stops.reserve(request.contents.size());
     for (const std::string& stop_name : request.contents)
@@ -37,7 +37,7 @@ void TransportCatalogue::AbutStop(const Stop* stop,
     stops_to_distance_[{stop, adjacent_stop}] = metres;
 }
 
-void TransportCatalogue::AbutStops(const io::Request& request,
+void TransportCatalogue::AbutStops(const domain::Request& request,
                                    const std::string_view delimiter) {
     const Stop* stop = SearchStop(request.name);
     std::for_each(

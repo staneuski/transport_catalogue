@@ -13,17 +13,13 @@
 
 namespace transport {
 
-namespace io {
+namespace domain {
 
 struct Request {
     std::string name;
     std::vector<std::string> contents;
     std::string delimiter;
 };
-
-} // end namespace io
-
-namespace domain {
 
 struct Stop {
     std::string name;
@@ -73,7 +69,7 @@ class TransportCatalogue {
 public:
     void AddStop(domain::Stop&& stop);
 
-    inline void AddStop(const io::Request& request) {
+    inline void AddStop(const domain::Request& request) {
         AddStop({
             request.name,
             {std::stod(request.contents[0]), std::stod(request.contents[1])}
@@ -82,7 +78,7 @@ public:
 
     void AddBus(domain::Bus&& bus);
 
-    void AddBus(const io::Request& request);
+    void AddBus(const domain::Request& request);
 
     inline const domain::Stop* SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
@@ -100,7 +96,7 @@ public:
                   const domain::Stop* adjacent_stop,
                   const int distance);
 
-    void AbutStops(const io::Request& request,
+    void AbutStops(const domain::Request& request,
                    const std::string_view delimiter = "m to ");
 
     domain::Route GetRoute(const std::string_view& bus_name) const;

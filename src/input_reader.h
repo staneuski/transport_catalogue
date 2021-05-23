@@ -19,15 +19,15 @@ std::vector<std::string> Split(std::string_view sv,
 namespace transport {
 namespace io {
 
-io::Request ReadRequest(const std::string delimiter = ": ");
+domain::Request ReadRequest(const std::string delimiter = ": ");
 
-std::vector<io::Request> ReadRequests();
+std::vector<domain::Request> ReadRequests();
 
-inline bool IsStop(const io::Request& request) {
+inline bool IsStop(const domain::Request& request) {
     return request.delimiter == ", ";
 }
 
-inline bool IsBus(const io::Request& request) {
+inline bool IsBus(const domain::Request& request) {
     return request.delimiter == " > " || request.delimiter == " - ";
 }
 
