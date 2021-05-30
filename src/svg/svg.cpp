@@ -2,25 +2,6 @@
 
 namespace svg {
 
-// ------------------------------------
-
-std::ostream& operator<<(std::ostream& out, const Rgb& rgb) {
-    out << "rgb(" << unsigned(rgb.r)
-        << ',' << unsigned(rgb.g)
-        << ',' << unsigned(rgb.b)
-        << ')';
-    return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const Rgba& rgba) {
-    out << "rgba(" << unsigned(rgba.r)
-        << ',' << unsigned(rgba.g)
-        << ',' << unsigned(rgba.b)
-        << ',' << unsigned(rgba.a)
-        << ')';
-    return out;
-}
-
 // ---------- Object ------------------
 
 void Object::Render(const RenderContext& context) const {
@@ -47,7 +28,9 @@ Circle& Circle::SetRadius(double radius)  {
 void Circle::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
     out << "<circle cx=\"" << center_.x << "\" cy=\"" << center_.y << "\" ";
-    out << "r=\"" << radius_ << "\" ";
+    out << "r=\"" << radius_ << "\"";
+
+    RenderProps(out);
     out << "/>";
 }
 
@@ -72,8 +55,10 @@ void Polyline::RenderObject(const RenderContext& context) const {
             out << ' ';
         out << p.x << ',' << p.y;
     }
+    out << "\"";
 
-    out << "\" />";
+    RenderProps(out);
+    out << "/>";
 }
 
 // ---------- Text --------------------
@@ -89,13 +74,12 @@ void Text::RenderObject(const RenderContext& context) const {
         out << " font-family=\"" << *font_family_ << "\"";
     if (font_weight_)
         out << " font-weight=\"" << *font_weight_ << "\"";
+
+    RenderProps(out);
     out << ">";
 
     for (const char letter : content_)
         switch (letter) {
-            default:
-                out << letter;
-                break;
             case '\"':
                 out << "&quot;";
                 break;
@@ -110,6 +94,9 @@ void Text::RenderObject(const RenderContext& context) const {
                 break;
             case '&':
                 out << "&amp";
+                break;
+            default:
+                out << letter;
                 break;
         }
 
@@ -126,6 +113,65 @@ void Document::Render(std::ostream& out) const {
         object->Render(RenderContext(out, 2, 2));
 
     out << "</svg>" << std::endl;
+}
+
+// ---------- helpers -----------------
+
+std::ostream& operator<<(std::ostream& out, const Rgb& rgb) {
+    out << "rgb(" << unsigned(rgb.r)
+        << ',' << unsigned(rgb.g)
+        << ',' << unsigned(rgb.b)
+        << ')';
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Rgba& rgba) {
+    out << "rgba(" << unsigned(rgba.r)
+        << ',' << unsigned(rgba.g)
+        << ',' << unsigned(rgba.b)
+        << ',' << rgba.a
+        << ')';
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const StrokeLineCap& line_cap) {
+    switch (line_cap) {
+        case StrokeLineCap::BUTT:
+            out << "butt";
+            break;
+        case StrokeLineCap::ROUND:
+            out << "round";
+            break;
+        case StrokeLineCap::SQUARE:
+            out << "square";
+            break;
+        default:
+            break;
+    }
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const StrokeLineJoin& line_join) {
+    switch (line_join) {
+        case StrokeLineJoin::ARCS:
+            out << "arcs";
+            break;
+        case StrokeLineJoin::BEVEL:
+            out << "bevel";
+            break;
+        case StrokeLineJoin::MITER:
+            out << "miter";
+            break;
+        case StrokeLineJoin::MITER_CLIP:
+            out << "miter-clip";
+            break;
+        case StrokeLineJoin::ROUND:
+            out << "round";
+            break;
+        default:
+            break;
+    }
+    return out;
 }
 
 } // end namespace svg

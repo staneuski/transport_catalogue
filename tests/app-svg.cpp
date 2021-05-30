@@ -63,6 +63,8 @@ public:
     inline void Draw(svg::ObjectContainer& container) const override {
         container.Add(
             CreateStar(center_, outer_radius_, inner_radius_, rays_no_)
+                .SetFillColor("red")
+                .SetStrokeColor("black")
         );
     }
 
@@ -80,19 +82,27 @@ public:
     {
     }
 
-    inline void Draw(svg::ObjectContainer& container) const override {
+    void Draw(svg::ObjectContainer& container) const override {
         container.Add(
             Circle()
                 .SetCenter({head_center_.x, head_center_.y + 5*head_radius_})
                 .SetRadius(2*head_radius_)
+                .SetFillColor("rgb(240,240,240)")
+                .SetStrokeColor("black")
         );
         container.Add(
             Circle()
                 .SetCenter({head_center_.x, head_center_.y + 2*head_radius_})
                 .SetRadius(1.5*head_radius_)
+                .SetFillColor("rgb(240,240,240)")
+                .SetStrokeColor("black")
         );
         container.Add(
-            Circle().SetCenter(head_center_).SetRadius(head_radius_)
+            Circle()
+                .SetCenter(head_center_)
+                .SetRadius(head_radius_)
+                .SetFillColor("rgb(240,240,240)")
+                .SetStrokeColor("black")
         );
     }
 
@@ -105,15 +115,13 @@ private:
 
 template <typename DrawableIterator>
 void DrawPicture(DrawableIterator begin, DrawableIterator end, svg::ObjectContainer& target) {
-    for (auto it = begin; it != end; ++it) {
+    for (auto it = begin; it != end; ++it)
         (*it)->Draw(target);
-    }
 }
 
 template <typename Container>
 void DrawPicture(const Container& container, svg::ObjectContainer& target) {
-    using namespace std;
-    DrawPicture(begin(container), end(container), target);
+    DrawPicture(std::begin(container), std::end(container), target);
 }
 
 int main() {
@@ -122,20 +130,27 @@ int main() {
     using namespace std;
 
     vector<unique_ptr<svg::Drawable>> picture;
-
     picture.emplace_back(make_unique<Triangle>(Point{100, 20}, Point{120, 50}, Point{80, 40}));
-    // 5-лучевая звезда с центром {50, 20}, длиной лучей 10 и внутренним радиусом 4
     picture.emplace_back(make_unique<Star>(Point{50.0, 20.0}, 10.0, 4.0, 5));
-    // Снеговик с "головой" радиусом 10, имеющей центр в точке {30, 20}
     picture.emplace_back(make_unique<Snowman>(Point{30, 20}, 10.0));
 
     svg::Document doc;
-    // Так как документ реализует интерфейс ObjectContainer,
-    // его можно передать в DrawPicture в качестве цели для рисования
     DrawPicture(picture, doc);
 
-    // Выводим полученный документ в stdout
+    const Text base_text =
+        Text()
+            .SetFontFamily("Verdana"s)
+            .SetFontSize(12)
+            .SetPosition({10, 100})
+            .SetData("Happy New Year!"s);
+    doc.Add(Text{base_text}
+                .SetStrokeColor("yellow"s)
+                .SetFillColor("yellow"s)
+                .SetStrokeLineJoin(StrokeLineJoin::ROUND)
+                .SetStrokeLineCap(StrokeLineCap::ROUND)
+                .SetStrokeWidth(3));
+    doc.Add(Text{base_text}.SetFillColor("red"s));
     doc.Render(cout);
 
     return 0;
-} 
+}

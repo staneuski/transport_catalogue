@@ -83,11 +83,72 @@ private:
     virtual void RenderObject(const RenderContext& context) const = 0;
 };
 
+enum class StrokeLineCap { BUTT, ROUND, SQUARE, };
+
+enum class StrokeLineJoin { ARCS, BEVEL, MITER, MITER_CLIP, ROUND, };
+
+std::ostream& operator<<(std::ostream& out, const StrokeLineCap& line_cap);
+
+std::ostream& operator<<(std::ostream& out, const StrokeLineJoin& line_join);
+
+/*
+ * Вспомогательный базовый класс, служит для хранения свойств,
+ * управляющих параметрами заливки и контура
+ */
+template <typename T>
+class PathProps {
+public:
+    inline T& SetFillColor(Color fill_color) {
+        fill_color_ = std::move(fill_color);
+        return static_cast<T&>(*this);
+    }
+
+    inline T& SetStrokeColor(Color stroke_color) {
+        stroke_color_ = std::move(stroke_color);
+        return static_cast<T&>(*this);
+    }
+
+    inline T& SetStrokeWidth(double width) {
+        width_ = std::move(width);
+        return static_cast<T&>(*this);
+    }
+
+    inline T& SetStrokeLineCap(StrokeLineCap line_cap) {
+        line_cap_ = std::move(line_cap);
+        return static_cast<T&>(*this);
+    }
+
+    inline T& SetStrokeLineJoin(StrokeLineJoin line_join) {
+        line_join_ = std::move(line_join);
+        return static_cast<T&>(*this);
+    }
+
+protected:
+    ~PathProps() = default;
+
+    void RenderProps(std::ostream& out) const {
+        if (fill_color_)
+            out << " fill=\"" << *fill_color_ << "\"";
+        if (stroke_color_)
+            out << " stroke=\"" << *stroke_color_ << "\"";
+        if (line_cap_)
+            out << " stroke-linecap=\"" << *line_cap_ << "\"";
+        if (line_join_)
+            out << " stroke-linejoin=\"" << *line_join_ << "\"";
+    }
+
+private:
+    std::optional<Color> fill_color_, stroke_color_;
+    std::optional<double> width_;
+    std::optional<StrokeLineCap> line_cap_;
+    std::optional<StrokeLineJoin> line_join_;
+};
+
 /*
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
  */
-class Circle final : public Object {
+class Circle final : public Object, public PathProps<Circle> {
 public:
     Circle& SetCenter(Point center);
 
@@ -104,7 +165,7 @@ private:
  * Класс Polyline моделирует элемент <polyline> для отображения ломаных линий
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline
  */
-class Polyline final : public Object {
+class Polyline final : public Object, public PathProps<Polyline> {
 public:
     Polyline& AddPoint(Point point);
 
@@ -118,7 +179,7 @@ private:
  * Класс Text моделирует элемент <text> для отображения текста
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/text
  */
-class Text final : public Object {
+class Text final : public Object, public PathProps<Text> {
 public:
     // Задаёт координаты опорной точки (атрибуты x и y)
     inline Text& SetPosition(Point pos) {
