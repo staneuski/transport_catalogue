@@ -19,10 +19,10 @@ set(TRANSPORT
 set(SRC ${GEO} ${SVG} ${TRANSPORT})
 
 #######################################
-# SRC
+# APPS
 #######################################
 add_executable(main src/main.cpp ${SRC})
-add_executable(main_svg src/svg/main_svg.cpp ${SVG})
+add_executable(app-svg tests/app-svg.cpp ${SVG})
 
 
 #######################################

@@ -153,6 +153,13 @@ public:
     }
 };
 
+class Drawable {
+public:
+    virtual void Draw(ObjectContainer& g) const = 0;
+
+    virtual ~Drawable() = default;
+};
+
 class Document : public ObjectContainer {
 public:
     // Добавляет в svg-документ объект-наследник svg::Object
