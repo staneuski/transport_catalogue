@@ -9,9 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Werror)
 
 include_directories(src tests)
-set(SRC
-    src/input_reader.cpp
-    src/transport_catalogue.cpp)
+
+set(IO src/io/input_reader.cpp)
+set(TRANSPORT src/transport/transport_catalogue.cpp)
+
+set(SRC ${IO} ${TRANSPORT})
 
 #######################################
 # SRC

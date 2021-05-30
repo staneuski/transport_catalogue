@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "input_reader.h"
-#include "transport_catalogue.h"
+#include "transport/transport_catalogue.h"
 
 namespace transport {
 namespace io {

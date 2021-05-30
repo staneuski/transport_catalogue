@@ -1,9 +1,9 @@
 #include <cassert>
 #include <string>
 
-#include "input_reader.h"
-#include "stat_reader.h"
-#include "transport_catalogue.h"
+#include "io/input_reader.h"
+#include "io/stat_reader.h"
+#include "transport/transport_catalogue.h"
 
 transport::TransportCatalogue InitialiseCatalogue() {
     const std::vector<transport::io::Request> stop_requests{
