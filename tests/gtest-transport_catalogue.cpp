@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "io/input_reader.h"
+#include "transport/input_reader.h"
 #include "transport/transport_catalogue.h"
 
 using transport::domain::Bus, transport::domain::Stop;

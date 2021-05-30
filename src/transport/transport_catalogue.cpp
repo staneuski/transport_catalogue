@@ -4,6 +4,8 @@ namespace transport {
 
 using domain::Bus, domain::Stop;
 
+// ---------- TransportCatalogue ------
+
 void TransportCatalogue::AddStop(Stop stop) {
     stops_.push_back(std::move(stop));
     stop_names_[stops_.back().name] = &stops_.back();

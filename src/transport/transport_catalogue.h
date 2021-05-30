@@ -7,8 +7,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "input_reader.h"
+
 #include "geo/geo.h"
-#include "io/input_reader.h"
 
 namespace transport {
 

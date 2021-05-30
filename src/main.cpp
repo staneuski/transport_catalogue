@@ -1,8 +1,8 @@
 #include <cassert>
 #include <string>
 
-#include "io/input_reader.h"
-#include "io/stat_reader.h"
+#include "transport/input_reader.h"
+#include "transport/stat_reader.h"
 #include "transport/transport_catalogue.h"
 
 transport::TransportCatalogue InitialiseCatalogue() {

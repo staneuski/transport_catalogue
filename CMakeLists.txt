@@ -10,10 +10,12 @@ add_compile_options(-Wall -Wextra -Werror)
 
 include_directories(src tests)
 
-set(IO src/io/input_reader.cpp)
-set(TRANSPORT src/transport/transport_catalogue.cpp)
+set(GEO)
+set(TRANSPORT
+    src/transport/input_reader.cpp
+    src/transport/transport_catalogue.cpp)
 
-set(SRC ${IO} ${TRANSPORT})
+set(SRC ${GEO} ${IO} ${SVG} ${TRANSPORT})
 
 #######################################
 # SRC
