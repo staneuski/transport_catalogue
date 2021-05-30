@@ -142,21 +142,26 @@ private:
     void RenderObject(const RenderContext& context) const override;
 };
 
-class Document {
+class ObjectContainer {
+public:
+    virtual void AddPtr(std::unique_ptr<Object>&& object) = 0;
+
+    // Метод Add добавляет в svg-документ любой объект-наследник svg::Object.
+    template <typename T>
+    inline void Add(const T& object) {
+        AddPtr(std::make_unique<T>(object));
+    }
+};
+
+class Document : public ObjectContainer {
 public:
     // Добавляет в svg-документ объект-наследник svg::Object
-    inline void AddPtr(std::unique_ptr<Object>&& object) {
+    inline void AddPtr(std::unique_ptr<Object>&& object) override {
         objects_.emplace_back(std::move(object));
     }
 
     // Выводит в ostream svg-представление документа
     void Render(std::ostream& out) const;
-
-    // Метод Add добавляет в svg-документ любой объект-наследник svg::Object.
-    template <typename Obj>
-    inline void Add(const Obj& object) {
-        AddPtr(std::make_unique<Obj>(object));
-    }
 
 private:
     std::vector<std::unique_ptr<Object>> objects_;
