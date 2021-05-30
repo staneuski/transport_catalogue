@@ -39,8 +39,8 @@ std::ostream& operator<<(std::ostream& out, const domain::StopStat& stop_stat) {
 }
 
 void Search(const TransportCatalogue& transport_catalogue) {
-    std::vector<domain::Request> requests{ReadRequests()};
-    for (const domain::Request& request : requests) {
+    std::vector<io::Request> requests{ReadRequests()};
+    for (const io::Request& request : requests) {
         if (IsBus(request))
             std::cout << transport_catalogue.GetRoute(request.name) << std::endl;
         else if (IsStop(request))

@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "transport_catalogue.h"
-
 namespace string_processing {
 
 std::string ReadLine();
@@ -17,17 +15,26 @@ std::vector<std::string> Split(std::string_view sv,
 } // end namespace string_processing
 
 namespace transport {
+
+class TransportCatalogue;
+
 namespace io {
 
-domain::Request ReadRequest(const std::string delimiter = ": ");
+struct Request {
+    std::string name;
+    std::vector<std::string> contents;
+    std::string delimiter;
+};
 
-std::vector<domain::Request> ReadRequests();
+Request ReadRequest(const std::string delimiter = ": ");
 
-inline bool IsStop(const domain::Request& request) {
+std::vector<Request> ReadRequests();
+
+inline bool IsStop(const Request& request) {
     return request.delimiter == ", ";
 }
 
-inline bool IsBus(const domain::Request& request) {
+inline bool IsBus(const Request& request) {
     return request.delimiter == " > " || request.delimiter == " - ";
 }
 
