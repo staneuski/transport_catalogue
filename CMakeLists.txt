@@ -11,11 +11,12 @@ add_compile_options(-Wall -Wextra -Werror)
 include_directories(src tests)
 
 set(GEO)
+set(SVG src/svg/svg.cpp)
 set(TRANSPORT
     src/transport/input_reader.cpp
     src/transport/transport_catalogue.cpp)
 
-set(SRC ${GEO} ${IO} ${SVG} ${TRANSPORT})
+set(SRC ${GEO} ${SVG} ${TRANSPORT})
 
 #######################################
 # SRC
