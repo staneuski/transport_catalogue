@@ -30,16 +30,14 @@ void Circle::RenderObject(const RenderContext& context) const {
     out << "<circle cx=\"" << center_.x << "\" cy=\"" << center_.y << "\" ";
     out << "r=\"" << radius_ << "\"";
 
-    RenderProps(out);
+    RenderAttrs(out);
     out << "/>";
 }
 
 // ---------- Polyline ----------------
 
 Polyline& Polyline::AddPoint(Point point) {
-    // if (!points_.empty() && points_.back() != point)
-        points_.push_back(std::move(point));
-
+    points_.push_back(std::move(point));
     return *this;
 }
 
@@ -57,7 +55,7 @@ void Polyline::RenderObject(const RenderContext& context) const {
     }
     out << "\"";
 
-    RenderProps(out);
+    RenderAttrs(out);
     out << "/>";
 }
 
@@ -75,7 +73,7 @@ void Text::RenderObject(const RenderContext& context) const {
     if (font_weight_)
         out << " font-weight=\"" << *font_weight_ << "\"";
 
-    RenderProps(out);
+    RenderAttrs(out);
     out << ">";
 
     for (const char letter : content_)
@@ -117,20 +115,25 @@ void Document::Render(std::ostream& out) const {
 
 // ---------- helpers -----------------
 
-std::ostream& operator<<(std::ostream& out, const Rgb& rgb) {
-    out << "rgb(" << unsigned(rgb.r)
-        << ',' << unsigned(rgb.g)
-        << ',' << unsigned(rgb.b)
+std::ostream& operator<<(std::ostream& out, const Rgb& color) {
+    out << "rgb(" << unsigned(color.red)
+        << ',' << unsigned(color.green)
+        << ',' << unsigned(color.blue)
         << ')';
     return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const Rgba& rgba) {
-    out << "rgba(" << unsigned(rgba.r)
-        << ',' << unsigned(rgba.g)
-        << ',' << unsigned(rgba.b)
-        << ',' << rgba.a
+std::ostream& operator<<(std::ostream& out, const Rgba& color) {
+    out << "rgb(" << unsigned(color.red)
+        << ',' << unsigned(color.green)
+        << ',' << unsigned(color.blue)
+        << ',' << unsigned(color.opacity)
         << ')';
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Color& color) {
+    std::visit(ColorPrinter{out}, color);
     return out;
 }
 

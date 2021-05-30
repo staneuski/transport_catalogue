@@ -124,33 +124,39 @@ void DrawPicture(const Container& container, svg::ObjectContainer& target) {
     DrawPicture(std::begin(container), std::end(container), target);
 }
 
+// Выполняет линейную интерполяцию значения от from до to в зависимости от параметра t
+uint8_t Lerp(uint8_t from, uint8_t to, double t) {
+    return static_cast<uint8_t>(std::round((to - from) * t + from));
+}
+
 int main() {
     using namespace svg;
-    using namespace shapes;
     using namespace std;
 
-    vector<unique_ptr<svg::Drawable>> picture;
-    picture.emplace_back(make_unique<Triangle>(Point{100, 20}, Point{120, 50}, Point{80, 40}));
-    picture.emplace_back(make_unique<Star>(Point{50.0, 20.0}, 10.0, 4.0, 5));
-    picture.emplace_back(make_unique<Snowman>(Point{30, 20}, 10.0));
+    const uint8_t start_r = 0;
+    const uint8_t end_r = 20;
+    const uint8_t start_g = 255;
+    const uint8_t end_g = 20;
+    const uint8_t start_b = 30;
+    const uint8_t end_b = 150;
 
-    svg::Document doc;
-    DrawPicture(picture, doc);
+    const int num_circles = 10;
+    Document doc;
+    for (int i = 0; i < num_circles; ++i) {
+        const double t = double(i) / (num_circles - 1);
 
-    const Text base_text =
-        Text()
-            .SetFontFamily("Verdana"s)
-            .SetFontSize(12)
-            .SetPosition({10, 100})
-            .SetData("Happy New Year!"s);
-    doc.Add(Text{base_text}
-                .SetStrokeColor("yellow"s)
-                .SetFillColor("yellow"s)
-                .SetStrokeLineJoin(StrokeLineJoin::ROUND)
-                .SetStrokeLineCap(StrokeLineCap::ROUND)
-                .SetStrokeWidth(3));
-    doc.Add(Text{base_text}.SetFillColor("red"s));
+        const string r = to_string(Lerp(start_r, end_r, t));
+        const string g = to_string(Lerp(start_g, end_g, t));
+        const string b = to_string(Lerp(start_b, end_b, t));
+
+        string fill_color = "rgb("s + r + ","s + g + ","s + b + ")"s;
+        doc.Add(Circle()
+                    .SetFillColor(fill_color)
+                    .SetStrokeColor("black"s)
+                    .SetCenter({i * 20.0 + 40, 40.0})
+                    .SetRadius(15));
+    }
     doc.Render(cout);
 
     return 0;
-}
+} 

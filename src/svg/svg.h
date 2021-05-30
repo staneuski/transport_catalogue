@@ -5,13 +5,10 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace svg {
-
-using Color = std::string;
-
-inline const Color NoneColor{"none"};
 
 struct Point {
     Point() = default;
@@ -23,22 +20,52 @@ struct Point {
 
 struct Rgb {
     Rgb() = default;
-    Rgb(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+    Rgb(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b) {}
 
-    uint8_t r{}, g{}, b{};
+    uint8_t red{}, green{}, blue{};
 };
 
 struct Rgba : public Rgb {
     Rgba() = default;
     Rgba(uint8_t r, uint8_t g, uint8_t b) : Rgb(r, g, b) {}
-    Rgba(uint8_t r, uint8_t g, uint8_t b, double a) : Rgb(r, g, b), a(a) {}
+    Rgba(uint8_t r, uint8_t g, uint8_t b, double a)
+        : Rgb(r, g, b)
+        , opacity(a)
+    {
+    }
 
-    double a = 1.;
+    double opacity = 1.;
 };
 
-std::ostream& operator<<(std::ostream& out, const Rgb& rgb);
+using Color = std::variant<std::monostate, std::string, Rgb, Rgba>;
 
-std::ostream& operator<<(std::ostream& out, const Rgba& rgba);
+inline const Color NoneColor{};
+
+std::ostream& operator<<(std::ostream& out, const Rgb& color);
+
+std::ostream& operator<<(std::ostream& out, const Rgba& color);
+
+struct ColorPrinter {
+    std::ostream& out;
+
+    inline void operator()(std::monostate) const {
+        out << "none";
+    }
+
+    inline void operator()(const std::string_view word) const {
+        out << word;
+    }
+
+    inline void operator()(const Rgb& rgb) {
+        out << rgb;
+    }
+
+    inline void operator()(const Rgba& rgba) {
+        out << rgba;
+    }
+};
+
+std::ostream& operator<<(std::ostream& out, const Color& color);
 
 /*
  * Вспомогательная структура, хранящая контекст для вывода SVG-документа с отступами.
@@ -126,7 +153,7 @@ public:
 protected:
     ~PathProps() = default;
 
-    void RenderProps(std::ostream& out) const {
+    void RenderAttrs(std::ostream& out) const {
         if (fill_color_)
             out << " fill=\"" << *fill_color_ << "\"";
         if (stroke_color_)
