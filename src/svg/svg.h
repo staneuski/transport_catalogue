@@ -9,13 +9,36 @@
 
 namespace svg {
 
+using Color = std::string;
+
+inline const Color NoneColor{"none"};
+
 struct Point {
     Point() = default;
 
     Point(double x, double y) : x(x), y(y) {}
 
-    double x = .0, y = .0;
+    double x{}, y{};
 };
+
+struct Rgb {
+    Rgb() = default;
+    Rgb(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+
+    uint8_t r{}, g{}, b{};
+};
+
+struct Rgba : public Rgb {
+    Rgba() = default;
+    Rgba(uint8_t r, uint8_t g, uint8_t b) : Rgb(r, g, b) {}
+    Rgba(uint8_t r, uint8_t g, uint8_t b, double a) : Rgb(r, g, b), a(a) {}
+
+    double a = 1.;
+};
+
+std::ostream& operator<<(std::ostream& out, const Rgb& rgb);
+
+std::ostream& operator<<(std::ostream& out, const Rgba& rgba);
 
 /*
  * Вспомогательная структура, хранящая контекст для вывода SVG-документа с отступами.

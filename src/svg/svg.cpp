@@ -2,6 +2,25 @@
 
 namespace svg {
 
+// ------------------------------------
+
+std::ostream& operator<<(std::ostream& out, const Rgb& rgb) {
+    out << "rgb(" << unsigned(rgb.r)
+        << ',' << unsigned(rgb.g)
+        << ',' << unsigned(rgb.b)
+        << ')';
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Rgba& rgba) {
+    out << "rgba(" << unsigned(rgba.r)
+        << ',' << unsigned(rgba.g)
+        << ',' << unsigned(rgba.b)
+        << ',' << unsigned(rgba.a)
+        << ')';
+    return out;
+}
+
 // ---------- Object ------------------
 
 void Object::Render(const RenderContext& context) const {
