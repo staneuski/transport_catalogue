@@ -11,16 +11,18 @@ add_compile_options(-Wall -Wextra -Werror)
 include_directories(src tests)
 
 set(GEO)
+set(JSON src/json/json.cpp)
 set(TRANSPORT
     src/transport/input_reader.cpp
     src/transport/transport_catalogue.cpp)
 
-set(SRC ${GEO} ${IO} ${SVG} ${TRANSPORT})
+set(SRC ${GEO} ${JSON} ${TRANSPORT})
 
 #######################################
-# SRC
+# APPS
 #######################################
 add_executable(main src/main.cpp ${SRC})
+add_executable(app-json tests/app-json.cpp ${JSON})
 
 
 #######################################
