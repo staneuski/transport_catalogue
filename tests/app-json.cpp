@@ -15,8 +15,6 @@ json::Document LoadJSON(const std::string& s) {
     return json::Load(strm);
 }
 
-// Раскомментируйте эти функции по мере того, как реализуете недостающий функционал
-
 std::string Print(const Node& node) {
     std::ostringstream out;
     Print(Document{node}, out);
@@ -55,7 +53,7 @@ void MustThrowLogicError(Fn fn) {
         assert(false);
     }
 }
-
+*/
 void TestNull() {
     Node null_node;
     assert(null_node.IsNull());
@@ -63,11 +61,11 @@ void TestNull() {
     Node null_node1{nullptr};
     assert(null_node1.IsNull());
 
-    assert(Print(null_node) == "null"s);
+    // assert(Print(null_node) == "null"s);
 
-    const Node node = LoadJSON("null"s).GetRoot();
-    assert(node.IsNull());
-    assert(node == null_node);
+    // const Node node = LoadJSON("null"s).GetRoot();
+    // assert(node.IsNull());
+    // assert(node == null_node);
 }
 
 void TestNumbers() {
@@ -76,26 +74,26 @@ void TestNumbers() {
     assert(int_node.AsInt() == 42);
     // целые числа являются подмножеством чисел с плавающей запятой
     assert(int_node.IsDouble());
-    // Когда узел хранит int, можно получить соответствующее ему double-значение
+    // // Когда узел хранит int, можно получить соответствующее ему double-значение
     assert(int_node.AsDouble() == 42.0);
     assert(!int_node.IsPureDouble());
 
-    Node dbl_node{123.45};
-    assert(dbl_node.IsDouble());
-    assert(dbl_node.AsDouble() == 123.45);
-    assert(dbl_node.IsPureDouble());  // Значение содержит число с плавающей запятой
-    assert(!dbl_node.IsInt());
+    // Node dbl_node{123.45};
+    // assert(dbl_node.IsDouble());
+    // assert(dbl_node.AsDouble() == 123.45);
+    // assert(dbl_node.IsPureDouble()); // Значение содержит число с плавающей запятой
+    // assert(!dbl_node.IsInt());
 
-    assert(Print(int_node) == "42"s);
-    assert(Print(dbl_node) == "123.45"s);
+    // assert(Print(int_node) == "42"s);
+    // assert(Print(dbl_node) == "123.45"s);
 
-    assert(LoadJSON("42"s).GetRoot() == int_node);
-    assert(LoadJSON("123.45"s).GetRoot() == dbl_node);
-    assert(LoadJSON("0.25"s).GetRoot().AsDouble() == 0.25);
-    assert(LoadJSON("3e5"s).GetRoot().AsDouble() == 3e5);
-    assert(LoadJSON("1.2e-5"s).GetRoot().AsDouble() == 1.2e-5);
-    assert(LoadJSON("1.2e+5"s).GetRoot().AsDouble() == 1.2e5);
-    assert(LoadJSON("-123456"s).GetRoot().AsInt() == -123456);
+    // assert(LoadJSON("42"s).GetRoot() == int_node);
+    // assert(LoadJSON("123.45"s).GetRoot() == dbl_node);
+    // assert(LoadJSON("0.25"s).GetRoot().AsDouble() == 0.25);
+    // assert(LoadJSON("3e5"s).GetRoot().AsDouble() == 3e5);
+    // assert(LoadJSON("1.2e-5"s).GetRoot().AsDouble() == 1.2e-5);
+    // assert(LoadJSON("1.2e+5"s).GetRoot().AsDouble() == 1.2e5);
+    // assert(LoadJSON("-123456"s).GetRoot().AsInt() == -123456);
 }
 
 void TestStrings() {
@@ -106,9 +104,9 @@ void TestStrings() {
     assert(!str_node.IsInt());
     assert(!str_node.IsDouble());
 
-    assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
+    // assert(Print(str_node) == "\"Hello, \\\"everybody\\\"\""s);
 
-    assert(LoadJSON(Print(str_node)).GetRoot() == str_node);
+    // assert(LoadJSON(Print(str_node)).GetRoot() == str_node);
 }
 
 void TestBool() {
@@ -120,23 +118,24 @@ void TestBool() {
     assert(false_node.IsBool());
     assert(!false_node.AsBool());
 
-    assert(Print(true_node) == "true"s);
-    assert(Print(false_node) == "false"s);
+    // assert(Print(true_node) == "true"s);
+    // assert(Print(false_node) == "false"s);
 
-    assert(LoadJSON("true"s).GetRoot() == true_node);
-    assert(LoadJSON("false"s).GetRoot() == false_node);
+    // assert(LoadJSON("true"s).GetRoot() == true_node);
+    // assert(LoadJSON("false"s).GetRoot() == false_node);
 }
 
 void TestArray() {
-    Node arr_node{Array{1, 1.23, "Hello"s}};
+    Node arr_node{Array{1, 1.23, "Hello"s, "true"s}};
     assert(arr_node.IsArray());
     const Array& arr = arr_node.AsArray();
-    assert(arr.size() == 3);
+    assert(arr.size() == 4);
     assert(arr.at(0).AsInt() == 1);
 
-    assert(LoadJSON("[1, 1.23, \"Hello\"]"s).GetRoot() == arr_node);
-    assert(LoadJSON(Print(arr_node)).GetRoot() == arr_node);
+    // assert(LoadJSON("[1, 1.23, \"Hello\", \"true\"]"s).GetRoot() == arr_node);
+    // assert(LoadJSON(Print(arr_node)).GetRoot() == arr_node);
 }
+
 
 void TestMap() {
     Node dict_node{Dict{{"key1"s, "value1"s}, {"key2"s, 42}}};
@@ -146,10 +145,10 @@ void TestMap() {
     assert(dict.at("key1"s).AsString() == "value1"s);
     assert(dict.at("key2"s).AsInt() == 42);
 
-    assert(LoadJSON("{ \"key1\": \"value1\", \"key2\": 42 }"s).GetRoot() == dict_node);
-    assert(LoadJSON(Print(dict_node)).GetRoot() == dict_node);
+    // assert(LoadJSON("{ \"key1\": \"value1\", \"key2\": 42 }"s).GetRoot() == dict_node);
+    // assert(LoadJSON(Print(dict_node)).GetRoot() == dict_node);
 }
-
+/*
 void TestErrorHandling() {
     MustFailToLoad("["s);
     MustFailToLoad("]"s);
@@ -212,16 +211,14 @@ void Benchmark() {
 } // end namespace
 
 int main() {
-    /*
     TestNull();
     TestNumbers();
     TestStrings();
     TestBool();
     TestArray();
     TestMap();
-    TestErrorHandling();
-    Benchmark();
-    */
+    // TestErrorHandling();
+    // Benchmark();
 
     return 0;
 }

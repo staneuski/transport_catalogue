@@ -1,12 +1,95 @@
 #include "json.h"
 
-// using namespace std;
-
 namespace json {
+
+// ---------- Node -------------------
+
+/*
+bool operator==(const Node& lhs, const Node& rhs) {
+    return lhs == rhs;
+}
+*/
 
 namespace {
 
 Node LoadNode(std::istream& input);
+
+Node LoadString(std::istream& input) {
+    input >> std::noskipws;
+
+    bool is_in_quotes = false;
+    for (char c; input >> c;) {
+        is_in_quotes = (c == '\"');
+        if (is_in_quotes)
+            break;
+
+        if (c == '\\') {
+            input >> c;
+            switch(c) {
+                case 'r':
+                    input.putback('\r');
+                    break;
+                case 'n':
+                    input.putback('\n');
+                    break;
+                case 't':
+                    input.putback('\t');
+                    break;
+                default:
+                    input.putback(c);
+                    break;
+            }
+        } else {
+            input.putback(c);
+        }
+    }
+
+    return LoadNode(input);
+}
+
+Node LoadBool(std::istream& input) {
+    for (char c; input >> c && c != 'e';)
+        if (c != ',')
+            input.putback(c);
+
+    return LoadNode(input);
+}
+
+Node LoadNumber(std::istream& input) {
+    std::string number;
+
+    if (input.peek() == '-')
+        number += static_cast<char>(input.get());
+
+    if (input.peek() == '0') {
+        number += static_cast<char>(input.get());
+    } else {
+        while (std::isdigit(input.peek()))
+            number += static_cast<char>(input.get());;
+    }
+
+    bool is_int = true;
+    if (input.peek() == '.') {
+        number += static_cast<char>(input.get());
+
+        while (std::isdigit(input.peek()))
+            number += static_cast<char>(input.get());
+        is_int = false;
+    }
+
+    if (char c = input.peek(); c == 'e' || c == 'E') {
+        number += static_cast<char>(input.get());
+
+        if (c = input.peek(); c == '-' || c == '+')
+            number += static_cast<char>(input.get());
+
+        while (std::isdigit(input.peek()))
+            number += static_cast<char>(input.get());;
+        is_int = false;
+    }
+
+    return Node();
+}
 
 Node LoadArray(std::istream& input) {
     Array result;
@@ -17,22 +100,7 @@ Node LoadArray(std::istream& input) {
         result.push_back(LoadNode(input));
     }
 
-    return Node(move(result));
-}
-
-Node LoadInt(std::istream& input) {
-    int result = 0;
-    while (isdigit(input.peek())) {
-        result *= 10;
-        result += input.get() - '0';
-    }
-    return Node(result);
-}
-
-Node LoadString(std::istream& input) {
-    std::string line;
-    getline(input, line, '"');
-    return Node(move(line));
+    return Node(std::move(result));
 }
 
 Node LoadDict(std::istream& input) {
@@ -44,69 +112,56 @@ Node LoadDict(std::istream& input) {
 
         std::string key = LoadString(input).AsString();
         input >> c;
-        result.insert({move(key), LoadNode(input)});
+        result.insert({std::move(key), LoadNode(input)});
     }
 
-    return Node(move(result));
+    return Node(std::move(result));
 }
 
 Node LoadNode(std::istream& input) {
     char c;
     input >> c;
 
-    if (c == '[') {
-        return LoadArray(input);
-    } else if (c == '{') {
-        return LoadDict(input);
-    } else if (c == '"') {
-        return LoadString(input);
-    } else {
-        input.putback(c);
-        return LoadInt(input);
+    switch(c) {
+        case ' ':
+            return LoadNode(input);
+        case '[':
+            return LoadArray(input);
+        case '{':
+            return LoadDict(input);
+        case 't':
+        case 'f':
+            input.putback(c);
+            return LoadBool(input);
+        case '"':
+            return LoadString(input);
+        default:
+            input.putback(c);
+            return LoadNumber(input);
     }
 }
 
 } // end namespace
 
-Node::Node(Array array) : as_array_(move(array)) {}
+// ---------- Document ----------------
 
-Node::Node(Dict map) : as_map_(move(map)) {}
-
-Node::Node(int value) : as_int_(value) {}
-
-Node::Node(std::string value) : as_string_(std::move(value)) {}
-
-const Array& Node::AsArray() const {
-    return as_array_;
-}
-
-const Dict& Node::AsMap() const {
-    return as_map_;
-}
-
-int Node::AsInt() const {
-    return as_int_;
-}
-
-const std::string& Node::AsString() const {
-    return as_string_;
-}
-
-Document::Document(Node root) : root_(std::move(root)) {}
+Document::Document(Node root) : root_ (std::move(root)) {}
 
 const Node& Document::GetRoot() const {
     return root_;
 }
 
+
+// bool operator==(const Document& lhs, const Document& rhs) {
+//     return lhs.GetRoot() == rhs.GetRoot();
+// }
+
 Document Load(std::istream& input) {
     return Document{LoadNode(input)};
 }
 
-void Print(const Document& doc, std::ostream& output) {
-    (void) &doc;
-    (void) &output;
-
-    // Реализуйте функцию самостоятельно
-}
+// void Print(const Document& doc, std::ostream& out) {
+//     out << doc;
+// }
 
 } // end namespace json
