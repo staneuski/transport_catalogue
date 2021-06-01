@@ -36,6 +36,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
+#- transport/transport_catalogue.h
 add_executable(gtest-transport_catalogue tests/gtest-transport_catalogue.cpp ${SRC})
-target_link_libraries(gtest-transport_catalogue gtest_main -lpthread)
+target_link_libraries(gtest-transport_catalogue gtest_main)
 add_test(NAME transport_catalogue COMMAND gtest-transport_catalogue)
+
+#- json/json.h
+add_executable(gtest-json tests/gtest-json.cpp ${JSON})
+target_link_libraries(gtest-json gtest_main)
+add_test(NAME json COMMAND gtest-json)
