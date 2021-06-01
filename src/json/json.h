@@ -11,6 +11,8 @@
 
 namespace json {
 
+// ---------- Node -------------------
+
 class Node;
 using Dict = std::map<std::string, Node>;
 using Array = std::vector<Node>;
@@ -27,9 +29,9 @@ public:
 
     explicit Node(std::nullptr_t) : Node() {};
 
-    explicit Node(Array array) : content_(std::move(array)) {};
+    Node(Array array) : content_(std::move(array)) {};
 
-    explicit Node(Dict map) : content_(std::move(map)) {};
+    Node(Dict map) : content_(std::move(map)) {};
 
     Node(bool boolean) : content_(boolean) {};
 
@@ -105,22 +107,69 @@ private:
     Value content_;
 };
 
-bool operator==(const Node& lhs, const Node& rhs);
+inline bool operator==(const Node& lhs, const Node& rhs) {
+    return lhs.AsVariant() == rhs.AsVariant();
+}
+
+Node LoadNode(std::istream& input);
+
+// ---------- Document ----------------
 
 class Document {
 public:
-    explicit Document(Node root);
+    explicit Document(Node root) : root_(std::move(root)) {}
 
-    const Node& Document::GetRoot();
+    inline const Node& GetRoot() const {
+        return root_;
+    }
 
 private:
     Node root_;
 };
 
-bool operator==(const Document& lhs, const Document& rhs);
+inline bool operator==(const Document& lhs, const Document& rhs) {
+    return lhs.GetRoot() == rhs.GetRoot();
+}
 
-Document Load(std::istream& input);
+inline Document Load(std::istream& input) {
+    return Document{LoadNode(input)};
+}
 
-void Print(const Document& doc, std::ostream& output);
+// ---------- NodePrinter -------------
+
+struct NodePrinter {
+    inline void operator()(const std::nullptr_t) const {
+        out << "null";
+    }
+
+    inline void operator()(const bool boolean) const {
+        out << std::boolalpha << boolean;
+    }
+
+    inline void operator()(const int number) const {
+        out << number;
+    }
+
+    inline void operator()(const double number) const {
+        out << number;
+    }
+
+    void operator()(const std::string& s) const;
+
+    void operator()(const Array& array) const;
+
+    void operator()(const Dict& map) const;
+
+    std::ostream& out;
+};
+
+inline std::ostream& operator<<(std::ostream& out, const Node& node) {
+    std::visit(NodePrinter{out}, node.AsVariant());
+    return out;
+}
+
+inline void Print(const Document& document, std::ostream& out) {
+    out << document.GetRoot();
+}
 
 } // end namespace json

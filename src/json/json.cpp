@@ -4,55 +4,86 @@ namespace json {
 
 // ---------- Node -------------------
 
-/*
-bool operator==(const Node& lhs, const Node& rhs) {
-    return lhs == rhs;
-}
-*/
-
 namespace {
 
-Node LoadNode(std::istream& input);
+Node LoadArray(std::istream& input) {
+    Array result;
+
+    for (char c; input >> c && c != ']';) {
+        if (c != ',')
+            input.putback(c);
+        result.push_back(LoadNode(input));
+    }
+
+    return Node(std::move(result));
+}
 
 Node LoadString(std::istream& input) {
     input >> std::noskipws;
 
-    bool is_in_quotes = false;
-    for (char c; input >> c;) {
-        is_in_quotes = (c == '\"');
-        if (is_in_quotes)
-            break;
-
+    std::string s;
+    for (char c; input >> c && c != '\"';) {
         if (c == '\\') {
             input >> c;
             switch(c) {
                 case 'r':
-                    input.putback('\r');
+                    s += '\r';
                     break;
                 case 'n':
-                    input.putback('\n');
+                    s += '\n';
                     break;
                 case 't':
-                    input.putback('\t');
+                    s += '\t';
                     break;
                 default:
-                    input.putback(c);
+                    s += c;
                     break;
             }
         } else {
-            input.putback(c);
+            s += c;
         }
     }
 
-    return LoadNode(input);
+    return Node(move(s));
+}
+
+Node LoadDict(std::istream& input) {
+    Dict result;
+
+    for (char c; input >> c && c != '}';) {
+        if (c == ' ' || c == ',')
+            continue;
+
+        std::string key = LoadString(input).AsString();
+        input >> c;
+        result.insert({std::move(key), LoadNode(input)});
+    }
+
+    return Node(std::move(result));
+}
+
+Node LoadNull(std::istream& input) {
+    std::string s{};
+
+    for (char c; input >> c && s.size() < 4;)
+        s += c;
+
+    // std::cout << '[' << s << ']' << std::endl;
+
+    return Node();
 }
 
 Node LoadBool(std::istream& input) {
-    for (char c; input >> c && c != 'e';)
-        if (c != ',')
-            input.putback(c);
+    std::string s{};
 
-    return LoadNode(input);
+    for (char c; input >> c && s.size() <= 5;) {
+        s += c;
+        if (c == 'e')
+            break;
+    }
+
+    // if (s == "true" || s == "false")
+    return Node(s == "true");
 }
 
 Node LoadNumber(std::istream& input) {
@@ -88,35 +119,13 @@ Node LoadNumber(std::istream& input) {
         is_int = false;
     }
 
-    return Node();
+    if (is_int)
+        return Node(std::stoi(std::move(number)));
+    else
+        return Node(std::stod(std::move(number)));
 }
 
-Node LoadArray(std::istream& input) {
-    Array result;
-
-    for (char c; input >> c && c != ']';) {
-        if (c != ',')
-            input.putback(c);
-        result.push_back(LoadNode(input));
-    }
-
-    return Node(std::move(result));
-}
-
-Node LoadDict(std::istream& input) {
-    Dict result;
-
-    for (char c; input >> c && c != '}';) {
-        if (c == ',')
-            input >> c;
-
-        std::string key = LoadString(input).AsString();
-        input >> c;
-        result.insert({std::move(key), LoadNode(input)});
-    }
-
-    return Node(std::move(result));
-}
+} // end namespace
 
 Node LoadNode(std::istream& input) {
     char c;
@@ -129,6 +138,9 @@ Node LoadNode(std::istream& input) {
             return LoadArray(input);
         case '{':
             return LoadDict(input);
+        case 'n':
+            input.putback(c);
+            return LoadNull(input);
         case 't':
         case 'f':
             input.putback(c);
@@ -141,27 +153,62 @@ Node LoadNode(std::istream& input) {
     }
 }
 
-} // end namespace
+// ---------- NodePrinter -------------
 
-// ---------- Document ----------------
-
-Document::Document(Node root) : root_ (std::move(root)) {}
-
-const Node& Document::GetRoot() const {
-    return root_;
+void NodePrinter::operator()(const std::string& s) const {
+    out << "\"";
+    for (char c : s)
+        switch(c) {
+            case '\"':
+                out << "\\\"";
+                break;
+            case '\\':
+                out << "\\\\";
+                break;
+            case '\t':
+                out << "\\t";
+                break;
+            case '\r':
+                out << "\\r";
+                break;
+            case '\n':
+                out << "\\n";
+                break;
+            default:
+                out << c; break;
+        }
+    out << "\"";
 }
 
+void NodePrinter::operator()(const Array& array) const {
+    bool is_first = true;
+    for (const Node& node : array) {
+        if (is_first) {
+            out << '[';
+            is_first = false;
+        } else {
+            out << ", ";
+        }
 
-// bool operator==(const Document& lhs, const Document& rhs) {
-//     return lhs.GetRoot() == rhs.GetRoot();
-// }
-
-Document Load(std::istream& input) {
-    return Document{LoadNode(input)};
+        out << node;
+    }
+    out << ']';
 }
 
-// void Print(const Document& doc, std::ostream& out) {
-//     out << doc;
-// }
+void NodePrinter::operator()(const Dict& map) const {
+    bool is_first = true;
+    for (const auto& [key, node] : map) {
+        if (is_first) {
+            out << '{';
+            is_first = false;
+        } else {
+            out << ", ";
+        }
+
+        this->operator()(key);
+        out << ": " << node;
+    }
+    out << '}';
+}
 
 } // end namespace json
