@@ -71,7 +71,7 @@ domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) con
 
     double distance = 0;
     const auto ComputeRoute = [&](const Stop* stop, const Stop* next_stop) {
-        distance += geo::ComputeDistance(stop->coords, next_stop->coords);
+        distance += domain::ComputeDistance(stop, next_stop);
         route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
                         ? stops_to_distance_.at({stop, next_stop})
                         : stops_to_distance_.at({next_stop, stop});

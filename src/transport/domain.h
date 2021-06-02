@@ -40,6 +40,10 @@ struct StopStat {
     const std::set<const Bus*, LessBusPtr>& unique_buses;
 };
 
+inline double ComputeDistance(const Stop* current, const Stop* next) {
+    return geo::ComputeDistance(current->coords, next->coords);
+}
+
 } // end namespace domain
 
 } // end namespace transport
