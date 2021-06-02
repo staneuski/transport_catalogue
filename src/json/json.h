@@ -22,75 +22,62 @@ public:
     using runtime_error::runtime_error;
 };
 
-class Node {
-    using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+class Node final
+    : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
 public:
-    Node() = default;
+    // Making available all constructors of the parent class std::variant
+    using variant::variant;
 
-    Node(std::nullptr_t) : Node() {};
-
-    Node(Array array) : content_(std::move(array)) {};
-
-    Node(Dict map) : content_(std::move(map)) {};
-
-    Node(bool boolean) : content_(boolean) {};
-
-    Node(int number) : content_(number) {};
-
-    Node(double number) : content_(number) {};
-
-    Node(std::string s) : content_(std::move(s)) {};
-
-    inline const Value& AsVariant() const {
-        return content_;
+    inline const variant& AsVariant() const {
+        return *this;
     }
 
     inline bool IsNull() const {
-        return std::holds_alternative<std::nullptr_t>(content_);
+        return std::holds_alternative<std::nullptr_t>(*this);
     }
 
     inline bool IsArray() const {
-        return std::holds_alternative<Array>(content_);
+        return std::holds_alternative<Array>(*this);
     }
 
     inline const Array& AsArray() const {
         if (!IsArray())
             throw std::logic_error("unable to convent content to array");
-        return std::get<Array>(content_);
+        return std::get<Array>(*this);
     }
 
     inline bool IsMap() const {
-        return std::holds_alternative<Dict>(content_);
+        return std::holds_alternative<Dict>(*this);
     }
 
     inline const Dict& AsMap() const {
         if (!IsMap())
             throw std::logic_error("unable to convent content to map");
-        return std::get<Dict>(content_);
+        return std::get<Dict>(*this);
     }
 
     inline bool IsBool() const {
-        return std::holds_alternative<bool>(content_);
+        return std::holds_alternative<bool>(*this);
     }
 
     inline bool AsBool() const {
         if (!IsBool())
             throw std::logic_error("unable to convent content to boolean");
-        return std::get<bool>(content_);
+        return std::get<bool>(*this);
     }
 
     inline bool IsInt() const {
-        return std::holds_alternative<int>(content_);
+        return std::holds_alternative<int>(*this);
     }
 
     inline int AsInt() const {
         if (!IsInt())
             throw std::logic_error("unable to convent content to integer");
-        return std::get<int>(content_);
+        return std::get<int>(*this);
     }
 
     inline bool IsPureDouble() const {
-        return std::holds_alternative<double>(content_);
+        return std::holds_alternative<double>(*this);
     }
 
     inline bool IsDouble() const {
@@ -102,21 +89,18 @@ public:
             throw std::logic_error("unable to convent content to double");
         if (IsInt())
             return AsInt();
-        return std::get<double>(content_);
+        return std::get<double>(*this);
     }
 
     inline bool IsString() const {
-        return std::holds_alternative<std::string>(content_);
+        return std::holds_alternative<std::string>(*this);
     }
 
     inline const std::string& AsString() const {
         if (!IsString())
             throw std::logic_error("unable to convent content to string");
-        return std::get<std::string>(content_);
+        return std::get<std::string>(*this);
     }
-
-private:
-    Value content_;
 };
 
 inline bool operator==(const Node& lhs, const Node& rhs) {

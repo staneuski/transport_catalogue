@@ -137,7 +137,7 @@ Node LoadNumber(std::istream& input) {
             return Node(std::stoi(std::move(number)));
         else
             return Node(std::stod(std::move(number)));
-    } catch (const std::invalid_argument&) {
+    } catch (const std::exception&) {
         throw ParsingError("unable to convert '" + number + "' to number");
     }
 }
