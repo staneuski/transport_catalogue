@@ -41,17 +41,9 @@ void Benchmark() {
 } // end namespace
 
 int main() {
+    using namespace std;
+
     Benchmark();
-
-    json::Dict map{{{"null", nullptr}}};
-    Print(json::Document{map}, std::cout);
-    std::cout << std::endl;
-
-    std::stringstream strm;
-    json::Print(json::Document{map}, strm);
-
-    const auto doc = json::Load(strm);
-    assert(doc.GetRoot() == map);
 
     return 0;
 }

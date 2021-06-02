@@ -198,33 +198,35 @@ void NodePrinter::operator()(const std::string& s) const {
 }
 
 void NodePrinter::operator()(const Array& array) const {
+    out << '[';
+
     bool is_first = true;
     for (const Node& node : array) {
-        if (is_first) {
-            out << '[';
+        if (is_first)
             is_first = false;
-        } else {
+        else
             out << ", ";
-        }
 
         out << node;
     }
+
     out << ']';
 }
 
 void NodePrinter::operator()(const Dict& map) const {
+    out << '{';
+
     bool is_first = true;
     for (const auto& [key, node] : map) {
-        if (is_first) {
-            out << '{';
+        if (is_first)
             is_first = false;
-        } else {
+        else
             out << ", ";
-        }
 
         this->operator()(key);
         out << ':' << node;
     }
+
     out << '}';
 }
 
