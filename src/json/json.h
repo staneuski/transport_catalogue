@@ -25,9 +25,9 @@ public:
 class Node {
     using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
 public:
-    explicit Node() = default;
+    Node() = default;
 
-    explicit Node(std::nullptr_t) : Node() {};
+    Node(std::nullptr_t) : Node() {};
 
     Node(Array array) : content_(std::move(array)) {};
 
@@ -54,6 +54,8 @@ public:
     }
 
     inline const Array& AsArray() const {
+        if (!IsArray())
+            throw std::logic_error("unable to convent content to array");
         return std::get<Array>(content_);
     }
 
@@ -62,6 +64,8 @@ public:
     }
 
     inline const Dict& AsMap() const {
+        if (!IsMap())
+            throw std::logic_error("unable to convent content to map");
         return std::get<Dict>(content_);
     }
 
@@ -70,6 +74,8 @@ public:
     }
 
     inline bool AsBool() const {
+        if (!IsBool())
+            throw std::logic_error("unable to convent content to boolean");
         return std::get<bool>(content_);
     }
 
@@ -78,29 +84,35 @@ public:
     }
 
     inline int AsInt() const {
+        if (!IsInt())
+            throw std::logic_error("unable to convent content to integer");
         return std::get<int>(content_);
-    }
-
-    inline bool IsDouble() const {
-        return std::holds_alternative<double>(content_) || IsInt();
     }
 
     inline bool IsPureDouble() const {
         return std::holds_alternative<double>(content_);
     }
 
+    inline bool IsDouble() const {
+        return IsPureDouble() || IsInt();
+    }
+
     inline double AsDouble() const {
+        if (!IsDouble())
+            throw std::logic_error("unable to convent content to double");
         if (IsInt())
             return AsInt();
         return std::get<double>(content_);
     }
 
-    inline const std::string& AsString() const {
-        return std::get<std::string>(content_);
-    }
-
     inline bool IsString() const {
         return std::holds_alternative<std::string>(content_);
+    }
+
+    inline const std::string& AsString() const {
+        if (!IsString())
+            throw std::logic_error("unable to convent content to string");
+        return std::get<std::string>(content_);
     }
 
 private:

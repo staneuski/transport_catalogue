@@ -9,20 +9,24 @@ namespace {
 Node LoadArray(std::istream& input) {
     Array result;
 
-    for (char c; input >> c && c != ']';) {
+    char c;
+    for (; input >> c && c != ']';) {
         if (c != ',')
             input.putback(c);
         result.push_back(LoadNode(input));
     }
 
+    if (c != ']')
+        throw ParsingError("unable to convert input to array");
     return Node(std::move(result));
 }
 
 Node LoadString(std::istream& input) {
-    input >> std::noskipws;
-
     std::string s;
-    for (char c; input >> c && c != '\"';) {
+
+    input >> std::noskipws;
+    char c;
+    for (; input >> c && c != '\"';) {
         if (c == '\\') {
             input >> c;
             switch(c) {
@@ -43,22 +47,28 @@ Node LoadString(std::istream& input) {
             s += c;
         }
     }
+    input >> std::skipws;
 
+    if (c != '\"')
+        throw ParsingError("unable to convert '" + s + "' to string");
     return Node(move(s));
 }
 
 Node LoadDict(std::istream& input) {
     Dict result;
 
-    for (char c; input >> c && c != '}';) {
-        if (c == ' ' || c == ',')
-            continue;
+    char c;
+    for (; input >> c && c != '}';) {
+        if (c != ',')
+            input.putback(c);
 
-        std::string key = LoadString(input).AsString();
+        std::string key = LoadNode(input).AsString();
         input >> c;
         result.insert({std::move(key), LoadNode(input)});
     }
 
+    if (c != '}')
+        throw ParsingError("unable to convert input to map");
     return Node(std::move(result));
 }
 
@@ -68,9 +78,10 @@ Node LoadNull(std::istream& input) {
     for (char c; input >> c && s.size() < 4;)
         s += c;
 
-    // std::cout << '[' << s << ']' << std::endl;
-
-    return Node();
+    if (s != "null")
+        throw ParsingError("unable to convert '" + s + "' to nullptr");
+    else
+        return Node();
 }
 
 Node LoadBool(std::istream& input) {
@@ -82,8 +93,10 @@ Node LoadBool(std::istream& input) {
             break;
     }
 
-    // if (s == "true" || s == "false")
-    return Node(s == "true");
+    if (s == "true" || s == "false")
+        return Node(s == "true");
+    else
+        throw ParsingError("unable to convert '" + s + "' to boolean");
 }
 
 Node LoadNumber(std::istream& input) {
@@ -115,14 +128,18 @@ Node LoadNumber(std::istream& input) {
             number += static_cast<char>(input.get());
 
         while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());;
+            number += static_cast<char>(input.get());
         is_int = false;
     }
 
-    if (is_int)
-        return Node(std::stoi(std::move(number)));
-    else
-        return Node(std::stod(std::move(number)));
+    try {
+        if (is_int)
+            return Node(std::stoi(std::move(number)));
+        else
+            return Node(std::stod(std::move(number)));
+    } catch (const std::invalid_argument&) {
+        throw ParsingError("unable to convert '" + number + "' to number");
+    }
 }
 
 } // end namespace
@@ -206,7 +223,7 @@ void NodePrinter::operator()(const Dict& map) const {
         }
 
         this->operator()(key);
-        out << ": " << node;
+        out << ':' << node;
     }
     out << '}';
 }
