@@ -2,26 +2,29 @@
 
 namespace transport {
 
-using domain::Bus, domain::Stop;
+using domain::Bus, domain::Stop, domain::BusPtr, domain::StopPtr;
 
 // ---------- TransportCatalogue ------
 
 void TransportCatalogue::AddStop(Stop stop) {
     stops_.push_back(std::move(stop));
-    stop_names_[stops_.back().name] = &stops_.back();
-    stop_to_buses_[&stops_.back()];
+    const StopPtr& stop_ptr = std::make_shared<const Stop>(stops_.back());
+
+    stop_names_[stops_.back().name] = stop_ptr;
+    stop_to_buses_[stop_ptr];
 }
 
 void TransportCatalogue::AddBus(Bus bus) {
     buses_.push_back(std::move(bus));
-    bus_names_[buses_.back().name] = &buses_.back();
+    const BusPtr& bus_ptr = std::make_shared<const Bus>(buses_.back());
 
-    for (const Stop* stop_ptr : buses_.back().stops)
-        stop_to_buses_.at(stop_ptr).insert(&buses_.back());
+    bus_names_[buses_.back().name] = bus_ptr;
+    for (const StopPtr& stop_ptr : buses_.back().stops)
+        stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
 void TransportCatalogue::AddBus(const io::Request& request) {
-    std::vector<const Stop*> stops;
+    std::vector<StopPtr> stops;
     stops.reserve(request.contents.size());
     for (const std::string& stop_name : request.contents)
         stops.push_back(SearchStop(stop_name));
@@ -29,9 +32,9 @@ void TransportCatalogue::AddBus(const io::Request& request) {
     AddBus({request.name, request.delimiter == " > ", stops});
 }
 
-void TransportCatalogue::MakeAdjacent(const Stop* stop,
-                                  const Stop* adjacent_stop,
-                                  const int metres) {
+void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
+                                      const StopPtr& adjacent_stop,
+                                      const int metres) {
     const auto it = stops_to_distance_.find({adjacent_stop, stop});
     if (it != stops_to_distance_.end() && it->second == metres)
         return;
@@ -41,7 +44,7 @@ void TransportCatalogue::MakeAdjacent(const Stop* stop,
 
 void TransportCatalogue::MakeAdjacent(const io::Request& request,
                                       const std::string_view delimiter) {
-    const Stop* stop = SearchStop(request.name);
+    StopPtr stop = SearchStop(request.name);
     std::for_each(
         request.contents.begin() + 2,
         request.contents.end(),
@@ -63,14 +66,14 @@ domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) con
     if (!route.ptr)
         return route;
 
-    const std::vector<const Stop*>& stops = route.ptr->stops;
+    const std::vector<StopPtr>& stops = route.ptr->stops;
     route.stops_count = stops.size();
 
-    const std::unordered_set<const Stop*> unique_stops{stops.begin(), stops.end()};
+    const std::unordered_set<StopPtr> unique_stops{stops.begin(), stops.end()};
     route.unique_stops_count = unique_stops.size();
 
     double distance = 0;
-    const auto ComputeRoute = [&](const Stop* stop, const Stop* next_stop) {
+    const auto ComputeRoute = [&](StopPtr stop, StopPtr next_stop) {
         distance += domain::ComputeDistance(stop, next_stop);
         route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
                         ? stops_to_distance_.at({stop, next_stop})
@@ -93,8 +96,8 @@ domain::StopStat TransportCatalogue::GetStop(
     const std::string_view& stop_name
 ) const
 {
-    const static std::set<const Bus*, domain::LessBusPtr> empty_stop;
-    const Stop* stop_ptr{SearchStop(stop_name)};
+    const static domain::SetBusPtr empty_stop;
+    const StopPtr stop_ptr{SearchStop(stop_name)};
     return {
         stop_name,
         stop_ptr,

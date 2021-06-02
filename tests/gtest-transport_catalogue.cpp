@@ -47,7 +47,7 @@ TEST(TransportCatalogue, SearchStopNotExist) {
 TEST(TransportCatalogue, AddStop) {
     TransportCatalogue transport_catalogue;
     transport_catalogue.AddStop({"A", {55.611087, 37.208290}});
-    const Stop* ptr{transport_catalogue.SearchStop("A")};
+    transport::domain::StopPtr ptr{transport_catalogue.SearchStop("A")};
 
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(ptr->name, "A");
@@ -113,7 +113,7 @@ TEST(TransportCatalogue, GetStop) {
 
     std::vector<std::string> bus_names;
     bus_names.reserve(stop_stat.unique_buses.size());
-    for (const Bus* bus : stop_stat.unique_buses)
+    for (const auto& bus : stop_stat.unique_buses)
         bus_names.push_back(bus->name);
 
     ASSERT_EQ(stop_stat.name, "D");

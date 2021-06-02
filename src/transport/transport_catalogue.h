@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <functional>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -14,12 +15,13 @@
 namespace transport {
 
 class TransportCatalogue {
-    using AdjacentStops = std::pair<const domain::Stop*, const domain::Stop*>;
+    using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
 
     class AdjacentStopsHasher {
     public:
         inline size_t operator()(const AdjacentStops adjacent_stops) const {
-            return hash_(adjacent_stops.first) + hash_(adjacent_stops.first)*37;
+            return hash_(adjacent_stops.first.get())
+                 + hash_(adjacent_stops.first.get())*37;
         }
     private:
         std::hash<const void*> hash_;
@@ -39,20 +41,20 @@ public:
 
     void AddBus(const io::Request& request);
 
-    inline const domain::Stop* SearchStop(const std::string_view& stop_name) const {
+    inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
                ? stop_names_.at(stop_name)
                : nullptr;
     }
 
-    inline const domain::Bus* SearchBus(const std::string_view& bus_name) const {
+    inline domain::BusPtr SearchBus(const std::string_view& bus_name) const {
         return (bus_names_.find(bus_name) != bus_names_.end())
                ? bus_names_.at(bus_name)
                : nullptr;
     }
 
-    void MakeAdjacent(const domain::Stop* stop,
-                      const domain::Stop* adjacent_stop,
+    void MakeAdjacent(const domain::StopPtr& stop,
+                      const domain::StopPtr& adjacent_stop,
                       const int distance);
 
     void MakeAdjacent(const io::Request& request,
@@ -65,9 +67,9 @@ public:
 private:
     std::deque<domain::Stop> stops_;
     std::deque<domain::Bus> buses_;
-    std::unordered_map<std::string_view, const domain::Stop*> stop_names_;
-    std::unordered_map<std::string_view, const domain::Bus*> bus_names_;
-    std::unordered_map<const domain::Stop*, std::set<const domain::Bus*, domain::LessBusPtr>> stop_to_buses_;
+    std::unordered_map<std::string_view, domain::StopPtr> stop_names_;
+    std::unordered_map<std::string_view, domain::BusPtr> bus_names_;
+    std::unordered_map<domain::StopPtr, domain::SetBusPtr> stop_to_buses_;
     std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
 };
 

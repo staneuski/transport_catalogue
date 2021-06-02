@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& out, const domain::StopStat& stop_stat) {
 
     if (stop_stat.ptr && !stop_stat.unique_buses.empty()) {
         out << ": buses";
-        for (const domain::Bus* bus : stop_stat.unique_buses)
+        for (const auto& bus : stop_stat.unique_buses)
             out << ' ' << bus->name;
     } else if (stop_stat.ptr && stop_stat.unique_buses.empty()) {
         out << ": no buses";
