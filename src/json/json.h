@@ -123,6 +123,10 @@ inline bool operator==(const Node& lhs, const Node& rhs) {
     return lhs.AsVariant() == rhs.AsVariant();
 }
 
+inline bool operator!=(const Node& lhs, const Node& rhs) {
+    return !(lhs.AsVariant() == rhs.AsVariant());
+}
+
 Node LoadNode(std::istream& input);
 
 // ---------- Document ----------------
@@ -141,6 +145,10 @@ private:
 
 inline bool operator==(const Document& lhs, const Document& rhs) {
     return lhs.GetRoot() == rhs.GetRoot();
+}
+
+inline bool operator!=(const Document& lhs, const Document& rhs) {
+    return !(lhs.GetRoot() == rhs.GetRoot());
 }
 
 inline Document Load(std::istream& input) {
