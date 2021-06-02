@@ -1,4 +1,6 @@
 #pragma once
+#include "domain.h"
+
 #include <deque>
 #include <functional>
 #include <set>
@@ -9,44 +11,7 @@
 
 #include "input_reader.h"
 
-#include "geo/geo.h"
-
 namespace transport {
-
-namespace domain {
-
-struct Stop {
-    std::string name;
-    geo::Coordinates coords;
-};
-
-struct Bus {
-    std::string name;
-    bool is_circular;
-    std::vector<const domain::Stop*> stops;
-};
-
-struct LessBusPtr {
-    inline bool operator()(const domain::Bus* lhs, const domain::Bus* rhs) const {
-        return lhs->name < rhs->name;
-    }
-};
-
-struct Route {
-    std::string_view name;
-    const Bus* ptr;
-    size_t stops_count, unique_stops_count;
-    int length = 0;
-    double curvature = 1.;
-};
-
-struct StopStat {
-    std::string_view name;
-    const Stop* ptr;
-    const std::set<const Bus*, LessBusPtr>& unique_buses;
-};
-
-} // end namespace domain
 
 class TransportCatalogue {
     using AdjacentStops = std::pair<const domain::Stop*, const domain::Stop*>;
