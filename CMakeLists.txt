@@ -14,6 +14,7 @@ set(GEO)
 set(JSON src/json/json.cpp)
 set(TRANSPORT
     src/transport/input_reader.cpp
+    src/transport/json_reader.cpp
     src/transport/transport_catalogue.cpp)
 
 set(SRC ${GEO} ${JSON} ${TRANSPORT})
