@@ -48,13 +48,13 @@ Requests LoadRequests(std::istream& input) {
     for (const auto& request_node : stat_requests) {
         const json::Dict& request = request_node.AsMap();
 
-        StatRequest stat_request;
+        Request::Stat stat_request;
         stat_request.ip = request.at("id").AsInt();
         stat_request.name = request.at("name").AsString();
         if (request.at("type") == "Bus")
-            stat_request.type = RequestType::BUS;
+            stat_request.type = Request::Type::BUS;
         else if (request.at("type") == "Stop")
-            stat_request.type = RequestType::STOP;
+            stat_request.type = Request::Type::STOP;
         else
             throw std::invalid_argument(
                 "unable to load stat request type '"

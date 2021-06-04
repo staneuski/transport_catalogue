@@ -23,7 +23,7 @@ void TransportCatalogue::AddBus(Bus bus) {
         stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
-void TransportCatalogue::AddBus(const io::BusRequest& request) {
+void TransportCatalogue::AddBus(const io::Request::Bus& request) {
     std::vector<StopPtr> stops;
     stops.reserve(request.stops.size());
     for (const std::string& stop_name : request.stops)

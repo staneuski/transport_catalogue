@@ -1,15 +1,18 @@
 #include <cassert>
+#include <fstream>
 
 #include "transport/input_handler.h"
 #include "transport/json_reader.h"
+#include "transport/transport_catalogue.h"
 
 int main() {
     using namespace std;
     using namespace transport::io;
 
-    const Requests requests = LoadRequests(cin);
+    transport::TransportCatalogue transport_catalogue;
 
-    cout << requests.buses.front().name << endl;
+    Requests requests = LoadRequests(cin);
+    Fill(transport_catalogue, requests);
 
     return 0;
 }

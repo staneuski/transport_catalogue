@@ -7,13 +7,14 @@ namespace transport {
 namespace io {
 
 void Fill(TransportCatalogue& transport_catalogue, const Requests& requests) {
-    for (const io::StopRequest& request : requests.stops)
+    for (const io::Request::Stop& request : requests.stops)
         transport_catalogue.AddStop(request);
-    for (const io::StopRequest& request : requests.stops)
+    for (const io::Request::Stop& request : requests.stops)
         transport_catalogue.MakeAdjacent(request);
 
-    for (const io::BusRequest& request : requests.buses)
+    for (const io::Request::Bus& request : requests.buses)
         transport_catalogue.AddBus(request);
 }
+
 } // end namespace io
 } // end namespace transport

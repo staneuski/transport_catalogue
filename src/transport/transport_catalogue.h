@@ -31,7 +31,7 @@ class TransportCatalogue {
 public:
     void AddStop(domain::Stop stop);
 
-    inline void AddStop(const io::StopRequest& request) {
+    inline void AddStop(const io::Request::Stop& request) {
         AddStop({
             request.name,
             {request.latitude, request.longitude}
@@ -40,7 +40,7 @@ public:
 
     void AddBus(domain::Bus bus);
 
-    void AddBus(const io::BusRequest& request);
+    void AddBus(const io::Request::Bus& request);
 
     inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
@@ -58,7 +58,7 @@ public:
                       const domain::StopPtr& adjacent_stop,
                       const int distance);
 
-    inline void MakeAdjacent(const io::StopRequest& request) {
+    inline void MakeAdjacent(const io::Request::Stop& request) {
         domain::StopPtr stop_ptr = SearchStop(request.name);
         for (const auto& [stop_name, distance] : request.stop_to_distances)
             MakeAdjacent(stop_ptr, SearchStop(stop_name), distance);

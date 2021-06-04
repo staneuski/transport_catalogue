@@ -12,31 +12,33 @@ class TransportCatalogue;
 
 namespace io {
 
-enum class RequestType { BUS, STOP, };
+struct Request {
+    enum class Type { BUS, STOP, };
 
-struct BusRequest {
-    std::string name;
-    std::vector<std::string> stops;
-    bool is_roundtrip;
-};
+    struct Bus {
+        std::string name;
+        std::vector<std::string> stops;
+        bool is_roundtrip;
+    };
 
-struct StopRequest {
-    std::string name;
-    double latitude;
-    double longitude;
-    std::unordered_map<std::string, int> stop_to_distances;
-};
+    struct Stop {
+        std::string name;
+        double latitude;
+        double longitude;
+        std::unordered_map<std::string, int> stop_to_distances;
+    };
 
-struct StatRequest {
-    int ip;
-    RequestType type;
-    std::string name;
+    struct Stat {
+        int ip;
+        Type type;
+        std::string name;
+    };
 };
 
 struct Requests {
-    std::vector<BusRequest> buses;
-    std::vector<StopRequest> stops;
-    std::vector<StatRequest> stats;
+    std::vector<Request::Bus> buses;
+    std::vector<Request::Stop> stops;
+    std::vector<Request::Stat> stats;
 };
 
 void Fill(TransportCatalogue& transport_catalogue, const Requests& requests);
