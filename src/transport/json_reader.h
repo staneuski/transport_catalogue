@@ -4,7 +4,6 @@
 #include <stdexcept>
 
 #include "json/json.h"
-
 #include "input_handler.h"
 
 namespace transport {
@@ -27,7 +26,7 @@ inline std::unordered_map<std::string, int> ConvertNodes(
     return elements;
 }
 
-Requests LoadRequests();
+Requests LoadRequests(std::istream& input);
 
 } // end namespace io
 } // end namespace transport

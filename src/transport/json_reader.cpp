@@ -3,20 +3,14 @@
 namespace transport {
 namespace io {
 
-Requests LoadRequests() {
-    json::Dict type_to_requests = std::move(
-        json::Load(std::cin).GetRoot().AsMap()
-    );
+Requests LoadRequests(std::istream& input) {
+    json::Dict type_to_requests = std::move(json::Load(input).GetRoot().AsMap());
+
+    Requests requests;
 
     json::Array base_requests = std::move(
         type_to_requests.at("base_requests").AsArray()
     );
-    json::Array stat_requests = std::move(
-        type_to_requests.at("stat_requests").AsArray()
-    );
-
-    Requests requests;
-
     requests.buses.reserve(base_requests.size());
     for (const auto& request_node : base_requests) {
         const json::Dict& request = request_node.AsMap();
@@ -47,6 +41,9 @@ Requests LoadRequests() {
             });
     }
 
+    json::Array stat_requests = std::move(
+        type_to_requests.at("stat_requests").AsArray()
+    );
     requests.stats.reserve(stat_requests.size());
     for (const auto& request_node : stat_requests) {
         const json::Dict& request = request_node.AsMap();

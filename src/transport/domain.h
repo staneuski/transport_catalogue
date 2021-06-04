@@ -22,8 +22,8 @@ using StopPtr = std::shared_ptr<const Stop>;
 
 struct Bus {
     std::string name;
-    bool is_circular;
     std::vector<StopPtr> stops;
+    bool is_roundtrip;
 };
 using BusPtr = std::shared_ptr<const Bus>;
 

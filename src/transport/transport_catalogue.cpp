@@ -23,13 +23,13 @@ void TransportCatalogue::AddBus(Bus bus) {
         stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
-void TransportCatalogue::AddBus(const io::Request& request) {
+void TransportCatalogue::AddBus(const io::BusRequest& request) {
     std::vector<StopPtr> stops;
-    stops.reserve(request.contents.size());
-    for (const std::string& stop_name : request.contents)
+    stops.reserve(request.stops.size());
+    for (const std::string& stop_name : request.stops)
         stops.push_back(SearchStop(stop_name));
 
-    AddBus({request.name, request.delimiter == " > ", stops});
+    AddBus({request.name, stops, request.is_roundtrip});
 }
 
 void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
@@ -40,23 +40,6 @@ void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
         return;
 
     stops_to_distance_[{stop, adjacent_stop}] = metres;
-}
-
-void TransportCatalogue::MakeAdjacent(const io::Request& request,
-                                      const std::string_view delimiter) {
-    StopPtr stop = SearchStop(request.name);
-    std::for_each(
-        request.contents.begin() + 2,
-        request.contents.end(),
-        [&](const std::string& s) {
-            const size_t pos = s.find(delimiter);
-            MakeAdjacent(
-                stop,
-                SearchStop(s.substr(pos + delimiter.size())),
-                std::stoi(s.substr(0, pos))
-            );
-        }
-    );
 }
 
 domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
@@ -83,7 +66,7 @@ domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) con
     for (auto it = stops.begin(); it + 1 != stops.end(); ++it)
         ComputeRoute(*it, *std::next(it));
 
-    if (!route.ptr->is_circular) {
+    if (!route.ptr->is_roundtrip) {
         route.stops_count = 2*route.stops_count - 1;
         for (auto it = stops.rbegin(); it + 1 != stops.rend(); ++it)
             ComputeRoute(*it, *std::next(it));

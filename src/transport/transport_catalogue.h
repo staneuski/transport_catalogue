@@ -10,7 +10,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "input_reader.h"
+#include "input_handler.h"
+// #include "json_reader.h"
 
 namespace transport {
 
@@ -30,16 +31,16 @@ class TransportCatalogue {
 public:
     void AddStop(domain::Stop stop);
 
-    inline void AddStop(const io::Request& request) {
+    inline void AddStop(const io::StopRequest& request) {
         AddStop({
             request.name,
-            {std::stod(request.contents[0]), std::stod(request.contents[1])}
+            {request.latitude, request.longitude}
         });
     }
 
     void AddBus(domain::Bus bus);
 
-    void AddBus(const io::Request& request);
+    void AddBus(const io::BusRequest& request);
 
     inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
@@ -57,8 +58,11 @@ public:
                       const domain::StopPtr& adjacent_stop,
                       const int distance);
 
-    void MakeAdjacent(const io::Request& request,
-                      const std::string_view delimiter = "m to ");
+    inline void MakeAdjacent(const io::StopRequest& request) {
+        domain::StopPtr stop_ptr = SearchStop(request.name);
+        for (const auto& [stop_name, distance] : request.stop_to_distances)
+            MakeAdjacent(stop_ptr, SearchStop(stop_name), distance);
+    }
 
     domain::Route GetRoute(const std::string_view& bus_name) const;
 

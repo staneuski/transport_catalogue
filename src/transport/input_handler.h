@@ -1,11 +1,15 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <variant>
 #include <vector>
 #include <unordered_map>
 
 namespace transport {
+
+class TransportCatalogue;
+
 namespace io {
 
 enum class RequestType { BUS, STOP, };
@@ -34,6 +38,8 @@ struct Requests {
     std::vector<StopRequest> stops;
     std::vector<StatRequest> stats;
 };
+
+void Fill(TransportCatalogue& transport_catalogue, const Requests& requests);
 
 } // end namespace io
 } // end namespace transport

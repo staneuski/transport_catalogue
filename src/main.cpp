@@ -7,7 +7,7 @@ int main() {
     using namespace std;
     using namespace transport::io;
 
-    const Requests requests = LoadRequests();
+    const Requests requests = LoadRequests(cin);
 
     cout << requests.buses.front().name << endl;
 
