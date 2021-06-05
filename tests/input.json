@@ -17,6 +17,9 @@
   "stat_requests":
   [
     {"id": 1, "type": "Stop", "name": "D"},
-    {"id": 2, "type": "Bus", "name": "256"}
+    {"id": 2, "type": "Bus", "name": "256"},
+    {"id": 3, "type": "Bus", "name": "0"},
+    {"id": 4, "type": "Stop", "name": "J"},
+    {"id": 5, "type": "Stop", "name": "Q"}
   ]
 }

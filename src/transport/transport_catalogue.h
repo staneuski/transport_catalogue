@@ -64,9 +64,11 @@ public:
             MakeAdjacent(stop_ptr, SearchStop(stop_name), distance);
     }
 
-    domain::Route GetRoute(const std::string_view& bus_name) const;
+    domain::Route GetRoute(const std::string_view& bus_name,
+                           const int request_id = 0) const;
 
-    domain::StopStat GetStop(const std::string_view& stop_name) const;
+    domain::StopStat GetStop(const std::string_view& stop_name,
+                             const int request_id = 0) const;
 
 private:
     std::deque<domain::Stop> stops_;

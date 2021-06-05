@@ -14,5 +14,7 @@ int main() {
     Requests requests = LoadRequests(cin);
     Fill(transport_catalogue, requests);
 
+    Search(transport_catalogue, requests);
+
     return 0;
 }

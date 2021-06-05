@@ -42,8 +42,10 @@ void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
     stops_to_distance_[{stop, adjacent_stop}] = metres;
 }
 
-domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) const {
+domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name,
+                                           const int request_id) const {
     domain::Route route;
+    route.request_id = request_id;
     route.name = bus_name;
     route.ptr = SearchBus(bus_name);
     if (!route.ptr)
@@ -53,7 +55,7 @@ domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) con
     route.stops_count = stops.size();
 
     const std::unordered_set<StopPtr> unique_stops{stops.begin(), stops.end()};
-    route.unique_stops_count = unique_stops.size();
+    route.unique_stop_count = unique_stops.size();
 
     double distance = 0;
     const auto ComputeRoute = [&](StopPtr stop, StopPtr next_stop) {
@@ -76,12 +78,14 @@ domain::Route TransportCatalogue::GetRoute(const std::string_view& bus_name) con
 }
 
 domain::StopStat TransportCatalogue::GetStop(
-    const std::string_view& stop_name
+    const std::string_view& stop_name,
+    const int request_id
 ) const
 {
     const static domain::SetBusPtr empty_stop;
     const StopPtr stop_ptr{SearchStop(stop_name)};
     return {
+        request_id,
         stop_name,
         stop_ptr,
         stop_ptr ? stop_to_buses_.at(stop_ptr) : empty_stop

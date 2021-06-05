@@ -73,7 +73,7 @@ TEST(TransportCatalogue, GetRouteCircular) {
     ASSERT_EQ(route.ptr->name, "256");
     ASSERT_EQ(route.ptr->name, route.name);
     ASSERT_EQ(route.stops_count, 6);
-    ASSERT_EQ(route.unique_stops_count, 5);
+    ASSERT_EQ(route.unique_stop_count, 5);
     ASSERT_EQ(route.length, 5950);
     ASSERT_NEAR(route.curvature, 1.36124, 1e-5);
 
@@ -87,7 +87,7 @@ TEST(TransportCatalogue, GetRouteNotCircular) {
     ASSERT_EQ(route.ptr->name, "750");
     ASSERT_EQ(route.ptr->name, route.name);
     ASSERT_EQ(route.stops_count, 7);
-    ASSERT_EQ(route.unique_stops_count, 3);
+    ASSERT_EQ(route.unique_stop_count, 3);
     ASSERT_EQ(route.length, 27400);
     ASSERT_NEAR(route.curvature, 1.30853, 1e-5);
 }

@@ -12,6 +12,8 @@ class TransportCatalogue;
 
 namespace io {
 
+static const int INDENT_SIZE = 2;
+
 struct Request {
     enum class Type { BUS, STOP, };
 
@@ -29,7 +31,7 @@ struct Request {
     };
 
     struct Stat {
-        int ip;
+        int id;
         Type type;
         std::string name;
     };
@@ -42,6 +44,9 @@ struct Requests {
 };
 
 void Fill(TransportCatalogue& transport_catalogue, const Requests& requests);
+
+void Search(const TransportCatalogue& transport_catalogue,
+            const Requests& requests);
 
 } // end namespace io
 } // end namespace transport

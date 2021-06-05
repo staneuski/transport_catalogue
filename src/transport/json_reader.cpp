@@ -49,7 +49,7 @@ Requests LoadRequests(std::istream& input) {
         const json::Dict& request = request_node.AsMap();
 
         Request::Stat stat_request;
-        stat_request.ip = request.at("id").AsInt();
+        stat_request.id = request.at("id").AsInt();
         stat_request.name = request.at("name").AsString();
         if (request.at("type") == "Bus")
             stat_request.type = Request::Type::BUS;
