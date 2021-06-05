@@ -46,11 +46,9 @@ public:
                       const domain::StopPtr& adjacent_stop,
                       const int distance);
 
-    domain::Route GetRoute(const std::string_view& bus_name,
-                           const int request_id = 0) const;
+    domain::Route GetRoute(const std::string_view& bus_name) const;
 
-    domain::StopStat GetStop(const std::string_view& stop_name,
-                             const int request_id = 0) const;
+    domain::StopStat GetStop(const std::string_view& stop_name) const;
 
 private:
     std::deque<domain::Stop> stops_;

@@ -89,7 +89,7 @@ void Populate(TransportCatalogue& db, const JsonReader& reader) {
     }
 }
 
-void Search(const TransportCatalogue& db, const JsonReader& reader) {
+void Search(const RequestHandler& handler, const JsonReader& reader) {
     std::cout << "[\n";
 
     bool is_first = true;
@@ -98,15 +98,15 @@ void Search(const TransportCatalogue& db, const JsonReader& reader) {
             is_first = false;
         else
             std::cout << ",\n";
-        std::cout << std::string(INDENT_SIZE, ' ');
+        std::cout << std::string(INDENT_SIZE, ' ') << '{';
 
         const json::Node& type_name = request->at("type");
         if ("Bus" == type_name)
-            std::cout << db.GetRoute(request->at("name").AsString(),
-                                     request->at("id").AsInt());
+            std::cout << handler.GetBusStat(request->at("name").AsString())
+                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
         else if ("Stop" == type_name)
-            std::cout << db.GetStop(request->at("name").AsString(),
-                                    request->at("id").AsInt());
+            std::cout << handler.GetStopStat(request->at("name").AsString())
+                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
         else
             throw std::invalid_argument(
                 "unable to load stat request type '" + type_name.AsString() + "'"

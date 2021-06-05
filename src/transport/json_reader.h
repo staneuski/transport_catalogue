@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "json/json.h"
+#include "request_handler.h"
 #include "transport_catalogue.h"
 
 namespace transport {
@@ -48,7 +49,7 @@ private:
 
 void Populate(TransportCatalogue& db, const JsonReader& reader);
 
-void Search(const TransportCatalogue& db, const JsonReader& reader);
+void Search(const RequestHandler& handler, const JsonReader& reader);
 
 } // end namespace io
 } // end namespace transport

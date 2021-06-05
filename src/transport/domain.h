@@ -38,7 +38,6 @@ using SetBusPtr = std::set<std::shared_ptr<const Bus>, domain::LessBusPtr>;
 // ---------- Route -------------------
 
 struct Route {
-    int request_id;
     std::string_view name;
     BusPtr ptr;
     size_t stops_count, unique_stop_count;
@@ -49,7 +48,6 @@ struct Route {
 // ---------- StopStat ----------------
 
 struct StopStat {
-    int request_id;
     std::string_view name;
     StopPtr ptr;
     const SetBusPtr& unique_buses;
