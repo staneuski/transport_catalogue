@@ -1,43 +1,30 @@
+#include <iostream>
+#include <fstream>
 #include <vector>
+#include <stdexcept>
 
 #include <gtest/gtest.h>
 
-#include "transport/request_handler.h"
+#include "transport/json_reader.h"
 #include "transport/transport_catalogue.h"
 
 using transport::domain::Bus, transport::domain::Stop;
 using transport::TransportCatalogue;
 
-TransportCatalogue InitialiseCatalogue() {
-    transport::io::Requests requests {
-        {
-            {"828", {"D", "F", "I", "D"}, true},
-            {"256", {"D", "E", "F", "G", "H", "D"}, true},
-            {"750", {"A", "B", "B", "C"}, false}
-        },
-        {
-            {"A", 55.611087, 37.20829, {{"B", 3900}}},
-            {"B", 55.595884, 37.209755, {{"C", 9900}, {"B", 100}}},
-            {"C", 55.632761, 37.333324, {{"B", 9500}}},
-            {"D", 55.574371, 37.6517, {{"I", 7500}, {"E", 1800}, {"F", 2400}}},
-            {"E", 55.581065, 37.64839, {{"F", 750}}},
-            {"F", 55.587655, 37.645687, {{"I", 5600}, {"G", 900}}},
-            {"G", 55.592028, 37.653656, {{"H", 1300}}},
-            {"H", 55.580999, 37.659164, {{"D", 1200}}},
-            {"I", 55.595579, 37.605757, {}},
-            {"J", 55.611678, 37.603831, {}}
-        },
-        {}
-    };
+TransportCatalogue InitialiseDatabase() {
+    transport::TransportCatalogue transport_catalogue;
 
-    TransportCatalogue transport_catalogue;
-    for (const transport::io::Request::Stop& request : requests.stops)
-        transport_catalogue.AddStop(request);
-    for (const transport::io::Request::Stop& request : requests.stops)
-        transport_catalogue.MakeAdjacent(request);
+    if (std::ifstream file("../tests/input.json"); file) {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
 
-    for (const transport::io::Request::Bus& request : requests.buses)
-        transport_catalogue.AddBus(request);
+        transport::io::Populate(
+            transport_catalogue,
+            transport::io::JsonReader{buffer}
+        );
+    } else {
+        throw std::invalid_argument("unable to get input.json file");
+    }
 
     return transport_catalogue;
 }
@@ -59,14 +46,14 @@ TEST(TransportCatalogue, AddStop) {
 }
 
 TEST(TransportCatalogue, GetRouteNotExist) {
-    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const TransportCatalogue transport_catalogue{InitialiseDatabase()};
     const transport::domain::Route route{transport_catalogue.GetRoute("751")};
 
     ASSERT_EQ(route.ptr, nullptr);
 }
 
 TEST(TransportCatalogue, GetRouteCircular) {
-    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const TransportCatalogue transport_catalogue{InitialiseDatabase()};
     const transport::domain::Route route{transport_catalogue.GetRoute("256")};
 
     ASSERT_NE(route.ptr, nullptr);
@@ -80,7 +67,7 @@ TEST(TransportCatalogue, GetRouteCircular) {
 }
 
 TEST(TransportCatalogue, GetRouteNotCircular) {
-    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const TransportCatalogue transport_catalogue{InitialiseDatabase()};
     const transport::domain::Route route{transport_catalogue.GetRoute("750")};
 
     ASSERT_NE(route.ptr, nullptr);
@@ -93,7 +80,7 @@ TEST(TransportCatalogue, GetRouteNotCircular) {
 }
 
 TEST(TransportCatalogue, GetStopNotExist) {
-    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const TransportCatalogue transport_catalogue{InitialiseDatabase()};
     transport::domain::StopStat stop_stat = transport_catalogue.GetStop("Z");
 
     ASSERT_EQ(stop_stat.name, "Z");
@@ -102,7 +89,7 @@ TEST(TransportCatalogue, GetStopNotExist) {
 }
 
 TEST(TransportCatalogue, GetStopWithoutBuses) {
-    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const TransportCatalogue transport_catalogue{InitialiseDatabase()};
     transport::domain::StopStat stop_stat = transport_catalogue.GetStop("J");
 
     ASSERT_EQ(stop_stat.name, "J");
@@ -111,7 +98,7 @@ TEST(TransportCatalogue, GetStopWithoutBuses) {
 }
 
 TEST(TransportCatalogue, GetStop) {
-    const TransportCatalogue transport_catalogue{InitialiseCatalogue()};
+    const TransportCatalogue transport_catalogue{InitialiseDatabase()};
     transport::domain::StopStat stop_stat = transport_catalogue.GetStop("D");
 
     std::vector<std::string> bus_names;
