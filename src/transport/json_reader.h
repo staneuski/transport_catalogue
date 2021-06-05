@@ -1,32 +1,54 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 #include "json/json.h"
-#include "request_handler.h"
+#include "transport_catalogue.h"
 
 namespace transport {
 namespace io {
 
-inline std::vector<std::string> ConvertNodes(const json::Array& nodes) {
-    std::vector<std::string> elements;
-    elements.reserve(nodes.size());
-    for (const auto& node : nodes)
-        elements.push_back(node.AsString());
-    return elements;
-}
+static const int INDENT_SIZE = 2;
 
-inline std::unordered_map<std::string, int> ConvertNodes(
-    const json::Dict& nodes
-) {
-    std::unordered_map<std::string, int> elements;
-    for (const auto& [key, value] : nodes)
-        elements[key] = value.AsInt();
-    return elements;
-}
+class JsonReader {
+    using Request = std::unique_ptr<const json::Dict>;
 
-Requests LoadRequests(std::istream& input);
+public:
+    JsonReader(std::istream& input)
+            : requests_(json::Load(input).GetRoot().AsMap()) {
+        ParseBuses();
+        ParseStops();
+        ParseStats();
+    }
+
+    inline const std::vector<Request>& GetBuses() const {
+        return buses_;
+    }
+
+    inline const std::vector<Request>& GetStops() const {
+        return stops_;
+    }
+
+    inline const std::vector<Request>& GetStats() const {
+        return stats_;
+    }
+
+private:
+    json::Dict requests_;
+    std::vector<Request> buses_, stops_, stats_;
+
+    void ParseBuses();
+
+    void ParseStops();
+
+    void ParseStats();
+};
+
+void Populate(TransportCatalogue& db, const JsonReader& reader);
+
+void Search(const TransportCatalogue& db, const JsonReader& reader);
 
 } // end namespace io
 } // end namespace transport

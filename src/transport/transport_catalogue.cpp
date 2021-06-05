@@ -23,15 +23,6 @@ void TransportCatalogue::AddBus(Bus bus) {
         stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
-void TransportCatalogue::AddBus(const io::Request::Bus& request) {
-    std::vector<StopPtr> stops;
-    stops.reserve(request.stops.size());
-    for (const std::string& stop_name : request.stops)
-        stops.push_back(SearchStop(stop_name));
-
-    AddBus({request.name, stops, request.is_roundtrip});
-}
-
 void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
                                       const StopPtr& adjacent_stop,
                                       const int metres) {

@@ -10,11 +10,9 @@ int main() {
     using namespace transport::io;
 
     transport::TransportCatalogue transport_catalogue;
-
-    Requests requests = LoadRequests(cin);
-    Fill(transport_catalogue, requests);
-
-    Search(transport_catalogue, requests);
+    JsonReader reader(cin);
+    Populate(transport_catalogue, reader);
+    Search(transport_catalogue, reader);
 
     return 0;
 }
