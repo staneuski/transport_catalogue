@@ -11,16 +11,20 @@ add_compile_options(-Wall -Wextra -Werror)
 include_directories(src tests)
 
 set(GEO)
+set(JSON src/json/json.cpp)
 set(TRANSPORT
-    src/transport/input_reader.cpp
+    src/transport/domain.cpp
+    src/transport/request_handler.cpp
+    src/transport/json_reader.cpp
     src/transport/transport_catalogue.cpp)
 
-set(SRC ${GEO} ${IO} ${SVG} ${TRANSPORT})
+set(SRC ${GEO} ${JSON} ${TRANSPORT})
 
 #######################################
-# SRC
+# APPS
 #######################################
 add_executable(main src/main.cpp ${SRC})
+add_executable(app-json tests/app-json.cpp ${JSON})
 
 
 #######################################
@@ -34,6 +38,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
-add_executable(gtest-transport_catalogue tests/gtest-transport_catalogue.cpp ${SRC})
-target_link_libraries(gtest-transport_catalogue gtest_main -lpthread)
-add_test(NAME transport_catalogue COMMAND gtest-transport_catalogue)
+#- transport/transport_catalogue.h
+add_executable(gtest-transport tests/gtest-transport.cpp ${SRC})
+target_link_libraries(gtest-transport gtest_main)
+add_test(NAME transport COMMAND gtest-transport)
+
+#- json/json.h
+add_executable(gtest-json tests/gtest-json.cpp ${JSON})
+target_link_libraries(gtest-json gtest_main)
+add_test(NAME json COMMAND gtest-json)
