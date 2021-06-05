@@ -14,7 +14,7 @@ set(GEO)
 set(JSON src/json/json.cpp)
 set(TRANSPORT
     src/transport/domain.cpp
-    src/transport/input_handler.cpp
+    src/transport/request_handler.cpp
     src/transport/json_reader.cpp
     src/transport/transport_catalogue.cpp)
 
