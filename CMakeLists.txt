@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(search_engine VERSION 0.6.0)
+project(transport_catalogue VERSION 0.2.0)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
@@ -11,19 +11,20 @@ add_compile_options(-Wall -Wextra -Werror)
 include_directories(src tests)
 
 set(GEO)
+set(SVG src/svg/svg.cpp)
 set(JSON src/json/json.cpp)
 set(TRANSPORT
     src/transport/domain.cpp
-    src/transport/request_handler.cpp
     src/transport/json_reader.cpp
     src/transport/transport_catalogue.cpp)
 
-set(SRC ${GEO} ${JSON} ${TRANSPORT})
+set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
 
 #######################################
 # APPS
 #######################################
 add_executable(main src/main.cpp ${SRC})
+add_executable(app-svg tests/app-svg.cpp ${SVG})
 add_executable(app-json tests/app-json.cpp ${JSON})
 
 
@@ -37,6 +38,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 enable_testing()
+
 
 #- transport/transport_catalogue.h
 add_executable(gtest-transport tests/gtest-transport.cpp ${SRC})
