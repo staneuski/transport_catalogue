@@ -87,5 +87,12 @@ std::optional<domain::StopStat> TransportCatalogue::GetStop(
     };
 }
 
+domain::SetStat<Route> TransportCatalogue::GetAllRoutes() const {
+    domain::SetStat<Route> routes;
+    for (const Bus& bus : buses_)
+        routes.insert(*GetRoute(bus.name));
+    return routes;
+}
+
 } // end namespace catalogue
 } // end namespace transport

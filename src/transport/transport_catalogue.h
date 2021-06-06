@@ -53,6 +53,8 @@ public:
         const std::string_view& stop_name
     ) const;
 
+    domain::SetStat<domain::Route> GetAllRoutes() const;
+
 private:
     std::deque<domain::Stop> stops_;
     std::deque<domain::Bus> buses_;
