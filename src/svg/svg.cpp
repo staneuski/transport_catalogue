@@ -110,7 +110,7 @@ void Document::Render(std::ostream& out) const {
     for (const std::unique_ptr<Object>& object : objects_)
         object->Render(RenderContext(out, 2, 2));
 
-    out << "</svg>" << std::endl;
+    out << "</svg>";
 }
 
 // ---------- helpers -----------------

@@ -14,8 +14,11 @@ int main() {
     io::JsonReader reader(cin);
     io::Populate(transport_catalogue, reader);
 
-    io::RequestHandler handler{transport_catalogue, reader.GenerateMapSettings()};
-    io::Search(handler, reader);
+    renderer::MapRenderer map_rendrer = reader.GenerateMapSettings();
+    cout << map_rendrer.RenderMap() << endl;
+
+    // io::RequestHandler handler{transport_catalogue, map_rendrer};
+    // io::Search(handler, reader);
 
     return 0;
 }
