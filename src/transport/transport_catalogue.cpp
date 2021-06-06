@@ -1,6 +1,7 @@
 #include "transport_catalogue.h"
 
 namespace transport {
+namespace catalogue {
 
 using domain::Bus, domain::Stop, domain::BusPtr, domain::StopPtr;
 
@@ -80,4 +81,5 @@ domain::StopStat TransportCatalogue::GetStop(
     };
 }
 
+} // end namespace catalogue
 } // end namespace transport

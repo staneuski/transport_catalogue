@@ -15,7 +15,7 @@ namespace io {
 
 class RequestHandler {
 public:
-    RequestHandler(const TransportCatalogue& transport_catalogue)
+    RequestHandler(const catalogue::TransportCatalogue& transport_catalogue)
             : db_(transport_catalogue) {}
 
     // RequestHandler(const TransportCatalogue& transport_catalogue,
@@ -34,7 +34,7 @@ public:
     // svg::Document RenderMap() const;
 
 private:
-    const TransportCatalogue& db_;
+    const catalogue::TransportCatalogue& db_;
     // const renderer::MapRenderer& renderer_;
 };
 

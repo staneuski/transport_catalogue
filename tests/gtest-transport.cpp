@@ -9,10 +9,10 @@
 #include "transport/transport_catalogue.h"
 
 using transport::domain::Bus, transport::domain::Stop;
-using transport::TransportCatalogue;
+using transport::catalogue::TransportCatalogue;
 
 TransportCatalogue InitialiseDatabase() {
-    transport::TransportCatalogue transport_catalogue;
+    TransportCatalogue transport_catalogue;
 
     if (std::ifstream file("../tests/input.json"); file) {
         std::stringstream buffer;

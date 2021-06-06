@@ -11,6 +11,7 @@
 #include "domain.h"
 
 namespace transport {
+namespace catalogue {
 
 class TransportCatalogue {
     using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
@@ -59,4 +60,5 @@ private:
     std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
 };
 
+} // end namespace catalogue
 } // end namespace transport

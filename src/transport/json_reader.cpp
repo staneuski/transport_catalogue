@@ -54,7 +54,7 @@ void JsonReader::ParseStats() {
     }
 }
 
-void Populate(TransportCatalogue& db, const JsonReader& reader) {
+void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
     for (const auto& request : reader.GetStops())
         db.AddStop({
             request->at("name").AsString(),

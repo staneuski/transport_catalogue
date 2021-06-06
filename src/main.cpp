@@ -9,7 +9,7 @@ int main() {
     using namespace std;
     using namespace transport::io;
 
-    transport::TransportCatalogue transport_catalogue;
+    transport::catalogue::TransportCatalogue transport_catalogue;
     JsonReader reader(cin);
     Populate(transport_catalogue, reader);
 

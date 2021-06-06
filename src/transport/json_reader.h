@@ -55,7 +55,7 @@ private:
     void ParseStats();
 };
 
-void Populate(TransportCatalogue& db, const JsonReader& reader);
+void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader);
 
 void Search(const RequestHandler& handler, const JsonReader& reader);
 
