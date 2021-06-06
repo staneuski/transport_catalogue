@@ -34,9 +34,7 @@ public:
         return stops_;
     }
 
-    inline const renderer::Settings GetRenderSettings() const {
-        return {};
-    }
+    renderer::Settings GenerateMapSettings() const;
 
     inline const std::vector<Request>& GetStats() const {
         return stats_;
@@ -46,6 +44,8 @@ private:
     json::Dict requests_;
     std::vector<Request> buses_, stops_, stats_;
     Request render_settings_;
+
+    static svg::Color ConvertToColor(const json::Node node);
 
     void ParseBuses();
 

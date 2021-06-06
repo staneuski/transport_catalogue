@@ -8,7 +8,7 @@ namespace transport {
 namespace renderer {
 
 struct Settings {
-    struct Label { uint32_t font_size; svg::Point offset; };
+    struct Label { int font_size; svg::Point offset; };
     struct Underlayer { double width; svg::Color color; };
 
     std::pair<double, double> map_sizes;
@@ -23,10 +23,7 @@ class MapRenderer {
 public:
     MapRenderer(Settings settings) : settings_(std::move(settings)) {}
 
-    inline svg::Document RenderMap() const {
-        svg::Document document_;
-        return document_;
-    }
+    svg::Document RenderMap() const;
 
 private:
     Settings settings_;

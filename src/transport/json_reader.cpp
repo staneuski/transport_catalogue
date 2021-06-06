@@ -54,6 +54,65 @@ void JsonReader::ParseStats() {
     }
 }
 
+renderer::Settings JsonReader::GenerateMapSettings() const {
+    renderer::Settings settings;
+    const auto fill = [&](renderer::Settings::Label& label,
+                            const std::string& label_key) {
+        const json::Array& arr = render_settings_->at(label_key + "_offset").AsArray();
+        label = {
+            render_settings_->at(label_key + "_font_size").AsInt(),
+            {arr.front().AsDouble(), arr.back().AsDouble()}
+        };
+    };
+
+    settings.map_sizes = {
+        render_settings_->at("width").AsDouble(),
+        render_settings_->at("height").AsDouble()
+    };
+    settings.padding = render_settings_->at("padding").AsDouble();
+    settings.line_width = render_settings_->at("line_width").AsDouble();
+
+    fill(settings.bus_label, "bus_label");
+    fill(settings.stop_label, "stop_label");
+
+    std::cout << render_settings_->at("underlayer_width").AsDouble() << std::endl;
+    settings.underlayer = {
+        render_settings_->at("underlayer_width").AsDouble(),
+        ConvertToColor(render_settings_->at("underlayer_color")),
+    };
+
+    const json::Array& color_palette = render_settings_->at("color_palette").AsArray();
+    settings.palette.reserve(color_palette.size());
+    for (const json::Node& color : color_palette)
+        settings.palette.push_back(ConvertToColor(color));
+
+    return settings;
+}
+
+svg::Color JsonReader::ConvertToColor(const json::Node node) {
+    svg::Color color;
+
+    if (node.IsString())
+        color = node.AsString();
+    else if (node.IsArray() && node.AsArray().size() == 3u)
+        color = svg::Rgb(
+            node.AsArray().at(0).AsInt(),
+            node.AsArray().at(1).AsInt(),
+            node.AsArray().at(2).AsInt()
+        );
+    else if (node.IsArray() && node.AsArray().size() == 4u)
+        color = svg::Rgba(
+            node.AsArray().at(0).AsInt(),
+            node.AsArray().at(1).AsInt(),
+            node.AsArray().at(2).AsInt(),
+            node.AsArray().at(3).AsDouble()
+        );
+    else
+        throw std::invalid_argument("unable to colvert node value to color");
+
+    return color;
+}
+
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
     for (const auto& request : reader.GetStops())
         db.AddStop({

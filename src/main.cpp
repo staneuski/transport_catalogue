@@ -14,7 +14,7 @@ int main() {
     io::JsonReader reader(cin);
     io::Populate(transport_catalogue, reader);
 
-    io::RequestHandler handler{transport_catalogue, reader.GetRenderSettings()};
+    io::RequestHandler handler{transport_catalogue, reader.GenerateMapSettings()};
     io::Search(handler, reader);
 
     return 0;

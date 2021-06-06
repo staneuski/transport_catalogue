@@ -3,9 +3,10 @@
 namespace transport {
 namespace renderer {
 
-// svg::Document RenderMap() {
-//     return document_;
-// }
+svg::Document MapRenderer::RenderMap() const {
+    svg::Document document_;
+    return document_;
+}
 
 } // end namespace renderer
 } // end namespace transport
