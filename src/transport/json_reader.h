@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "json/json.h"
+#include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
 
@@ -31,6 +32,10 @@ public:
 
     inline const std::vector<Request>& GetStops() const {
         return stops_;
+    }
+
+    inline const renderer::Settings GetRenderSettings() const {
+        return {};
     }
 
     inline const std::vector<Request>& GetStats() const {

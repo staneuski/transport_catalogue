@@ -1,27 +1,19 @@
 #pragma once
 
+#include "map_renderer.h"
+#include "request_handler.h"
 #include "transport_catalogue.h"
-
-namespace transport {
-namespace renderer {
-
-class MapRenderer;
-
-} // end namespace renderer
-} // end namespace transport
 
 namespace transport {
 namespace io {
 
 class RequestHandler {
 public:
-    RequestHandler(const catalogue::TransportCatalogue& transport_catalogue)
-            : db_(transport_catalogue) {}
-
-    // RequestHandler(const TransportCatalogue& transport_catalogue,
-    //                const renderer::MapRenderer& renderer)
-    //         : db_(transport_catalogue)
-    //         , renderer_(renderer) {}
+    RequestHandler(const catalogue::TransportCatalogue& transport_catalogue,
+                   const renderer::MapRenderer& renderer)
+            : db_(transport_catalogue)
+            , renderer_(renderer) {
+    }
 
     inline domain::Route GetBusStat(const std::string_view& bus_name) const {
         return db_.GetRoute(bus_name);
@@ -31,11 +23,13 @@ public:
         return db_.GetStop(stop_name);
     }
 
-    // svg::Document RenderMap() const;
+    inline svg::Document RenderMap() const {
+        return renderer_.RenderMap();
+    }
 
 private:
     const catalogue::TransportCatalogue& db_;
-    // const renderer::MapRenderer& renderer_;
+    const renderer::MapRenderer& renderer_;
 };
 
 } // end namespace io

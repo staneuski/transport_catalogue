@@ -2,19 +2,20 @@
 #include <fstream>
 
 #include "transport/json_reader.h"
+#include "transport/map_renderer.h"
 #include "transport/request_handler.h"
 #include "transport/transport_catalogue.h"
 
 int main() {
     using namespace std;
-    using namespace transport::io;
+    using namespace transport;
 
-    transport::catalogue::TransportCatalogue transport_catalogue;
-    JsonReader reader(cin);
-    Populate(transport_catalogue, reader);
+    catalogue::TransportCatalogue transport_catalogue;
+    io::JsonReader reader(cin);
+    io::Populate(transport_catalogue, reader);
 
-    RequestHandler handler{transport_catalogue};
-    Search(handler, reader);
+    io::RequestHandler handler{transport_catalogue, reader.GetRenderSettings()};
+    io::Search(handler, reader);
 
     return 0;
 }
