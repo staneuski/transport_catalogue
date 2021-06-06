@@ -3,7 +3,8 @@
 namespace transport {
 namespace catalogue {
 
-using domain::Bus, domain::Stop, domain::BusPtr, domain::StopPtr;
+using domain::Bus, domain::BusPtr, domain::Route;
+using domain::Stop, domain::StopPtr, domain::StopStat;
 
 // ---------- TransportCatalogue ------
 
@@ -72,7 +73,7 @@ domain::Route TransportCatalogue::GetRoute(
 domain::StopStat TransportCatalogue::GetStop(
     const std::string_view& stop_name
 ) const {
-    const static domain::SetBusPtr empty_stop;
+    const static domain::SetPtr<BusPtr> empty_stop;
     const StopPtr stop_ptr{SearchStop(stop_name)};
     return {
         stop_name,

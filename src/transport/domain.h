@@ -11,6 +11,16 @@
 namespace transport {
 namespace domain {
 
+template<typename T>
+struct Less {
+    inline bool operator()(const T lhs, const T rhs) const {
+        return lhs->name < rhs->name;
+    }
+};
+
+template<typename Ptr>
+using SetPtr = std::set<Ptr, Less<Ptr>>;
+
 // ---------- Stop --------------------
 
 struct Stop {
@@ -28,13 +38,6 @@ struct Bus {
 };
 using BusPtr = std::shared_ptr<const Bus>;
 
-struct LessBusPtr {
-    inline bool operator()(const BusPtr lhs, const BusPtr rhs) const {
-        return lhs->name < rhs->name;
-    }
-};
-using SetBusPtr = std::set<std::shared_ptr<const Bus>, domain::LessBusPtr>;
-
 // ---------- Route -------------------
 
 struct Route {
@@ -50,7 +53,7 @@ struct Route {
 struct StopStat {
     std::string_view name;
     StopPtr ptr;
-    const SetBusPtr& unique_buses;
+    const SetPtr<BusPtr>& unique_buses;
 };
 
 // ---------- helpers -----------------

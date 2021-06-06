@@ -1,12 +1,9 @@
 #pragma once
+
 #include <deque>
 #include <functional>
-#include <memory>
-#include <set>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 
 #include "domain.h"
 
@@ -56,7 +53,7 @@ private:
     std::deque<domain::Bus> buses_;
     std::unordered_map<std::string_view, domain::StopPtr> stop_names_;
     std::unordered_map<std::string_view, domain::BusPtr> bus_names_;
-    std::unordered_map<domain::StopPtr, domain::SetBusPtr> stop_to_buses_;
+    std::unordered_map<domain::StopPtr, domain::SetPtr<domain::BusPtr>> stop_to_buses_;
     std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
 };
 
