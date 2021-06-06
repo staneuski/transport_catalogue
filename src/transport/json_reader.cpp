@@ -75,7 +75,6 @@ renderer::Settings JsonReader::GenerateMapSettings() const {
     fill(settings.bus_label, "bus_label");
     fill(settings.stop_label, "stop_label");
 
-    std::cout << render_settings_->at("underlayer_width").AsDouble() << std::endl;
     settings.underlayer = {
         render_settings_->at("underlayer_width").AsDouble(),
         ConvertToColor(render_settings_->at("underlayer_color")),
