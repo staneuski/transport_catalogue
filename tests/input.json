@@ -14,12 +14,32 @@
     {"type": "Stop", "name": "I", "latitude": 55.595579, "longitude": 37.605757, "road_distances": {}},
     {"type": "Stop", "name": "J", "latitude": 55.611678, "longitude": 37.603831, "road_distances": {}}
   ],
-  "stat_requests":
-  [
+  "render_settings": {
+    "width": 1200.0,
+    "height": 1200.0,
+
+    "padding": 50.0,
+
+    "line_width": 14.0,
+    "stop_radius": 5.0,
+
+    "bus_label_font_size": 20,
+    "bus_label_offset": [7.0, 15.0],
+
+    "stop_label_font_size": 20,
+    "stop_label_offset": [7.0, -3.0],
+
+    "underlayer_color": [255, 255, 255, 0.85],
+    "underlayer_width": 3.0,
+
+    "color_palette": ["green", [255, 160, 0], "red"]
+  },
+  "stat_requests": [
     {"id": 1, "type": "Stop", "name": "D"},
     {"id": 2, "type": "Bus", "name": "256"},
     {"id": 3, "type": "Bus", "name": "0"},
     {"id": 4, "type": "Stop", "name": "J"},
-    {"id": 5, "type": "Stop", "name": "Q"}
+    {"id": 5, "type": "Stop", "name": "Q"},
+    {"id": 6, "type": "Map"}
   ]
 }

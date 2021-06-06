@@ -44,12 +44,12 @@ void JsonReader::ParseStats() {
     for (const auto& request_node : stat_requests) {
         const json::Dict& request = request_node.AsMap();
 
-        if (request.at("type") == "Bus" || request.at("type") == "Stop")
+        const json::Node& type_name = request.at("type");
+        if ("Bus" == type_name || "Stop" == type_name || "Map" == type_name)
             stats_.push_back(std::make_unique<const json::Dict>(request));
         else
             throw std::invalid_argument(
-                "unable to load stat request type '"
-                + request.at("type").AsString() + "'"
+                "unable to load stat request type '" + type_name.AsString() + "'"
             );
     }
 }
@@ -102,11 +102,14 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
 
         const json::Node& type_name = request->at("type");
         if ("Bus" == type_name)
-            std::cout << handler.GetBusStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
+            std::cout << handler.GetBusStat(type_name.AsString())
+                      << ", \"request_id\": " << request->at("id") << '}';
         else if ("Stop" == type_name)
-            std::cout << handler.GetStopStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
+            std::cout << handler.GetStopStat(type_name.AsString())
+                      << ", \"request_id\": " << request->at("id") << '}';
+        else if ("Map" == type_name)
+            std::cout << "\"map\": \"" << "handler.RenderMap()" << "\""
+                      << ", \"request_id\": " << request->at("id") << '}';
         else
             throw std::invalid_argument(
                 "unable to load stat request type '" + type_name.AsString() + "'"

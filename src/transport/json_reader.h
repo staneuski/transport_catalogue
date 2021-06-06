@@ -21,6 +21,7 @@ public:
             : requests_(json::Load(input).GetRoot().AsMap()) {
         ParseBuses();
         ParseStops();
+        ParseRenderSettings();
         ParseStats();
     }
 
@@ -39,10 +40,17 @@ public:
 private:
     json::Dict requests_;
     std::vector<Request> buses_, stops_, stats_;
+    Request render_settings_;
 
     void ParseBuses();
 
     void ParseStops();
+
+    inline void ParseRenderSettings() {
+        render_settings_ = std::make_unique<const json::Dict>(
+            requests_.at("render_settings").AsMap()
+        );
+    }
 
     void ParseStats();
 };
