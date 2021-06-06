@@ -15,11 +15,11 @@ public:
             , renderer_(renderer) {
     }
 
-    inline domain::Route GetBusStat(const std::string_view& bus_name) const {
+    inline std::optional<domain::Route> GetBusStat(const std::string_view& bus_name) const {
         return db_.GetRoute(bus_name);
     }
 
-    inline domain::StopStat GetStopStat(const std::string_view& stop_name) const {
+    inline std::optional<domain::StopStat> GetStopStat(const std::string_view& stop_name) const {
         return db_.GetStop(stop_name);
     }
 

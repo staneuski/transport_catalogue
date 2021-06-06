@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <functional>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -26,6 +27,10 @@ class TransportCatalogue {
 public:
     void AddStop(domain::Stop stop);
 
+    void MakeAdjacent(const domain::StopPtr& stop,
+                      const domain::StopPtr& adjacent_stop,
+                      const int distance);
+
     void AddBus(domain::Bus bus);
 
     inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
@@ -40,13 +45,13 @@ public:
                : nullptr;
     }
 
-    void MakeAdjacent(const domain::StopPtr& stop,
-                      const domain::StopPtr& adjacent_stop,
-                      const int distance);
+    std::optional<domain::Route> GetRoute(
+        const std::string_view& bus_name
+    ) const;
 
-    domain::Route GetRoute(const std::string_view& bus_name) const;
-
-    domain::StopStat GetStop(const std::string_view& stop_name) const;
+    std::optional<domain::StopStat> GetStop(
+        const std::string_view& stop_name
+    ) const;
 
 private:
     std::deque<domain::Stop> stops_;

@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -11,15 +12,25 @@
 namespace transport {
 namespace domain {
 
-template<typename T>
+template<typename Ptr>
 struct Less {
-    inline bool operator()(const T lhs, const T rhs) const {
+    inline bool operator()(const Ptr& lhs, const Ptr& rhs) const {
         return lhs->name < rhs->name;
     }
 };
 
 template<typename Ptr>
 using SetPtr = std::set<Ptr, Less<Ptr>>;
+
+template<typename Stat>
+struct LessStat : public Less<Stat> {
+    inline bool operator()(const Stat& lhs, const Stat& rhs) const {
+        return lhs.ptr < rhs.ptr;
+    }
+};
+
+template<typename Stat>
+using SetStat = std::set<Stat, LessStat<Stat>>;
 
 // ---------- Stop --------------------
 
@@ -41,7 +52,6 @@ using BusPtr = std::shared_ptr<const Bus>;
 // ---------- Route -------------------
 
 struct Route {
-    std::string_view name;
     BusPtr ptr;
     size_t stops_count, unique_stop_count;
     int length = 0;
@@ -51,7 +61,6 @@ struct Route {
 // ---------- StopStat ----------------
 
 struct StopStat {
-    std::string_view name;
     StopPtr ptr;
     const SetPtr<BusPtr>& unique_buses;
 };
@@ -62,9 +71,11 @@ inline double ComputeDistance(const StopPtr current, const StopPtr next) {
     return geo::ComputeDistance(current->coords, next->coords);
 }
 
-std::ostream& operator<<(std::ostream& out, const Route& route);
+std::ostream& operator<<(std::ostream& out,
+                         const std::optional<domain::Route>& route);
 
-std::ostream& operator<<(std::ostream& out, const StopStat& stop_stat);
+std::ostream& operator<<(std::ostream& out,
+                         const std::optional<StopStat>& stop_stat);
 
 } // end namespace domain
 } // end namespace transport
