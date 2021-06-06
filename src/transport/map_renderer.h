@@ -6,6 +6,8 @@
 #include "geo/geo.h"
 #include "svg/svg.h"
 
+#include "domain.h"
+
 namespace transport {
 
 static const double EPSILON = 1e-6;
@@ -90,10 +92,17 @@ class MapRenderer {
 public:
     MapRenderer(Settings settings) : settings_(std::move(settings)) {}
 
-    svg::Document RenderMap() const;
+    svg::Document RenderMap(
+        const domain::SetStat<domain::Route>& routes,
+        const domain::SetStat<domain::StopStat>& stop_stats
+    ) const;
 
 private:
     Settings settings_;
+
+    std::vector<geo::Coordinates> GetCoordinates(
+        const domain::SetStat<domain::StopStat>& stops
+    ) const;
 };
 
 } // end namespace renderer

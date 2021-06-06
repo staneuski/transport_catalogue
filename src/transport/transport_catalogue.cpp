@@ -94,5 +94,12 @@ domain::SetStat<Route> TransportCatalogue::GetAllRoutes() const {
     return routes;
 }
 
+domain::SetStat<StopStat> TransportCatalogue::GetAllStopStats() const {
+    domain::SetStat<StopStat> stop_stats;
+    for (const Stop& stop : stops_)
+        stop_stats.insert(*GetStop(stop.name));
+    return stop_stats;
+}
+
 } // end namespace catalogue
 } // end namespace transport

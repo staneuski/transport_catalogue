@@ -10,15 +10,15 @@ int main() {
     using namespace std;
     using namespace transport;
 
-    catalogue::TransportCatalogue transport_catalogue;
+    catalogue::TransportCatalogue db;
     io::JsonReader reader(cin);
-    io::Populate(transport_catalogue, reader);
+    io::Populate(db, reader);
 
     renderer::MapRenderer map_rendrer = reader.GenerateMapSettings();
-    cout << map_rendrer.RenderMap() << endl;
+    cout << map_rendrer.RenderMap(db.GetAllRoutes(), db.GetAllStopStats()) << endl;
 
-    io::RequestHandler handler{transport_catalogue, map_rendrer};
-    io::Search(handler, reader);
+    // io::RequestHandler handler{db, map_rendrer};
+    // io::Search(handler, reader);
 
     return 0;
 }

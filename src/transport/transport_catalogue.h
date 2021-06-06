@@ -55,6 +55,8 @@ public:
 
     domain::SetStat<domain::Route> GetAllRoutes() const;
 
+    domain::SetStat<domain::StopStat> GetAllStopStats() const;
+
 private:
     std::deque<domain::Stop> stops_;
     std::deque<domain::Bus> buses_;

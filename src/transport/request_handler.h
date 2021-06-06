@@ -24,7 +24,7 @@ public:
     }
 
     inline svg::Document RenderMap() const {
-        return renderer_.RenderMap();
+        return renderer_.RenderMap(db_.GetAllRoutes(), db_.GetAllStopStats());
     }
 
 private:
