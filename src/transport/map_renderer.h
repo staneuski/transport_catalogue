@@ -62,7 +62,7 @@ public:
             zoom_coeff_ = *height_zoom;
     }
 
-    inline svg::Point operator()(geo::Coordinates coords) const {
+    inline svg::Point operator()(const geo::Coordinates& coords) const {
         return {
             (coords.lng - min_lon_)*zoom_coeff_ + padding_,
             (max_lat_ - coords.lat)*zoom_coeff_ + padding_
@@ -100,9 +100,17 @@ public:
 private:
     Settings settings_;
 
+    inline svg::Color GetRouteColor(const size_t route_counter) const {
+        return settings_.palette.at(route_counter % settings_.palette.size());
+    }
+
     std::vector<geo::Coordinates> GetCoordinates(
         const domain::SetStat<domain::StopStat>& stops
     ) const;
+
+    void DrawRouteLines(svg::Document& document,
+                        SphereProjector& projector,
+                        const domain::SetStat<domain::Route>& routes) const;
 };
 
 } // end namespace renderer
