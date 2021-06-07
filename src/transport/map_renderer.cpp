@@ -18,6 +18,7 @@ svg::Document MapRenderer::RenderMap(
 
     DrawRouteLines(document, projector, routes);
     DrawRouteLabels(document, projector, routes);
+    DrawStops(document, projector, stop_stats);
 
     return document;
 }
@@ -105,6 +106,22 @@ void MapRenderer::DrawRouteLabels(
             );
 
         ++counter;
+    }
+}
+
+
+void MapRenderer::DrawStops(
+    svg::Document& document,
+    SphereProjector& projector,
+    const domain::SetStat<domain::StopStat>& stop_stats
+) const {
+    for (const domain::StopStat& stop_stat : stop_stats) {
+        svg::Circle circle;
+        circle
+            .SetCenter(projector(stop_stat.ptr->coords))
+            .SetRadius(settings_.stop_radius)
+            .SetFillColor("white");
+        document.Add(circle);
     }
 }
 

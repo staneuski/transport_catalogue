@@ -70,6 +70,7 @@ renderer::Settings JsonReader::GenerateMapSettings() const {
         render_settings_->at("height").AsDouble()
     };
     settings.padding = render_settings_->at("padding").AsDouble();
+    settings.stop_radius = render_settings_->at("stop_radius").AsDouble();
     settings.line_width = render_settings_->at("line_width").AsDouble();
 
     fill(settings.bus_label, "bus_label");

@@ -83,6 +83,7 @@ struct Settings {
     std::pair<double, double> map_sizes;
     double padding;
     double line_width;
+    double stop_radius;
     Label bus_label, stop_label;
     Underlayer underlayer;
     std::vector<svg::Color> palette;
@@ -120,7 +121,11 @@ private:
 
     void DrawRouteLabels(svg::Document& document,
                          SphereProjector& projector,
-                         const domain::SetStat<domain::Route>& routes) const;
+                         const domain::SetStat<domain::Route>& stop_stats) const;
+
+    void DrawStops(svg::Document& document,
+                   SphereProjector& projector,
+                   const domain::SetStat<domain::StopStat>& stops) const;
 };
 
 } // end namespace renderer
