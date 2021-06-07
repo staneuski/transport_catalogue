@@ -158,6 +158,8 @@ protected:
             out << " fill=\"" << *fill_color_ << "\"";
         if (stroke_color_)
             out << " stroke=\"" << *stroke_color_ << "\"";
+        if (width_)
+            out << " stroke-width=\"" << *width_ << "\"";
         if (line_cap_)
             out << " stroke-linecap=\"" << *line_cap_ << "\"";
         if (line_join_)
