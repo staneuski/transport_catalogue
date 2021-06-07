@@ -17,6 +17,7 @@ svg::Document MapRenderer::RenderMap(
     );
 
     DrawRouteLines(document, projector, routes);
+    DrawRouteLabels(document, projector, routes);
 
     return document;
 }
@@ -43,13 +44,67 @@ void MapRenderer::DrawRouteLines(
         for (const domain::StopPtr& stop_ptr : route.ptr->stops)
             polyline.AddPoint(projector(stop_ptr->coords));
 
-        document.Add(polyline
-            .SetStrokeColor(GetRouteColor(counter++))
-            .SetFillColor(svg::Color())
-            .SetStrokeWidth(settings_.line_width)
-            .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
-            .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
+        document.Add(
+            polyline
+                .SetStrokeColor(GetRouteColor(counter++))
+                .SetFillColor(svg::Color())
+                .SetStrokeWidth(settings_.line_width)
+                .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
+                .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
         );
+    }
+}
+
+void MapRenderer::DrawLabel(svg::Document& document,
+                            const std::string& content,
+                            const svg::Point& position,
+                            const svg::Color& color,
+                            const Settings::Label& label) const {
+    svg::Text text;
+    text.SetFillColor(color)
+        .SetPosition(position)
+        .SetOffset(label.offset)
+        .SetFontSize(label.font_size)
+        .SetFontFamily("Verdana")
+        .SetFontWeight("bold")
+        .SetData(content);
+
+    svg::Text back = text;
+    back.SetFillColor(settings_.underlayer.color)
+        .SetStrokeWidth(settings_.underlayer.width)
+        .SetStrokeColor(settings_.underlayer.color)
+        .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
+        .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
+
+    document.Add(back);
+    document.Add(text);
+}
+
+void MapRenderer::DrawRouteLabels(
+    svg::Document& document,
+    SphereProjector& projector,
+    const domain::SetStat<domain::Route>& routes
+) const {
+    size_t counter = 0;
+    for (const domain::Route& route : routes) {
+        DrawLabel(
+            document,
+            route.ptr->name,
+            projector(route.ptr->stops.back()->coords),
+            GetRouteColor(counter),
+            settings_.bus_label
+        );
+
+        if (!route.ptr->is_roundtrip)
+            DrawLabel(
+                document,
+                route.ptr->name,
+                projector(route.ptr->stops.front()->coords),
+                GetRouteColor(counter),
+                settings_.bus_label
+            );
+
+        ++counter;
     }
 }
 

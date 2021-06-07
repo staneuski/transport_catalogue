@@ -111,6 +111,16 @@ private:
     void DrawRouteLines(svg::Document& document,
                         SphereProjector& projector,
                         const domain::SetStat<domain::Route>& routes) const;
+
+    void DrawLabel(svg::Document& document,
+                   const std::string& content,
+                   const svg::Point& position,
+                   const svg::Color& color,
+                   const Settings::Label& label) const;
+
+    void DrawRouteLabels(svg::Document& document,
+                         SphereProjector& projector,
+                         const domain::SetStat<domain::Route>& routes) const;
 };
 
 } // end namespace renderer
