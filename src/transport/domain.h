@@ -23,9 +23,9 @@ template<typename Ptr>
 using SetPtr = std::set<Ptr, Less<Ptr>>;
 
 template<typename Stat>
-struct LessStat : public Less<Stat> {
+struct LessStat {
     inline bool operator()(const Stat& lhs, const Stat& rhs) const {
-        return lhs.ptr < rhs.ptr;
+        return lhs.ptr->name < rhs.ptr->name;
     }
 };
 
