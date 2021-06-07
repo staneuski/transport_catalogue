@@ -124,10 +124,10 @@ std::ostream& operator<<(std::ostream& out, const Rgb& color) {
 }
 
 std::ostream& operator<<(std::ostream& out, const Rgba& color) {
-    out << "rgb(" << unsigned(color.red)
+    out << "rgba(" << unsigned(color.red)
         << ',' << unsigned(color.green)
         << ',' << unsigned(color.blue)
-        << ',' << unsigned(color.opacity)
+        << ',' << color.opacity
         << ')';
     return out;
 }
