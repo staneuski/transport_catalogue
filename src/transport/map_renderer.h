@@ -110,22 +110,29 @@ private:
     ) const;
 
     void DrawRouteLines(svg::Document& document,
-                        SphereProjector& projector,
+                        const SphereProjector& projector,
                         const domain::SetStat<domain::Route>& routes) const;
 
     void DrawLabel(svg::Document& document,
                    const std::string& content,
                    const svg::Point& position,
-                   const svg::Color& color,
-                   const Settings::Label& label) const;
+                   const Settings::Label& label,
+                   const svg::Color& color = svg::Color("black"),
+                   const bool is_bold = false) const;
 
     void DrawRouteLabels(svg::Document& document,
-                         SphereProjector& projector,
-                         const domain::SetStat<domain::Route>& stop_stats) const;
+                         const SphereProjector& projector,
+                         const domain::SetStat<domain::Route>& routes) const;
 
     void DrawStops(svg::Document& document,
-                   SphereProjector& projector,
-                   const domain::SetStat<domain::StopStat>& stops) const;
+                   const SphereProjector& projector,
+                   const domain::SetStat<domain::StopStat>& stop_stats) const;
+
+    void DrawStopLabels(
+        svg::Document& document,
+        const SphereProjector& projector,
+        const domain::SetStat<domain::StopStat>& stop_stats
+    ) const;
 };
 
 } // end namespace renderer

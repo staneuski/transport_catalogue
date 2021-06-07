@@ -19,6 +19,7 @@ svg::Document MapRenderer::RenderMap(
     DrawRouteLines(document, projector, routes);
     DrawRouteLabels(document, projector, routes);
     DrawStops(document, projector, stop_stats);
+    DrawStopLabels(document, projector, stop_stats);
 
     return document;
 }
@@ -36,7 +37,7 @@ std::vector<geo::Coordinates> MapRenderer::GetCoordinates(
 
 void MapRenderer::DrawRouteLines(
     svg::Document& document,
-    SphereProjector& projector,
+    const SphereProjector& projector,
     const domain::SetStat<domain::Route>& routes
 ) const {
     size_t counter = 0;
@@ -59,16 +60,20 @@ void MapRenderer::DrawRouteLines(
 void MapRenderer::DrawLabel(svg::Document& document,
                             const std::string& content,
                             const svg::Point& position,
+                            const Settings::Label& label,
                             const svg::Color& color,
-                            const Settings::Label& label) const {
+                            const bool is_bold) const {
     svg::Text text;
+
     text.SetFillColor(color)
         .SetPosition(position)
         .SetOffset(label.offset)
         .SetFontSize(label.font_size)
         .SetFontFamily("Verdana")
-        .SetFontWeight("bold")
         .SetData(content);
+
+    if (is_bold)
+        text.SetFontWeight("bold");
 
     svg::Text back = text;
     back.SetFillColor(settings_.underlayer.color)
@@ -83,17 +88,20 @@ void MapRenderer::DrawLabel(svg::Document& document,
 
 void MapRenderer::DrawRouteLabels(
     svg::Document& document,
-    SphereProjector& projector,
+    const SphereProjector& projector,
     const domain::SetStat<domain::Route>& routes
 ) const {
+    bool is_bold = true;
+
     size_t counter = 0;
     for (const domain::Route& route : routes) {
         DrawLabel(
             document,
             route.ptr->name,
             projector(route.ptr->stops.back()->coords),
+            settings_.bus_label,
             GetRouteColor(counter),
-            settings_.bus_label
+            is_bold
         );
 
         if (!route.ptr->is_roundtrip)
@@ -101,18 +109,18 @@ void MapRenderer::DrawRouteLabels(
                 document,
                 route.ptr->name,
                 projector(route.ptr->stops.front()->coords),
+                settings_.bus_label,
                 GetRouteColor(counter),
-                settings_.bus_label
+                is_bold
             );
 
         ++counter;
     }
 }
 
-
 void MapRenderer::DrawStops(
     svg::Document& document,
-    SphereProjector& projector,
+    const SphereProjector& projector,
     const domain::SetStat<domain::StopStat>& stop_stats
 ) const {
     for (const domain::StopStat& stop_stat : stop_stats) {
@@ -123,6 +131,20 @@ void MapRenderer::DrawStops(
             .SetFillColor("white");
         document.Add(circle);
     }
+}
+
+void MapRenderer::DrawStopLabels(
+    svg::Document& document,
+    const SphereProjector& projector,
+    const domain::SetStat<domain::StopStat>& stop_stats
+) const {
+    for (const domain::StopStat& stop_stat : stop_stats)
+        DrawLabel(
+            document,
+            stop_stat.ptr->name,
+            projector(stop_stat.ptr->coords),
+            settings_.stop_label
+        );
 }
 
 } // end namespace renderer
