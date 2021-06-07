@@ -14,11 +14,11 @@ int main() {
     io::JsonReader reader(cin);
     io::Populate(db, reader);
 
-    renderer::MapRenderer map_rendrer = reader.GenerateMapSettings();
-    cout << map_rendrer.RenderMap(db.GetAllRoutes(), db.GetAllStopStats()) << endl;
+    renderer::MapRenderer map_renderer = reader.GenerateMapSettings();
+    // cout << map_renderer.RenderMap(db.GetAllRoutes(), db.GetAllStopStats()) << endl;
 
-    // io::RequestHandler handler{db, map_rendrer};
-    // io::Search(handler, reader);
+    io::RequestHandler handler{db, map_renderer};
+    io::Search(handler, reader);
 
     return 0;
 }

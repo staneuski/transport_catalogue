@@ -159,20 +159,24 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
             std::cout << ",\n";
         std::cout << std::string(INDENT_SIZE, ' ') << '{';
 
-        if ("Bus" == request->at("type"))
+        if ("Bus" == request->at("type")) {
             std::cout << handler.GetBusStat(request->at("name").AsString())
                       << ", \"request_id\": " << request->at("id") << '}';
-        else if ("Stop" == request->at("type"))
+        } else if ("Stop" == request->at("type")) {
             std::cout << handler.GetStopStat(request->at("name").AsString())
                       << ", \"request_id\": " << request->at("id") << '}';
-        else if ("Map" == request->at("type"))
-            std::cout << "\"map\": \"" << "handler.RenderMap()" << "\""
+        } else if ("Map" == request->at("type")) {
+            std::ostringstream out;
+            handler.RenderMap().Render(out);
+
+            std::cout << "\"map\": " << json::Node(out.str())
                       << ", \"request_id\": " << request->at("id") << '}';
-        else
+        } else {
             throw std::invalid_argument(
                 "unable to load stat request type '"
                 + request->at("type").AsString() + "'"
             );
+        }
     }
 
     std::cout << "\n]" << std::endl;
