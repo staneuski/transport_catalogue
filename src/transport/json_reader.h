@@ -20,10 +20,14 @@ class JsonReader {
 public:
     JsonReader(std::istream& input)
             : requests_(json::Load(input).GetRoot().AsMap()) {
-        ParseBuses();
-        ParseStops();
-        ParseRenderSettings();
-        ParseStats();
+        if (requests_.find("base_requests") != requests_.end()) {
+            ParseBuses();
+            ParseStops();
+        }
+        if (requests_.find("render_settings") != requests_.end())
+            ParseRenderSettings();
+        if (requests_.find("stat_requests") != requests_.end())
+            ParseStats();
     }
 
     inline const std::vector<Request>& GetBuses() const {

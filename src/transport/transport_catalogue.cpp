@@ -54,9 +54,12 @@ std::optional<Route> TransportCatalogue::GetRoute(
     double distance = 0;
     const auto ComputeRoute = [&](StopPtr stop, StopPtr next_stop) {
         distance += domain::ComputeDistance(stop, next_stop);
-        route.length += (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
-                        ? stops_to_distance_.at({stop, next_stop})
-                        : stops_to_distance_.at({next_stop, stop});
+        if (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
+            route.length += stops_to_distance_.at({stop, next_stop});
+        else if (stops_to_distance_.find({next_stop, stop}) != stops_to_distance_.end())
+            route.length += stops_to_distance_.at({next_stop, stop});
+        else
+            route.length -= 1;
     };
 
     for (auto it = stops.begin(); it + 1 != stops.end(); ++it)
@@ -96,8 +99,9 @@ domain::SetStat<Route> TransportCatalogue::GetAllRoutes() const {
 
 domain::SetStat<StopStat> TransportCatalogue::GetAllStopStats() const {
     domain::SetStat<StopStat> stop_stats;
-    for (const Stop& stop : stops_)
-        stop_stats.insert(*GetStop(stop.name));
+    for (const auto& [stop_ptr, buses] : stop_to_buses_)
+        if (!buses.empty())
+            stop_stats.insert(*GetStop(stop_ptr->name));
     return stop_stats;
 }
 

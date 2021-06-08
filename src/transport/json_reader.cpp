@@ -56,14 +56,18 @@ void JsonReader::ParseStats() {
 
 renderer::Settings JsonReader::GenerateMapSettings() const {
     renderer::Settings settings;
+
     const auto fill = [&](renderer::Settings::Label& label,
-                            const std::string& label_key) {
+                         const std::string& label_key) {
         const json::Array& arr = render_settings_->at(label_key + "_offset").AsArray();
         label = {
             render_settings_->at(label_key + "_font_size").AsInt(),
             {arr.front().AsDouble(), arr.back().AsDouble()}
         };
     };
+
+    if (requests_.find("render_settings") == requests_.end())
+        return settings;
 
     settings.map_sizes = {
         render_settings_->at("width").AsDouble(),

@@ -42,9 +42,15 @@ void MapRenderer::DrawRouteLines(
 ) const {
     size_t counter = 0;
     for (const domain::Route& route : routes) {
+        const std::vector<domain::StopPtr>& stops = route.ptr->stops;
+
         svg::Polyline polyline;
-        for (const domain::StopPtr& stop_ptr : route.ptr->stops)
-            polyline.AddPoint(projector(stop_ptr->coords));
+        for (auto it = stops.begin(); it != stops.end(); ++it)
+            polyline.AddPoint(projector((*it)->coords));
+
+        if (!route.ptr->is_roundtrip)
+            for (auto it = stops.rbegin() + 1; it != stops.rend(); ++it)
+                polyline.AddPoint(projector((*it)->coords));
 
         document.Add(
             polyline
@@ -95,26 +101,27 @@ void MapRenderer::DrawRouteLabels(
 
     size_t counter = 0;
     for (const domain::Route& route : routes) {
-        DrawLabel(
-            document,
-            route.ptr->name,
-            projector(route.ptr->stops.back()->coords),
-            settings_.bus_label,
-            GetRouteColor(counter),
-            is_bold
-        );
+        svg::Color color = GetRouteColor(counter++);
 
-        if (!route.ptr->is_roundtrip)
+        if (!route.ptr->is_roundtrip
+         && route.ptr->stops.front() != route.ptr->stops.back())
             DrawLabel(
                 document,
                 route.ptr->name,
                 projector(route.ptr->stops.front()->coords),
                 settings_.bus_label,
-                GetRouteColor(counter),
+                color,
                 is_bold
             );
 
-        ++counter;
+        DrawLabel(
+            document,
+            route.ptr->name,
+            projector(route.ptr->stops.back()->coords),
+            settings_.bus_label,
+            color,
+            is_bold
+        );
     }
 }
 
@@ -149,3 +156,4 @@ void MapRenderer::DrawStopLabels(
 
 } // end namespace renderer
 } // end namespace transport
+

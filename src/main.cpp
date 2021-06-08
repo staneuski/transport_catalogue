@@ -11,8 +11,15 @@ int main() {
     using namespace transport;
 
     catalogue::TransportCatalogue db;
+
     io::JsonReader reader(cin);
     io::Populate(db, reader);
+
+    // std::ifstream file("../tests/input-rand.json");
+    // std::stringstream buffer;
+    // buffer << file.rdbuf();
+    // io::JsonReader reader(buffer);
+    // io::Populate(db, reader);
 
     renderer::MapRenderer map_renderer = reader.GenerateMapSettings();
     // cout << map_renderer.RenderMap(db.GetAllRoutes(), db.GetAllStopStats()) << endl;
