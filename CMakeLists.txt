@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(search_engine VERSION 0.6.0)
+project(transport_catalogue VERSION 0.2.0)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
@@ -9,14 +9,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Werror)
 
 include_directories(src tests)
-set(SRC
-    src/input_reader.cpp
-    src/transport_catalogue.cpp)
+
+set(GEO)
+set(SVG src/svg/svg.cpp)
+set(JSON src/json/json.cpp)
+
+set(TRANSPORT_CATALOGUE src/transport/transport_catalogue.cpp)
+set(TRANSPORT_DOMAIN src/transport/domain.cpp)
+set(TRANSPORT_IO src/transport/json_reader.cpp)
+set(TRANSPORT_RENDERER src/transport/map_renderer.cpp)
+set(TRANSPORT
+    ${TRANSPORT_CATALOGUE}
+    ${TRANSPORT_DOMAIN}
+    ${TRANSPORT_IO}
+    ${TRANSPORT_RENDERER})
+
+set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
 
 #######################################
-# SRC
+# APPS
 #######################################
 add_executable(main src/main.cpp ${SRC})
+add_executable(app-svg tests/app-svg.cpp ${SVG})
+add_executable(app-json tests/app-json.cpp ${JSON})
 
 
 #######################################
@@ -30,6 +45,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
-add_executable(gtest-transport_catalogue tests/gtest-transport_catalogue.cpp ${SRC})
-target_link_libraries(gtest-transport_catalogue gtest_main -lpthread)
-add_test(NAME transport_catalogue COMMAND gtest-transport_catalogue)
+
+#- transport/transport_catalogue.h
+add_executable(gtest-transport tests/gtest-transport.cpp ${SRC})
+target_link_libraries(gtest-transport gtest_main)
+add_test(NAME transport COMMAND gtest-transport)
+
+#- json/json.h
+add_executable(gtest-json tests/gtest-json.cpp ${JSON})
+target_link_libraries(gtest-json gtest_main)
+add_test(NAME json COMMAND gtest-json)
