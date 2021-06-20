@@ -45,24 +45,28 @@ std::ostream& operator<<(std::ostream& out, const Rgb& color);
 
 std::ostream& operator<<(std::ostream& out, const Rgba& color);
 
-struct ColorPrinter {
-    std::ostream& out;
+class ColorPrinter {
+public:
+    explicit ColorPrinter(std::ostream& out) : out_(out) {}
 
     inline void operator()(std::monostate) const {
-        out << "none";
+        out_ << "none";
     }
 
     inline void operator()(const std::string_view word) const {
-        out << word;
+        out_ << word;
     }
 
     inline void operator()(const Rgb& rgb) {
-        out << rgb;
+        out_ << rgb;
     }
 
     inline void operator()(const Rgba& rgba) {
-        out << rgba;
+        out_ << rgba;
     }
+
+private:
+    std::ostream& out_;
 };
 
 std::ostream& operator<<(std::ostream& out, const Color& color);

@@ -141,21 +141,24 @@ inline Document Load(std::istream& input) {
 
 // ---------- NodePrinter -------------
 
-struct NodePrinter {
+class NodePrinter {
+public:
+    explicit NodePrinter(std::ostream& out) : out_(out) {}
+
     inline void operator()(const std::nullptr_t) const {
-        out << "null";
+        out_ << "null";
     }
 
     inline void operator()(const bool boolean) const {
-        out << std::boolalpha << boolean;
+        out_ << std::boolalpha << boolean;
     }
 
     inline void operator()(const int number) const {
-        out << number;
+        out_ << number;
     }
 
     inline void operator()(const double number) const {
-        out << number;
+        out_ << number;
     }
 
     void operator()(const std::string& s) const;
@@ -164,7 +167,8 @@ struct NodePrinter {
 
     void operator()(const Dict& map) const;
 
-    std::ostream& out;
+private:
+    std::ostream& out_;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Node& node) {

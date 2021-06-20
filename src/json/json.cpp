@@ -178,61 +178,61 @@ Node LoadNode(std::istream& input) {
 // ---------- NodePrinter -------------
 
 void NodePrinter::operator()(const std::string& s) const {
-    out << "\"";
+    out_ << "\"";
     for (char c : s)
         switch(c) {
             case '\"':
-                out << "\\\"";
+                out_ << "\\\"";
                 break;
             case '\\':
-                out << "\\\\";
+                out_ << "\\\\";
                 break;
             case '\t':
-                out << "\\t";
+                out_ << "\\t";
                 break;
             case '\r':
-                out << "\\r";
+                out_ << "\\r";
                 break;
             case '\n':
-                out << "\\n";
+                out_ << "\\n";
                 break;
             default:
-                out << c; break;
+                out_ << c; break;
         }
-    out << "\"";
+    out_ << "\"";
 }
 
 void NodePrinter::operator()(const Array& array) const {
-    out << '[';
+    out_ << '[';
 
     bool is_first = true;
     for (const Node& node : array) {
         if (is_first)
             is_first = false;
         else
-            out << ", ";
+            out_ << ", ";
 
-        out << node;
+        out_ << node;
     }
 
-    out << ']';
+    out_ << ']';
 }
 
 void NodePrinter::operator()(const Dict& map) const {
-    out << '{';
+    out_ << '{';
 
     bool is_first = true;
     for (const auto& [key, node] : map) {
         if (is_first)
             is_first = false;
         else
-            out << ", ";
+            out_ << ", ";
 
         this->operator()(key);
-        out << ':' << node;
+        out_ << ':' << node;
     }
 
-    out << '}';
+    out_ << '}';
 }
 
 } // end namespace json
