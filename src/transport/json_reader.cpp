@@ -3,33 +3,24 @@
 namespace transport {
 namespace io {
 
-void JsonReader::ParseBuses() {
+void JsonReader::ParseBases(const RequestType type) {
+    if (type != RequestType::BUS && type != RequestType::STOP)
+        throw std::invalid_argument("BaseRequest enumiration option");
+
+    const std::string type_s = (type == RequestType::BUS) ? "Bus" : "Stop";
+    std::vector<Request>& container = (type == RequestType::BUS)
+                                      ? buses_
+                                      : stops_;
+
     const json::Array& base_requests = requests_.at("base_requests").AsArray();
 
-    buses_.reserve(base_requests.size()/2u);
+    container.reserve(base_requests.size()/2u);
     for (const auto& base_request : base_requests) {
         const json::Dict& request = base_request.AsMap();
 
-        if (request.at("type") == "Bus")
-            buses_.push_back(std::make_unique<const json::Dict>(request));
-        else if (request.at("type") != "Stop")
-            throw std::invalid_argument(
-                "unable to load base request type '" 
-                + request.at("type").AsString() + "'"
-            );
-    }
-}
-
-void JsonReader::ParseStops() {
-    const json::Array& base_requests = requests_.at("base_requests").AsArray();
-
-    stops_.reserve(base_requests.size()/2u);
-    for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsMap();
-
-        if (request.at("type") == "Stop")
-            stops_.push_back(std::make_unique<const json::Dict>(request));
-        else if (request.at("type") != "Bus")
+        if (request.at("type") == type_s)
+            container.push_back(std::make_unique<const json::Dict>(request));
+        else if (request.at("type") != "Stop" && request.at("type") != "Bus")
             throw std::invalid_argument(
                 "unable to load base request type '" 
                 + request.at("type").AsString() + "'"
