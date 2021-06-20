@@ -16,21 +16,13 @@ static const int INDENT_SIZE = 2;
 
 enum class RequestType { BUS, STOP, };
 
+std::string ConvertRequestType(const RequestType request_t);
+
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
 
 public:
-    JsonReader(std::istream& input)
-            : requests_(json::Load(input).GetRoot().AsMap()) {
-        if (requests_.find("base_requests") != requests_.end()) {
-            ParseBases(RequestType::BUS);
-            ParseBases(RequestType::STOP);
-        }
-        if (requests_.find("render_settings") != requests_.end())
-            ParseRenderSettings();
-        if (requests_.find("stat_requests") != requests_.end())
-            ParseStats();
-    }
+    JsonReader(std::istream& input);
 
     inline const std::vector<Request>& GetBuses() const {
         return buses_;
@@ -55,15 +47,17 @@ private:
 
     static svg::Color ConvertToColor(const json::Node node);
 
-    void ParseBases(const RequestType type);
-
     inline void ParseRenderSettings() {
         render_settings_ = std::make_unique<const json::Dict>(
             requests_.at("render_settings").AsMap()
         );
     }
 
+    void ParseBases(const RequestType type);
+
     void ParseStats();
+
+    void AppendBase(const json::Dict& request, const std::string& type_name);
 };
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader);
