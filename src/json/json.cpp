@@ -205,32 +205,31 @@ void NodePrinter::operator()(const std::string& s) const {
 void NodePrinter::operator()(const Array& array) const {
     out_ << '[';
 
-    bool is_first = true;
-    for (const Node& node : array) {
-        if (is_first)
-            is_first = false;
-        else
-            out_ << ", ";
-
-        out_ << node;
-    }
+    out_ << array.front();
+    std::for_each(
+        std::next(array.begin()), array.end(),
+        [&](const Node& node) { out_ << ", " << node; }
+    );
 
     out_ << ']';
 }
 
 void NodePrinter::operator()(const Dict& map) const {
+    const auto& print_element = [&](const std::pair<std::string, Node>& element) {
+        this->operator()(element.first);
+        out_ << ':' << element.second;
+    };
+
     out_ << '{';
 
-    bool is_first = true;
-    for (const auto& [key, node] : map) {
-        if (is_first)
-            is_first = false;
-        else
+    print_element(*map.begin());
+    std::for_each(
+        std::next(map.begin()), map.end(),
+        [&](const auto& element) {
             out_ << ", ";
-
-        this->operator()(key);
-        out_ << ':' << node;
-    }
+            print_element(element);
+        }
+    );
 
     out_ << '}';
 }
