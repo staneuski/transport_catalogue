@@ -31,20 +31,20 @@ Node LoadString(std::istream& input) {
             input >> c;
             switch(c) {
                 case 'r':
-                    s += '\r';
+                    s.push_back('\r');
                     break;
                 case 'n':
-                    s += '\n';
+                    s.push_back('\n');
                     break;
                 case 't':
-                    s += '\t';
+                    s.push_back('\t');
                     break;
                 default:
-                    s += c;
+                    s.push_back(c);
                     break;
             }
         } else {
-            s += c;
+            s.push_back(c);
         }
     }
     input >> std::skipws;
@@ -102,33 +102,38 @@ Node LoadBool(std::istream& input) {
 Node LoadNumber(std::istream& input) {
     std::string number;
 
-    if (input.peek() == '-')
-        number += static_cast<char>(input.get());
+    const auto& append_number = [&number, &input]() {
+        number.push_back(static_cast<char>(input.get()));
+    };
 
-    if (input.peek() == '0') {
-        number += static_cast<char>(input.get());
-    } else {
+    const auto& append_digits = [&input, &append_number]() {
         while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());;
-    }
+            append_number();
+    };
+
+    if (input.peek() == '-')
+        append_number();
+
+    if (input.peek() == '0')
+        append_number();
+    else 
+        append_digits();
 
     bool is_int = true;
     if (input.peek() == '.') {
-        number += static_cast<char>(input.get());
+        append_number();
+        append_digits();
 
-        while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());
         is_int = false;
     }
 
     if (char c = input.peek(); c == 'e' || c == 'E') {
-        number += static_cast<char>(input.get());
+        append_number();
 
         if (c = input.peek(); c == '-' || c == '+')
-            number += static_cast<char>(input.get());
-
-        while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());
+            append_number();
+        append_digits();
+    
         is_int = false;
     }
 
