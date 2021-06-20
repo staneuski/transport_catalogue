@@ -3,38 +3,40 @@
 namespace transport {
 namespace io {
 
-void JsonReader::ParseBuses() {
-    const json::Array& base_requests = requests_.at("base_requests").AsArray();
-
-    buses_.reserve(base_requests.size()/2u);
-    for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsMap();
-
-        if (request.at("type") == "Bus")
-            buses_.push_back(std::make_unique<const json::Dict>(request));
-        else if (request.at("type") != "Stop")
-            throw std::invalid_argument(
-                "unable to load base request type '" 
-                + request.at("type").AsString() + "'"
-            );
+std::string ConvertRequestType(const RequestType request_e) {
+    switch (request_e) {
+    case RequestType::BUS:
+        return "Bus";
+    case RequestType::STOP:
+        return "Stop";
+    default:
+        throw std::invalid_argument("BaseRequest enumiration option");
     }
 }
 
-void JsonReader::ParseStops() {
+JsonReader::JsonReader(std::istream& input) 
+        : requests_(json::Load(input).GetRoot().AsMap()) {
+    if (requests_.find("base_requests") != requests_.end()) {
+        ParseBases(RequestType::BUS);
+        ParseBases(RequestType::STOP);
+    }
+    if (requests_.find("render_settings") != requests_.end())
+        ParseRenderSettings();
+    if (requests_.find("stat_requests") != requests_.end())
+        ParseStats();
+}
+
+void JsonReader::ParseBases(const RequestType type_e) {
     const json::Array& base_requests = requests_.at("base_requests").AsArray();
 
-    stops_.reserve(base_requests.size()/2u);
-    for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsMap();
+    if (RequestType::BUS == type_e && !buses_.capacity())
+        buses_.reserve(base_requests.size()/2u);
+    if (RequestType::STOP == type_e && !stops_.capacity())
+        stops_.reserve(base_requests.size()/2u);
 
-        if (request.at("type") == "Stop")
-            stops_.push_back(std::make_unique<const json::Dict>(request));
-        else if (request.at("type") != "Bus")
-            throw std::invalid_argument(
-                "unable to load base request type '" 
-                + request.at("type").AsString() + "'"
-            );
-    }
+    const std::string type_name = ConvertRequestType(type_e);
+    for (const auto& base_request : base_requests)
+        AppendBase(base_request.AsMap(), type_name);
 }
 
 void JsonReader::ParseStats() {
@@ -44,14 +46,27 @@ void JsonReader::ParseStats() {
     for (const auto& request_node : stat_requests) {
         const json::Dict& request = request_node.AsMap();
 
-        const json::Node& type_name = request.at("type");
-        if ("Bus" == type_name || "Stop" == type_name || "Map" == type_name)
+        const json::Node& type_node = request.at("type");
+        if (type_node == "Bus" || type_node == "Stop" || type_node == "Map")
             stats_.push_back(std::make_unique<const json::Dict>(request));
         else
             throw std::invalid_argument(
-                "unable to load stat request type '" + type_name.AsString() + "'"
+                "unable to load stat request type '" + type_node.AsString() + "'"
             );
     }
+}
+
+void JsonReader::AppendBase(const json::Dict& request,
+                            const std::string& type_name) {
+    const json::Node& type_node = request.at("type");
+    if (type_node != "Stop" && type_node != "Bus" && type_node != "Map")
+        throw std::invalid_argument(
+            "unable to load request with type '" + type_node.AsString() + "'"
+        );
+    else if (type_name == "Bus" && type_name == type_node)
+        buses_.push_back(std::make_unique<const json::Dict>(request));
+    else if (type_name == "Stop" && type_name == type_node)
+        stops_.push_back(std::make_unique<const json::Dict>(request));
 }
 
 renderer::Settings JsonReader::GenerateMapSettings() const {

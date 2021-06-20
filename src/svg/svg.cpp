@@ -2,6 +2,13 @@
 
 namespace svg {
 
+// ---------- RenderContext -----------
+
+void RenderContext::RenderIndent() const {
+    for (int i = 0; i < indent; ++i)
+        out.put(' ');
+}
+
 // ---------- Object ------------------
 
 void Object::Render(const RenderContext& context) const {
@@ -11,6 +18,46 @@ void Object::Render(const RenderContext& context) const {
     RenderObject(context);
 
     context.out << std::endl;
+}
+
+std::ostream& operator<<(std::ostream& out, const StrokeLineCap& line_cap) {
+    switch (line_cap) {
+        case StrokeLineCap::BUTT:
+            out << "butt";
+            break;
+        case StrokeLineCap::ROUND:
+            out << "round";
+            break;
+        case StrokeLineCap::SQUARE:
+            out << "square";
+            break;
+        default:
+            break;
+    }
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const StrokeLineJoin& line_join) {
+    switch (line_join) {
+        case StrokeLineJoin::ARCS:
+            out << "arcs";
+            break;
+        case StrokeLineJoin::BEVEL:
+            out << "bevel";
+            break;
+        case StrokeLineJoin::MITER:
+            out << "miter";
+            break;
+        case StrokeLineJoin::MITER_CLIP:
+            out << "miter-clip";
+            break;
+        case StrokeLineJoin::ROUND:
+            out << "round";
+            break;
+        default:
+            break;
+    }
+    return out;
 }
 
 // ---------- Circle ------------------
@@ -42,17 +89,15 @@ Polyline& Polyline::AddPoint(Point point) {
 }
 
 void Polyline::RenderObject(const RenderContext& context) const {
-    auto& out = context.out;
+    std::ostream& out = context.out;
     out << "<polyline points=\"";
 
-    bool is_first = true;
-    for (const Point& p : points_) {
-        if (is_first)
-            is_first = false;
-        else
-            out << ' ';
-        out << p.x << ',' << p.y;
-    }
+    out << points_.front();
+    std::for_each(
+        std::next(points_.begin()), points_.end(),
+        [&out](const Point& p) { out << ' ' << p; }
+    );
+
     out << "\"";
 
     RenderAttrs(out);
@@ -62,7 +107,7 @@ void Polyline::RenderObject(const RenderContext& context) const {
 // ---------- Text --------------------
 
 void Text::RenderObject(const RenderContext& context) const {
-    auto& out = context.out;
+    std::ostream& out = context.out;
     out << "<text" << " x=\"" << position_.x << "\""
                    << " y=\"" << position_.y << "\""
                    << " dx=\"" << offset_.x << "\""
@@ -111,70 +156,6 @@ void Document::Render(std::ostream& out) const {
         object->Render(RenderContext(out, 2, 2));
 
     out << "</svg>";
-}
-
-// ---------- helpers -----------------
-
-std::ostream& operator<<(std::ostream& out, const Rgb& color) {
-    out << "rgb(" << unsigned(color.red)
-        << ',' << unsigned(color.green)
-        << ',' << unsigned(color.blue)
-        << ')';
-    return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const Rgba& color) {
-    out << "rgba(" << unsigned(color.red)
-        << ',' << unsigned(color.green)
-        << ',' << unsigned(color.blue)
-        << ',' << color.opacity
-        << ')';
-    return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const Color& color) {
-    std::visit(ColorPrinter{out}, color);
-    return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const StrokeLineCap& line_cap) {
-    switch (line_cap) {
-        case StrokeLineCap::BUTT:
-            out << "butt";
-            break;
-        case StrokeLineCap::ROUND:
-            out << "round";
-            break;
-        case StrokeLineCap::SQUARE:
-            out << "square";
-            break;
-        default:
-            break;
-    }
-    return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const StrokeLineJoin& line_join) {
-    switch (line_join) {
-        case StrokeLineJoin::ARCS:
-            out << "arcs";
-            break;
-        case StrokeLineJoin::BEVEL:
-            out << "bevel";
-            break;
-        case StrokeLineJoin::MITER:
-            out << "miter";
-            break;
-        case StrokeLineJoin::MITER_CLIP:
-            out << "miter-clip";
-            break;
-        case StrokeLineJoin::ROUND:
-            out << "round";
-            break;
-        default:
-            break;
-    }
-    return out;
 }
 
 } // end namespace svg

@@ -31,20 +31,20 @@ Node LoadString(std::istream& input) {
             input >> c;
             switch(c) {
                 case 'r':
-                    s += '\r';
+                    s.push_back('\r');
                     break;
                 case 'n':
-                    s += '\n';
+                    s.push_back('\n');
                     break;
                 case 't':
-                    s += '\t';
+                    s.push_back('\t');
                     break;
                 default:
-                    s += c;
+                    s.push_back(c);
                     break;
             }
         } else {
-            s += c;
+            s.push_back(c);
         }
     }
     input >> std::skipws;
@@ -102,33 +102,38 @@ Node LoadBool(std::istream& input) {
 Node LoadNumber(std::istream& input) {
     std::string number;
 
-    if (input.peek() == '-')
-        number += static_cast<char>(input.get());
+    const auto& append_number = [&number, &input]() {
+        number.push_back(static_cast<char>(input.get()));
+    };
 
-    if (input.peek() == '0') {
-        number += static_cast<char>(input.get());
-    } else {
+    const auto& append_digits = [&input, &append_number]() {
         while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());;
-    }
+            append_number();
+    };
+
+    if (input.peek() == '-')
+        append_number();
+
+    if (input.peek() == '0')
+        append_number();
+    else 
+        append_digits();
 
     bool is_int = true;
     if (input.peek() == '.') {
-        number += static_cast<char>(input.get());
+        append_number();
+        append_digits();
 
-        while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());
         is_int = false;
     }
 
     if (char c = input.peek(); c == 'e' || c == 'E') {
-        number += static_cast<char>(input.get());
+        append_number();
 
         if (c = input.peek(); c == '-' || c == '+')
-            number += static_cast<char>(input.get());
-
-        while (std::isdigit(input.peek()))
-            number += static_cast<char>(input.get());
+            append_number();
+        append_digits();
+    
         is_int = false;
     }
 
@@ -173,61 +178,60 @@ Node LoadNode(std::istream& input) {
 // ---------- NodePrinter -------------
 
 void NodePrinter::operator()(const std::string& s) const {
-    out << "\"";
+    out_ << "\"";
     for (char c : s)
         switch(c) {
             case '\"':
-                out << "\\\"";
+                out_ << "\\\"";
                 break;
             case '\\':
-                out << "\\\\";
+                out_ << "\\\\";
                 break;
             case '\t':
-                out << "\\t";
+                out_ << "\\t";
                 break;
             case '\r':
-                out << "\\r";
+                out_ << "\\r";
                 break;
             case '\n':
-                out << "\\n";
+                out_ << "\\n";
                 break;
             default:
-                out << c; break;
+                out_ << c; break;
         }
-    out << "\"";
+    out_ << "\"";
 }
 
 void NodePrinter::operator()(const Array& array) const {
-    out << '[';
+    out_ << '[';
 
-    bool is_first = true;
-    for (const Node& node : array) {
-        if (is_first)
-            is_first = false;
-        else
-            out << ", ";
+    out_ << array.front();
+    std::for_each(
+        std::next(array.begin()), array.end(),
+        [&](const Node& node) { out_ << ", " << node; }
+    );
 
-        out << node;
-    }
-
-    out << ']';
+    out_ << ']';
 }
 
 void NodePrinter::operator()(const Dict& map) const {
-    out << '{';
+    const auto& print_element = [&](const std::pair<std::string, Node>& element) {
+        this->operator()(element.first);
+        out_ << ':' << element.second;
+    };
 
-    bool is_first = true;
-    for (const auto& [key, node] : map) {
-        if (is_first)
-            is_first = false;
-        else
-            out << ", ";
+    out_ << '{';
 
-        this->operator()(key);
-        out << ':' << node;
-    }
+    print_element(*map.begin());
+    std::for_each(
+        std::next(map.begin()), map.end(),
+        [&](const auto& element) {
+            out_ << ", ";
+            print_element(element);
+        }
+    );
 
-    out << '}';
+    out_ << '}';
 }
 
 } // end namespace json

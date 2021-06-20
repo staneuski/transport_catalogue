@@ -19,15 +19,22 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          const std::optional<StopStat>& stop_stat) {
     if (stop_stat) {
-        out << "\"buses\": [";
-        bool is_first = true;
-        for (const auto& bus : stop_stat->unique_buses) {
-            if (is_first)
-                is_first = false;
-            else
-                std::cout << ", ";
+        const auto& print_bus = [&out](const BusPtr& bus) {
             out << "\"" << bus->name << "\"";
-        }
+        };
+
+        out << "\"buses\": [";
+
+        const SetPtr<BusPtr>& buses = stop_stat->unique_buses;
+        print_bus(*buses.begin());
+        std::for_each(
+            std::next(buses.begin()), buses.end(),
+            [&out, &print_bus](const BusPtr& bus) {
+                out << ", ";
+                print_bus(bus);
+            }
+        );
+
         out << ']';
     } else {
         out << "\"error_message\": \"not found\"";

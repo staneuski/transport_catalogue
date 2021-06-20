@@ -85,7 +85,8 @@ struct Settings {
     double padding;
     double line_width;
     double stop_radius;
-    Label bus_label, stop_label;
+    Label bus_label
+    Label stop_label;
     Underlayer underlayer;
     std::vector<svg::Color> palette;
 };
