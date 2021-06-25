@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 
 #include "json/json.h"
@@ -19,7 +20,7 @@ class JsonReader {
 
 public:
     JsonReader(std::istream& input)
-            : requests_(json::Load(input).GetRoot().AsMap()) {
+            : requests_(json::Load(input).GetRoot().AsDict()) {
         if (requests_.find("base_requests") != requests_.end()) {
             ParseBuses();
             ParseStops();
@@ -57,7 +58,7 @@ private:
 
     inline void ParseRenderSettings() {
         render_settings_ = std::make_unique<const json::Dict>(
-            requests_.at("render_settings").AsMap()
+            requests_.at("render_settings").AsDict()
         );
     }
 

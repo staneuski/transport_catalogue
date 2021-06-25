@@ -8,7 +8,7 @@ void JsonReader::ParseBuses() {
 
     buses_.reserve(base_requests.size()/2u);
     for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsMap();
+        const json::Dict& request = base_request.AsDict();
 
         if (request.at("type") == "Bus")
             buses_.push_back(std::make_unique<const json::Dict>(request));
@@ -25,7 +25,7 @@ void JsonReader::ParseStops() {
 
     stops_.reserve(base_requests.size()/2u);
     for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsMap();
+        const json::Dict& request = base_request.AsDict();
 
         if (request.at("type") == "Stop")
             stops_.push_back(std::make_unique<const json::Dict>(request));
@@ -42,7 +42,7 @@ void JsonReader::ParseStats() {
 
     stats_.reserve(stat_requests.size());
     for (const auto& request_node : stat_requests) {
-        const json::Dict& request = request_node.AsMap();
+        const json::Dict& request = request_node.AsDict();
 
         const json::Node& type_name = request.at("type");
         if ("Bus" == type_name || "Stop" == type_name || "Map" == type_name)
@@ -128,7 +128,7 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
         domain::StopPtr stop_ptr = db.SearchStop(
             request->at("name").AsString()
         );
-        for (const auto& [stop_name, distance] : request->at("road_distances").AsMap())
+        for (const auto& [stop_name, distance] : request->at("road_distances").AsDict())
             db.MakeAdjacent(
                 stop_ptr,
                 db.SearchStop(stop_name),
@@ -165,16 +165,16 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
 
         if ("Bus" == request->at("type")) {
             std::cout << handler.GetBusStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id") << '}';
+                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
         } else if ("Stop" == request->at("type")) {
             std::cout << handler.GetStopStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id") << '}';
+                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
         } else if ("Map" == request->at("type")) {
             std::ostringstream out;
             handler.RenderMap().Render(out);
 
-            std::cout << "\"map\": " << json::Node(out.str())
-                      << ", \"request_id\": " << request->at("id") << '}';
+            std::cout << "\"map\": " << json::Document(out.str())
+                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
         } else {
             throw std::invalid_argument(
                 "unable to load stat request type '"
