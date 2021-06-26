@@ -156,4 +156,3 @@ void MapRenderer::DrawStopLabels(
 
 } // end namespace renderer
 } // end namespace transport
-

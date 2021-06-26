@@ -18,6 +18,11 @@ struct Point {
     double x{}, y{};
 };
 
+inline std::ostream& operator<<(std::ostream& out, const Point& point) {
+    out << point.x << ',' << point.y;
+    return out;
+}
+
 struct Rgb {
     Rgb() = default;
     Rgb(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b) {}
@@ -25,25 +30,37 @@ struct Rgb {
     uint8_t red{}, green{}, blue{};
 };
 
+inline std::ostream& operator<<(std::ostream& out, const Rgb& color) {
+    out << "rgb(" << unsigned(color.red)
+        << ',' << unsigned(color.green)
+        << ',' << unsigned(color.blue)
+        << ')';
+    return out;
+}
+
 struct Rgba : public Rgb {
     Rgba() = default;
     Rgba(uint8_t r, uint8_t g, uint8_t b) : Rgb(r, g, b) {}
     Rgba(uint8_t r, uint8_t g, uint8_t b, double a)
         : Rgb(r, g, b)
         , opacity(a)
-    {
-    }
+    {}
 
     double opacity = 1.;
 };
 
+inline std::ostream& operator<<(std::ostream& out, const Rgba& color) {
+    out << "rgba(" << unsigned(color.red)
+        << ',' << unsigned(color.green)
+        << ',' << unsigned(color.blue)
+        << ',' << color.opacity
+        << ')';
+    return out;
+}
+
 using Color = std::variant<std::monostate, std::string, Rgb, Rgba>;
 
 inline const Color NoneColor{};
-
-std::ostream& operator<<(std::ostream& out, const Rgb& color);
-
-std::ostream& operator<<(std::ostream& out, const Rgba& color);
 
 struct ColorPrinter {
     std::ostream& out;
@@ -65,7 +82,10 @@ struct ColorPrinter {
     }
 };
 
-std::ostream& operator<<(std::ostream& out, const Color& color);
+inline std::ostream& operator<<(std::ostream& out, const Color& color) {
+    std::visit(ColorPrinter{out}, color);
+    return out;
+}
 
 /*
  * Вспомогательная структура, хранящая контекст для вывода SVG-документа с отступами.
@@ -85,15 +105,14 @@ struct RenderContext {
         return {out, indent_step, indent + indent_step};
     }
 
-    inline void RenderIndent() const {
-        for (int i = 0; i < indent; ++i)
-            out.put(' ');
-    }
+    void RenderIndent() const;
 
     std::ostream& out;
     int indent_step{};
     int indent{};
 };
+
+// ---------- Object ------------------
 
 /*
  * Абстрактный базовый класс Object служит для унифицированного хранения
