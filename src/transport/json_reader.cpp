@@ -152,29 +152,73 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
     }
 }
 
-void Search(const RequestHandler& handler, const JsonReader& reader) {
-    std::cout << "[\n";
+void ProcessNotFoundRequest(json::Builder& builder, const int id) {
+    builder.StartDict()
+        .Key("error_message").Value("not found")
+        .Key("request_id").Value(id)
+    .EndDict();
+}
 
-    bool is_first = true;
+void ProcessRouteRequest(json::Builder& builder,
+                         const int id,
+                         const std::optional<domain::Route>& route) {
+    if (route)
+        builder.StartDict()
+            .Key("curvature").Value(route->curvature)
+            .Key("request_id").Value(id)
+            .Key("route_length").Value(route->length)
+            .Key("stop_count").Value(static_cast<int>(route->stops_count))
+            .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
+        .EndDict();
+    else
+        ProcessNotFoundRequest(builder, id);
+}
+
+void ProcessStopRequest(json::Builder& builder,
+                        const int id,
+                        const std::optional<domain::StopStat>& stop_stat) {
+    if (stop_stat) {
+        json::Array buses;
+        buses.reserve(stop_stat->unique_buses.size());
+        for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
+            buses.push_back(bus_ptr->name);
+
+        builder.StartDict()
+            .Key("buses").Value(buses)
+            .Key("request_id").Value(id)
+        .EndDict();
+    } else {
+        ProcessNotFoundRequest(builder, id);
+    }
+}
+
+void Search(const RequestHandler& handler, const JsonReader& reader) {
+    json::Builder builder = json::Builder{};
+    builder.StartArray();
+
     for (const auto& request : reader.GetStats()) {
-        if (is_first)
-            is_first = false;
-        else
-            std::cout << ",\n";
-        std::cout << std::string(INDENT_SIZE, ' ') << '{';
+        const int id = request->at("id").AsInt();
 
         if ("Bus" == request->at("type")) {
-            std::cout << handler.GetBusStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
+            ProcessRouteRequest(
+                builder,
+                id,
+                handler.GetBusStat(request->at("name").AsString())
+            );
         } else if ("Stop" == request->at("type")) {
-            std::cout << handler.GetStopStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
+            ProcessStopRequest(
+                builder,
+                id,
+                handler.GetStopStat(request->at("name").AsString())
+            );
         } else if ("Map" == request->at("type")) {
             std::ostringstream out;
             handler.RenderMap().Render(out);
 
-            std::cout << "\"map\": " << json::Document(out.str())
-                      << ", \"request_id\": " << request->at("id").AsInt() << '}';
+            builder.StartDict()
+                .Key("map").Value(out.str())
+                .Key("request_id").Value(request->at("id").AsInt())
+            .EndDict();
         } else {
             throw std::invalid_argument(
                 "unable to load stat request type '"
@@ -182,8 +226,10 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
             );
         }
     }
+    builder.EndArray();
 
-    std::cout << "\n]" << std::endl;
+    json::Print(json::Document(builder.Build()), std::cout);
+    std::cout << std::endl;
 }
 
 } // end namespace io

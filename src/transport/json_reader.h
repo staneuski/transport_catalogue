@@ -5,15 +5,13 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "json/json.h"
+#include "json/json_builder.h"
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
 
 namespace transport {
 namespace io {
-
-static const int INDENT_SIZE = 2;
 
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
@@ -47,7 +45,9 @@ public:
 
 private:
     json::Dict requests_;
-    std::vector<Request> buses_, stops_, stats_;
+    std::vector<Request> buses_;
+    std::vector<Request> stops_;
+    std::vector<Request> stats_;
     Request render_settings_;
 
     static svg::Color ConvertToColor(const json::Node node);
@@ -66,6 +66,16 @@ private:
 };
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader);
+
+void ProcessNotFoundRequest(json::Builder& builder, const int id);
+
+void ProcessRouteRequest(json::Builder& builder,
+                         const int id,
+                         const std::optional<domain::Route>& route);
+
+void ProcessStopRequest(json::Builder& builder,
+                        const int id,
+                        const std::optional<domain::StopStat>& route);
 
 void Search(const RequestHandler& handler, const JsonReader& reader);
 
