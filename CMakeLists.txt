@@ -12,17 +12,12 @@ include_directories(src tests)
 
 set(GEO)
 set(SVG src/svg/svg.cpp)
-set(JSON src/json/json.cpp)
-
-set(TRANSPORT_CATALOGUE src/transport/transport_catalogue.cpp)
-set(TRANSPORT_DOMAIN src/transport/domain.cpp)
-set(TRANSPORT_IO src/transport/json_reader.cpp)
-set(TRANSPORT_RENDERER src/transport/map_renderer.cpp)
+set(JSON src/json/json.cpp src/json/json_builder.cpp)
 set(TRANSPORT
-    ${TRANSPORT_CATALOGUE}
-    ${TRANSPORT_DOMAIN}
-    ${TRANSPORT_IO}
-    ${TRANSPORT_RENDERER})
+    src/transport/domain.cpp
+    src/transport/map_renderer.cpp
+    src/transport/json_reader.cpp
+    src/transport/transport_catalogue.cpp)
 
 set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
 

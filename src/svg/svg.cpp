@@ -89,15 +89,17 @@ Polyline& Polyline::AddPoint(Point point) {
 }
 
 void Polyline::RenderObject(const RenderContext& context) const {
-    std::ostream& out = context.out;
+    auto& out = context.out;
     out << "<polyline points=\"";
 
-    out << points_.front();
-    std::for_each(
-        std::next(points_.begin()), points_.end(),
-        [&out](const Point& p) { out << ' ' << p; }
-    );
-
+    bool is_first = true;
+    for (const Point& p : points_) {
+        if (is_first)
+            is_first = false;
+        else
+            out << ' ';
+        out << p.x << ',' << p.y;
+    }
     out << "\"";
 
     RenderAttrs(out);
@@ -107,7 +109,7 @@ void Polyline::RenderObject(const RenderContext& context) const {
 // ---------- Text --------------------
 
 void Text::RenderObject(const RenderContext& context) const {
-    std::ostream& out = context.out;
+    auto& out = context.out;
     out << "<text" << " x=\"" << position_.x << "\""
                    << " y=\"" << position_.y << "\""
                    << " dx=\"" << offset_.x << "\""

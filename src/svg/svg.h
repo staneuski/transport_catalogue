@@ -10,8 +10,6 @@
 
 namespace svg {
 
-// ---------- Point -------------------
-
 struct Point {
     Point() = default;
 
@@ -20,12 +18,10 @@ struct Point {
     double x{}, y{};
 };
 
-inline std::ostream& operator<<(std::ostream& out, const Point& p) {
-    out << p.x << ',' << p.y;
+inline std::ostream& operator<<(std::ostream& out, const Point& point) {
+    out << point.x << ',' << point.y;
     return out;
 }
-
-// ---------- Rgb ---------------------
 
 struct Rgb {
     Rgb() = default;
@@ -42,16 +38,13 @@ inline std::ostream& operator<<(std::ostream& out, const Rgb& color) {
     return out;
 }
 
-// ---------- Rgba ---------------------
-
 struct Rgba : public Rgb {
     Rgba() = default;
     Rgba(uint8_t r, uint8_t g, uint8_t b) : Rgb(r, g, b) {}
     Rgba(uint8_t r, uint8_t g, uint8_t b, double a)
         : Rgb(r, g, b)
         , opacity(a)
-    {
-    }
+    {}
 
     double opacity = 1.;
 };
@@ -65,44 +58,34 @@ inline std::ostream& operator<<(std::ostream& out, const Rgba& color) {
     return out;
 }
 
-// ---------- Color --------------------
-
 using Color = std::variant<std::monostate, std::string, Rgb, Rgba>;
 
 inline const Color NoneColor{};
 
-// ---------- ColorPrinter -------------
-
-class ColorPrinter {
-public:
-    explicit ColorPrinter(std::ostream& out) : out_(out) {}
+struct ColorPrinter {
+    std::ostream& out;
 
     inline void operator()(std::monostate) const {
-        out_ << "none";
+        out << "none";
     }
 
     inline void operator()(const std::string_view word) const {
-        out_ << word;
+        out << word;
     }
 
     inline void operator()(const Rgb& rgb) {
-        out_ << rgb;
+        out << rgb;
     }
 
     inline void operator()(const Rgba& rgba) {
-        out_ << rgba;
+        out << rgba;
     }
-
-private:
-    std::ostream& out_;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const Color& color) {
     std::visit(ColorPrinter{out}, color);
     return out;
 }
-
-// ---------- RenderContext -------------
 
 /*
  * Вспомогательная структура, хранящая контекст для вывода SVG-документа с отступами.
@@ -209,19 +192,6 @@ private:
     std::optional<StrokeLineJoin> line_join_;
 };
 
-class ObjectContainer {
-public:
-    virtual void AddPtr(std::unique_ptr<Object>&& object) = 0;
-
-    // Метод Add добавляет в svg-документ любой объект-наследник svg::Object.
-    template <typename T>
-    inline void Add(const T& object) {
-        AddPtr(std::make_unique<T>(object));
-    }
-};
-
-// ---------- Circle ------------------
-
 /*
  * Класс Circle моделирует элемент <circle> для отображения круга
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
@@ -239,8 +209,6 @@ private:
     void RenderObject(const RenderContext& context) const override;
 };
 
-// ---------- Polyline ----------------
-
 /*
  * Класс Polyline моделирует элемент <polyline> для отображения ломаных линий
  * https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline
@@ -254,8 +222,6 @@ private:
 
     void RenderObject(const RenderContext& context) const override;
 };
-
-// ---------- Text --------------------
 
 /*
  * Класс Text моделирует элемент <text> для отображения текста
@@ -308,7 +274,16 @@ private:
     void RenderObject(const RenderContext& context) const override;
 };
 
-// ---------- Drawable ----------------
+class ObjectContainer {
+public:
+    virtual void AddPtr(std::unique_ptr<Object>&& object) = 0;
+
+    // Метод Add добавляет в svg-документ любой объект-наследник svg::Object.
+    template <typename T>
+    inline void Add(const T& object) {
+        AddPtr(std::make_unique<T>(object));
+    }
+};
 
 class Drawable {
 public:
@@ -316,8 +291,6 @@ public:
 
     virtual ~Drawable() = default;
 };
-
-// ---------- Document ----------------
 
 class Document : public ObjectContainer {
 public:

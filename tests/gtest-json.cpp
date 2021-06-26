@@ -120,15 +120,15 @@ TEST(json, Array) {
     ASSERT_THROW(LoadJSON("]"s), json::ParsingError);
 
     Node empty_arr_node{Array{}};
-    ASSERT_THROW(empty_arr_node.AsMap(), std::logic_error);
+    ASSERT_THROW(empty_arr_node.AsDict(), std::logic_error);
     ASSERT_THROW(empty_arr_node.AsDouble(), std::logic_error);
     ASSERT_THROW(empty_arr_node.AsBool(), std::logic_error);
 }
 
 TEST(json, Map) {
     Node dict_node{Dict{{"key1"s, "v1"s}, {"key2"s, 42}}};
-    ASSERT_TRUE(dict_node.IsMap());
-    const Dict& dict = dict_node.AsMap();
+    ASSERT_TRUE(dict_node.IsDict());
+    const Dict& dict = dict_node.AsDict();
     ASSERT_EQ(dict.size(), 2);
     ASSERT_EQ(dict.at("key1"s).AsString(), "v1"s);
     ASSERT_EQ(dict.at("key2"s).AsInt(), 42);

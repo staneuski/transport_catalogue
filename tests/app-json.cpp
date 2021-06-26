@@ -1,9 +1,9 @@
-#include "json/json.h"
+#include "json/json_builder.h"
 
 #include <cassert>
 #include <chrono>
+#include <iostream>
 #include <sstream>
-#include <string_view>
 
 namespace {
 
@@ -11,7 +11,7 @@ static const int ARRAY_SIZE = 1'000;
 
 using namespace json;
 
-void Benchmark() {
+int Benchmark() {
     const auto start = std::chrono::steady_clock::now();
 
     Array arr;
@@ -34,8 +34,7 @@ void Benchmark() {
     assert(doc.GetRoot() == arr);
 
     const auto duration = std::chrono::steady_clock::now() - start;
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()
-              << "ms" << std::endl;
+    return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 }
 
 } // end namespace
@@ -43,7 +42,20 @@ void Benchmark() {
 int main() {
     using namespace std;
 
-    Benchmark();
+    json::Print(
+        json::Document{
+            json::Builder{}
+                .StartDict()
+                    .Key("benchmark_ms"s).Value(Benchmark())
+                    .Key("string"s).Value("text"s)
+                    .Key("numeric"s).Value(0.5)
+                    .Key("bool"s).StartArray().Value(true).Value(false).EndArray()
+                .EndDict()
+                .Build()
+        },
+        cout
+    );
+    cout << endl;
 
     return 0;
 }

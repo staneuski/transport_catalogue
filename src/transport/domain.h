@@ -53,7 +53,8 @@ using BusPtr = std::shared_ptr<const Bus>;
 
 struct Route {
     BusPtr ptr;
-    size_t stops_count, unique_stop_count;
+    size_t stops_count;
+    size_t unique_stop_count;
     int length = 0;
     double curvature = 1.;
 };
