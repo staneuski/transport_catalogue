@@ -14,10 +14,15 @@
 namespace transport {
 namespace io {
 
-enum class BaseType { BUS, STOP, };
-
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
+
+    enum class BaseType { BUS, STOP, };
+
+    struct Settings {
+        Request render;
+        Request routing;
+    };
 
 public:
     JsonReader(std::istream& input)
@@ -26,11 +31,18 @@ public:
             ParseBases(BaseType::BUS);
             ParseBases(BaseType::STOP);
         }
+
         if (requests_.find("render_settings") != requests_.end())
-            ParseRenderSettings();
+            ParseSettings("render_settings");
+
+        if (requests_.find("routing_settings") != requests_.end())
+            ParseSettings("routing_settings");
+
         if (requests_.find("stat_requests") != requests_.end())
             ParseStats();
     }
+
+    renderer::Settings GenerateMapSettings() const;
 
     inline const std::vector<Request>& GetBuses() const {
         return buses_;
@@ -39,8 +51,6 @@ public:
     inline const std::vector<Request>& GetStops() const {
         return stops_;
     }
-
-    renderer::Settings GenerateMapSettings() const;
 
     inline const std::vector<Request>& GetStats() const {
         return stats_;
@@ -51,17 +61,15 @@ private:
     std::vector<Request> buses_;
     std::vector<Request> stops_;
     std::vector<Request> stats_;
-    Request render_settings_;
+    Settings settings_;
 
     static svg::Color ConvertToColor(const json::Node node);
 
+    static std::string ConvertRequestType(const BaseType type);
+
     void ParseBases(const BaseType type);
 
-    inline void ParseRenderSettings() {
-        render_settings_ = std::make_unique<const json::Dict>(
-            requests_.at("render_settings").AsDict()
-        );
-    }
+    void ParseSettings(const std::string& setting_key);
 
     void ParseStats();
 };

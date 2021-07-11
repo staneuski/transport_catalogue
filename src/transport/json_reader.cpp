@@ -3,74 +3,14 @@
 namespace transport {
 namespace io {
 
-void ThrowInvalidRequest(const std::string& id, const std::string& type) {
-    throw std::invalid_argument(
-        "unable to load request " + id + " (type='" + type + "')"
-    );
-}
-
-std::string ConvertRequestType(const BaseType type) {
-    switch (type) {
-    case BaseType::BUS:
-        return "Bus";
-    case BaseType::STOP:
-        return "Stop";
-    default:
-        throw std::invalid_argument("transport::io::BaseType: enum class");
-    }
-}
-
-void JsonReader::ParseBases(const BaseType type) {
-    const std::string type_s = ConvertRequestType(type);
-
-    std::vector<Request>* container = nullptr;
-    if (type == BaseType::BUS)
-        container = &buses_;
-    else if (type == BaseType::STOP)
-        container = &stops_;
-
-    const json::Array& base_requests = requests_.at("base_requests").AsArray();
-    container->reserve(base_requests.size()/2u);
-    for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsDict();
-        const json::Node& type_value = request.at("type");
-
-        if (type_value == type_s)
-            container->push_back(std::make_unique<const json::Dict>(request));
-        else if (type_value != "Bus" && type_value != "Stop" && type_value != "Map")
-            ThrowInvalidRequest(
-                request.at("id").AsString(),
-                type_value.AsString()
-            );
-    }
-}
-
-void JsonReader::ParseStats() {
-    const json::Array& stat_requests = requests_.at("stat_requests").AsArray();
-
-    stats_.reserve(stat_requests.size());
-    for (const auto& request_node : stat_requests) {
-        const json::Dict& request = request_node.AsDict();
-        const json::Node& type_value = request.at("type");
-
-        if ("Bus" == type_value || "Stop" == type_value || "Map" == type_value)
-            stats_.push_back(std::make_unique<const json::Dict>(request));
-        else
-            ThrowInvalidRequest(
-                request.at("id").AsString(),
-                type_value.AsString()
-            );
-    }
-}
-
 renderer::Settings JsonReader::GenerateMapSettings() const {
     renderer::Settings settings;
 
     const auto fill = [&](renderer::Settings::Label& label,
                          const std::string& label_key) {
-        const json::Array& arr = render_settings_->at(label_key + "_offset").AsArray();
+        const json::Array& arr = settings_.render->at(label_key + "_offset").AsArray();
         label = {
-            render_settings_->at(label_key + "_font_size").AsInt(),
+            settings_.render->at(label_key + "_font_size").AsInt(),
             {arr.front().AsDouble(), arr.back().AsDouble()}
         };
     };
@@ -79,22 +19,22 @@ renderer::Settings JsonReader::GenerateMapSettings() const {
         return settings;
 
     settings.map_sizes = {
-        render_settings_->at("width").AsDouble(),
-        render_settings_->at("height").AsDouble()
+        settings_.render->at("width").AsDouble(),
+        settings_.render->at("height").AsDouble()
     };
-    settings.padding = render_settings_->at("padding").AsDouble();
-    settings.stop_radius = render_settings_->at("stop_radius").AsDouble();
-    settings.line_width = render_settings_->at("line_width").AsDouble();
+    settings.padding = settings_.render->at("padding").AsDouble();
+    settings.stop_radius = settings_.render->at("stop_radius").AsDouble();
+    settings.line_width = settings_.render->at("line_width").AsDouble();
 
     fill(settings.bus_label, "bus_label");
     fill(settings.stop_label, "stop_label");
 
     settings.underlayer = {
-        render_settings_->at("underlayer_width").AsDouble(),
-        ConvertToColor(render_settings_->at("underlayer_color")),
+        settings_.render->at("underlayer_width").AsDouble(),
+        ConvertToColor(settings_.render->at("underlayer_color")),
     };
 
-    const json::Array& color_palette = render_settings_->at("color_palette").AsArray();
+    const json::Array& color_palette = settings_.render->at("color_palette").AsArray();
     settings.palette.reserve(color_palette.size());
     for (const json::Node& color : color_palette)
         settings.palette.push_back(ConvertToColor(color));
@@ -124,6 +64,76 @@ svg::Color JsonReader::ConvertToColor(const json::Node node) {
         throw std::invalid_argument("unable to convert node value to color");
 
     return color;
+}
+
+std::string JsonReader::ConvertRequestType(const JsonReader::BaseType type) {
+    switch (type) {
+    case JsonReader::BaseType::BUS:
+        return "Bus";
+    case JsonReader::BaseType::STOP:
+        return "Stop";
+    default:
+        throw std::invalid_argument("transport::io::BaseType: enum class");
+    }
+}
+
+void ThrowInvalidRequest(const std::string& id, const std::string& type) {
+    throw std::invalid_argument(
+        "unable to load request " + id + " (type='" + type + "')"
+    );
+}
+
+void JsonReader::ParseBases(const BaseType type) {
+    const std::string type_s = ConvertRequestType(type);
+
+    std::vector<Request>* container = nullptr;
+    if (type == BaseType::BUS)
+        container = &buses_;
+    else if (type == BaseType::STOP)
+        container = &stops_;
+
+    const json::Array& base_requests = requests_.at("base_requests").AsArray();
+    container->reserve(base_requests.size()/2u);
+    for (const auto& base_request : base_requests) {
+        const json::Dict& request = base_request.AsDict();
+        const json::Node& type_value = request.at("type");
+
+        if (type_value == type_s)
+            container->push_back(std::make_unique<const json::Dict>(request));
+        else if (type_value != "Bus" && type_value != "Stop" && type_value != "Map")
+            ThrowInvalidRequest(
+                request.at("id").AsString(),
+                type_value.AsString()
+            );
+    }
+}
+
+void JsonReader::ParseSettings(const std::string& setting_key) {
+    Request settings = std::make_unique<const json::Dict>(
+        requests_.at(setting_key).AsDict()
+    );
+    if (setting_key == "render_settings")
+        settings_.render = std::move(settings);
+    else if (setting_key == "routing_settings")
+        settings_.routing = std::move(settings);
+}
+
+void JsonReader::ParseStats() {
+    const json::Array& stat_requests = requests_.at("stat_requests").AsArray();
+
+    stats_.reserve(stat_requests.size());
+    for (const auto& request_node : stat_requests) {
+        const json::Dict& request = request_node.AsDict();
+        const json::Node& type_value = request.at("type");
+
+        if ("Bus" == type_value || "Stop" == type_value || "Map" == type_value)
+            stats_.push_back(std::make_unique<const json::Dict>(request));
+        else
+            ThrowInvalidRequest(
+                request.at("id").AsString(),
+                type_value.AsString()
+            );
+    }
 }
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
