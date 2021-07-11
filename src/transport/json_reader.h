@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 
@@ -13,6 +14,8 @@
 namespace transport {
 namespace io {
 
+enum class BaseType { BUS, STOP, };
+
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
 
@@ -20,8 +23,8 @@ public:
     JsonReader(std::istream& input)
             : requests_(json::Load(input).GetRoot().AsDict()) {
         if (requests_.find("base_requests") != requests_.end()) {
-            ParseBuses();
-            ParseStops();
+            ParseBases(BaseType::BUS);
+            ParseBases(BaseType::STOP);
         }
         if (requests_.find("render_settings") != requests_.end())
             ParseRenderSettings();
@@ -52,9 +55,7 @@ private:
 
     static svg::Color ConvertToColor(const json::Node node);
 
-    void ParseBuses();
-
-    void ParseStops();
+    void ParseBases(const BaseType type);
 
     inline void ParseRenderSettings() {
         render_settings_ = std::make_unique<const json::Dict>(
