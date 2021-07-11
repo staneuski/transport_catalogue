@@ -30,7 +30,7 @@ set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
 add_executable(main src/main.cpp ${SRC})
 add_executable(app-svg tests/app-svg.cpp ${SVG})
 add_executable(app-json tests/app-json.cpp ${JSON})
-add_executable(input_generator tests/input_generator.cpp)
+add_executable(input_generator tests/input_generator.cpp ${JSON})
 
 
 #######################################
