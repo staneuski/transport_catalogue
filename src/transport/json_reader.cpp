@@ -152,84 +152,86 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
     }
 }
 
-void ProcessNotFoundRequest(json::Builder& builder, const int id) {
-    builder.StartDict()
+json::Node ConstructNotFoundRequest(const int id) {
+    return json::Builder{}.StartDict()
         .Key("error_message").Value("not found")
         .Key("request_id").Value(id)
-    .EndDict();
+    .EndDict()
+    .Build();
 }
 
-void ProcessRouteRequest(json::Builder& builder,
-                         const int id,
-                         const std::optional<domain::Route>& route) {
+json::Node ConstructRouteRequest(const int id,
+                                 const std::optional<domain::Route>& route) {
     if (route)
-        builder.StartDict()
+        return json::Builder{}.StartDict()
             .Key("curvature").Value(route->curvature)
             .Key("request_id").Value(id)
             .Key("route_length").Value(route->length)
             .Key("stop_count").Value(static_cast<int>(route->stops_count))
             .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
-        .EndDict();
+        .EndDict()
+        .Build();
     else
-        ProcessNotFoundRequest(builder, id);
+        return ConstructNotFoundRequest(id);
 }
 
-void ProcessStopRequest(json::Builder& builder,
-                        const int id,
-                        const std::optional<domain::StopStat>& stop_stat) {
+json::Node ConstructStopRequest(const int id,
+                                const std::optional<domain::StopStat>& stop_stat) {
     if (stop_stat) {
         json::Array buses;
         buses.reserve(stop_stat->unique_buses.size());
         for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
             buses.push_back(bus_ptr->name);
 
-        builder.StartDict()
+        return json::Builder{}.StartDict()
             .Key("buses").Value(buses)
             .Key("request_id").Value(id)
-        .EndDict();
+        .EndDict()
+        .Build();
     } else {
-        ProcessNotFoundRequest(builder, id);
+        return ConstructNotFoundRequest(id);
     }
 }
 
 void Search(const RequestHandler& handler, const JsonReader& reader) {
-    json::Builder builder = json::Builder{};
-    builder.StartArray();
-
+    std::vector<json::Node> nodes;
+    nodes.reserve(reader.GetStats().size());
     for (const auto& request : reader.GetStats()) {
-        const json::Node& type = request->at("type");
+        const std::string& type = request->at("type").AsString();
         const int& id = request->at("id").AsInt();
 
         if ("Map" == type) {
             std::ostringstream out;
             handler.RenderMap().Render(out);
-
-            builder.StartDict()
-                .Key("map").Value(out.str())
-                .Key("request_id").Value(id)
-            .EndDict();
+            nodes.push_back(
+                json::Builder{}.StartDict()
+                    .Key("map").Value(out.str())
+                    .Key("request_id").Value(id)
+                .EndDict()
+                .Build()
+            );
         } else if ("Bus" == type) {
-            ProcessRouteRequest(
-                builder,
+            nodes.push_back(ConstructRouteRequest(
                 id,
                 handler.GetBusStat(request->at("name").AsString())
-            );
+            ));
         } else if ("Stop" == type) {
-            ProcessStopRequest(
-                builder,
+            nodes.push_back(ConstructStopRequest(
                 id,
                 handler.GetStopStat(request->at("name").AsString())
-            );
+            ));
         } else {
             throw std::invalid_argument(
-                "unable to load request's type: '" + type.AsString()
+                "unable to load request's type: '" + type
                 + "' (id=" + std::to_string(id) + ")"
             );
         }
     }
-    builder.EndArray();
 
-    json::Print(json::Document(builder.Build()), std::cout);
+    json::Print(
+        json::Document(json::Builder{}.Value(nodes).Build()),
+        std::cout
+    );
     std::cout << std::endl;
 }
 
