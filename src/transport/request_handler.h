@@ -15,16 +15,20 @@ public:
             , renderer_(renderer) {
     }
 
-    inline std::optional<domain::Route> GetBusStat(const std::string_view& bus_name) const {
-        return db_.GetRoute(bus_name);
+    inline std::optional<domain::BusLine> GetBusStat(
+        const std::string_view& bus_name
+    ) const {
+        return db_.GetBusLine(bus_name);
     }
 
-    inline std::optional<domain::StopStat> GetStopStat(const std::string_view& stop_name) const {
+    inline std::optional<domain::StopStat> GetStopStat(
+        const std::string_view& stop_name
+    ) const {
         return db_.GetStop(stop_name);
     }
 
     inline svg::Document RenderMap() const {
-        return renderer_.RenderMap(db_.GetAllRoutes(), db_.GetAllStopStats());
+        return renderer_.RenderMap(db_.GetAllBusLines(), db_.GetAllStopStats());
     }
 
 private:

@@ -56,9 +56,9 @@ struct BusTiming {
     int wait_time; // [min]
 };
 
-// ---------- Route -------------------
+// ---------- BusLine -------------------
 
-struct Route {
+struct BusLine {
     BusPtr ptr;
     size_t stops_count;
     size_t unique_stop_count;

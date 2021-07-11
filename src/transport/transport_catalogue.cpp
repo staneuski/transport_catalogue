@@ -3,7 +3,7 @@
 namespace transport {
 namespace catalogue {
 
-using domain::Bus, domain::BusPtr, domain::Route;
+using domain::Bus, domain::BusPtr, domain::BusLine;
 using domain::Stop, domain::StopPtr, domain::StopStat;
 
 // ---------- TransportCatalogue ------
@@ -35,14 +35,14 @@ void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
     stops_to_distance_[{stop, adjacent_stop}] = metres;
 }
 
-std::optional<Route> TransportCatalogue::GetRoute(
+std::optional<BusLine> TransportCatalogue::GetBusLine(
     const std::string_view& bus_name
 ) const {
     const BusPtr& bus_ptr = SearchBus(bus_name);
     if (!bus_ptr)
         return std::nullopt;
 
-    Route route;
+    BusLine route;
     route.ptr = bus_ptr;
 
     const std::vector<StopPtr>& stops = bus_ptr->stops;
@@ -52,7 +52,7 @@ std::optional<Route> TransportCatalogue::GetRoute(
     route.unique_stop_count = unique_stops.size();
 
     double distance = 0;
-    const auto ComputeRoute = [&](StopPtr stop, StopPtr next_stop) {
+    const auto ComputeBusLine = [&](StopPtr stop, StopPtr next_stop) {
         distance += domain::ComputeDistance(stop, next_stop);
         if (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
             route.length += stops_to_distance_.at({stop, next_stop});
@@ -63,12 +63,12 @@ std::optional<Route> TransportCatalogue::GetRoute(
     };
 
     for (auto it = stops.begin(); it + 1 != stops.end(); ++it)
-        ComputeRoute(*it, *std::next(it));
+        ComputeBusLine(*it, *std::next(it));
 
     if (!bus_ptr->is_roundtrip) {
         route.stops_count = 2*route.stops_count - 1;
         for (auto it = stops.rbegin(); it + 1 != stops.rend(); ++it)
-            ComputeRoute(*it, *std::next(it));
+            ComputeBusLine(*it, *std::next(it));
     }
     route.curvature = route.length/distance;
 
@@ -90,10 +90,10 @@ std::optional<domain::StopStat> TransportCatalogue::GetStop(
     };
 }
 
-domain::SetStat<Route> TransportCatalogue::GetAllRoutes() const {
-    domain::SetStat<Route> routes;
+domain::SetStat<BusLine> TransportCatalogue::GetAllBusLines() const {
+    domain::SetStat<BusLine> routes;
     for (const Bus& bus : buses_)
-        routes.insert(*GetRoute(bus.name));
+        routes.insert(*GetBusLine(bus.name));
     return routes;
 }
 

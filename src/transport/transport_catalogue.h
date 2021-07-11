@@ -49,7 +49,7 @@ public:
                : nullptr;
     }
 
-    std::optional<domain::Route> GetRoute(
+    std::optional<domain::BusLine> GetBusLine(
         const std::string_view& bus_name
     ) const;
 
@@ -57,7 +57,7 @@ public:
         const std::string_view& stop_name
     ) const;
 
-    domain::SetStat<domain::Route> GetAllRoutes() const;
+    domain::SetStat<domain::BusLine> GetAllBusLines() const;
 
     domain::SetStat<domain::StopStat> GetAllStopStats() const;
 

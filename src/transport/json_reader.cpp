@@ -3,6 +3,12 @@
 namespace transport {
 namespace io {
 
+void ThrowInvalidRequest(const std::string& id, const std::string& type) {
+    throw std::invalid_argument(
+        "unable to load request " + id + " (type='" + type + "')"
+    );
+}
+
 renderer::Settings JsonReader::GenerateMapSettings() const {
     renderer::Settings settings;
 
@@ -77,12 +83,6 @@ std::string JsonReader::ConvertRequestType(const JsonReader::BaseType type) {
     }
 }
 
-void ThrowInvalidRequest(const std::string& id, const std::string& type) {
-    throw std::invalid_argument(
-        "unable to load request " + id + " (type='" + type + "')"
-    );
-}
-
 void JsonReader::ParseBases(const BaseType type) {
     const std::string type_s = ConvertRequestType(type);
 
@@ -96,15 +96,12 @@ void JsonReader::ParseBases(const BaseType type) {
     container->reserve(base_requests.size()/2u);
     for (const auto& base_request : base_requests) {
         const json::Dict& request = base_request.AsDict();
-        const json::Node& type_value = request.at("type");
+        const std::string& type_value = request.at("type").AsString();
 
         if (type_value == type_s)
             container->push_back(std::make_unique<const json::Dict>(request));
-        else if (type_value != "Bus" && type_value != "Stop" && type_value != "Map")
-            ThrowInvalidRequest(
-                request.at("id").AsString(),
-                type_value.AsString()
-            );
+        else if (type_names_.find(type_value) == type_names_.end())
+            ThrowInvalidRequest(request.at("id").AsString(), type_value);
     }
 }
 
@@ -124,15 +121,12 @@ void JsonReader::ParseStats() {
     stats_.reserve(stat_requests.size());
     for (const auto& request_node : stat_requests) {
         const json::Dict& request = request_node.AsDict();
-        const json::Node& type_value = request.at("type");
+        const std::string& type_value = request.at("type").AsString();
 
-        if ("Bus" == type_value || "Stop" == type_value || "Map" == type_value)
+        if (type_names_.find(type_value) != type_names_.end())
             stats_.push_back(std::make_unique<const json::Dict>(request));
         else
-            ThrowInvalidRequest(
-                request.at("id").AsString(),
-                type_value.AsString()
-            );
+            ThrowInvalidRequest(request.at("id").AsString(), type_value);
     }
 }
 
@@ -185,8 +179,10 @@ json::Node ConstructNotFoundRequest(const int id) {
     .Build();
 }
 
-json::Node ConstructRouteRequest(const int id,
-                                 const std::optional<domain::Route>& route) {
+json::Node ConstructBusLineRequest(
+    const int id,
+    const std::optional<domain::BusLine>& route
+) {
     if (route)
         return json::Builder{}.StartDict()
             .Key("curvature").Value(route->curvature)
@@ -222,7 +218,7 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
     std::vector<json::Node> nodes;
     nodes.reserve(reader.GetStats().size());
     for (const auto& request : reader.GetStats()) {
-        const json::Node& type_value = request->at("type");
+        const std::string& type_value = request->at("type").AsString();
         const int& id = request->at("id").AsInt();
 
         if (type_value == "Map") {
@@ -236,17 +232,22 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
                 .Build()
             );
         } else if (type_value == "Bus") {
-            nodes.push_back(ConstructRouteRequest(
+            nodes.push_back(ConstructBusLineRequest(
                 id,
                 handler.GetBusStat(request->at("name").AsString())
             ));
+        /*} else if (type_value == "Route") {
+            nodes.push_back(ConstructRouteRequest(
+                id,
+                handler.GetStopStat(request->at("name").AsString())
+            ));*/
         } else if (type_value == "Stop") {
             nodes.push_back(ConstructStopRequest(
                 id,
                 handler.GetStopStat(request->at("name").AsString())
             ));
         } else {
-            ThrowInvalidRequest(std::to_string(id), type_value.AsString());
+            ThrowInvalidRequest(std::to_string(id), type_value);
         }
     }
 

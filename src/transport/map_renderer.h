@@ -96,14 +96,14 @@ public:
     MapRenderer(Settings settings) : settings_(std::move(settings)) {}
 
     svg::Document RenderMap(
-        const domain::SetStat<domain::Route>& routes,
+        const domain::SetStat<domain::BusLine>& routes,
         const domain::SetStat<domain::StopStat>& stop_stats
     ) const;
 
 private:
     Settings settings_;
 
-    inline svg::Color GetRouteColor(const size_t route_counter) const {
+    inline svg::Color GetBusLineColor(const size_t route_counter) const {
         return settings_.palette.at(route_counter % settings_.palette.size());
     }
 
@@ -111,9 +111,9 @@ private:
         const domain::SetStat<domain::StopStat>& stops
     ) const;
 
-    void DrawRouteLines(svg::Document& document,
+    void DrawBusLineLines(svg::Document& document,
                         const SphereProjector& projector,
-                        const domain::SetStat<domain::Route>& routes) const;
+                        const domain::SetStat<domain::BusLine>& routes) const;
 
     void DrawLabel(svg::Document& document,
                    const std::string& content,
@@ -122,9 +122,9 @@ private:
                    const svg::Color& color = svg::Color("black"),
                    const bool is_bold = false) const;
 
-    void DrawRouteLabels(svg::Document& document,
+    void DrawBusLineLabels(svg::Document& document,
                          const SphereProjector& projector,
-                         const domain::SetStat<domain::Route>& routes) const;
+                         const domain::SetStat<domain::BusLine>& routes) const;
 
     void DrawStops(svg::Document& document,
                    const SphereProjector& projector,

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 
@@ -17,7 +18,7 @@ namespace io {
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
 
-    enum class BaseType { BUS, STOP, };
+    enum class BaseType { BUS, STOP, ROUTE, };
 
     struct Settings {
         Request render;
@@ -61,9 +62,11 @@ public:
     }
 
 private:
+    const std::set<std::string> type_names_{"Bus", "Map", "Route", "Stop"};
     json::Dict requests_;
     std::vector<Request> buses_;
     std::vector<Request> stops_;
+    std::vector<Request> routes_;
     std::vector<Request> stats_;
     Settings settings_;
 

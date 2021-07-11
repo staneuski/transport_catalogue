@@ -22,7 +22,7 @@ int main() {
     // io::Populate(db, reader);
 
     renderer::MapRenderer map_renderer = reader.GenerateMapSettings();
-    // cout << map_renderer.RenderMap(db.GetAllRoutes(), db.GetAllStopStats()) << endl;
+    // cout << map_renderer.RenderMap(db.GetAllBusLines(), db.GetAllStopStats()) << endl;
 
     io::RequestHandler handler{db, map_renderer};
     io::Search(handler, reader);

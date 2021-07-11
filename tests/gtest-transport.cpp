@@ -46,16 +46,16 @@ TEST(TransportCatalogue, AddStop) {
     ASSERT_EQ(ptr->coords.lng, 37.208290);
 }
 
-TEST(TransportCatalogue, GetRouteNotExist) {
+TEST(TransportCatalogue, GetBusLineNotExist) {
     const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::Route> route = transport_catalogue.GetRoute("751");
+    const std::optional<domain::BusLine> route = transport_catalogue.GetBusLine("751");
 
     ASSERT_EQ(route, std::nullopt);
 }
 
-TEST(TransportCatalogue, GetRouteCircular) {
+TEST(TransportCatalogue, GetBusLineCircular) {
     const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::Route> route = transport_catalogue.GetRoute("256");
+    const std::optional<domain::BusLine> route = transport_catalogue.GetBusLine("256");
 
     ASSERT_NE(route, std::nullopt);
     ASSERT_EQ(route->stops_count, 6);
@@ -65,9 +65,9 @@ TEST(TransportCatalogue, GetRouteCircular) {
 
 }
 
-TEST(TransportCatalogue, GetRouteNotCircular) {
+TEST(TransportCatalogue, GetBusLineNotCircular) {
     const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::Route> route = transport_catalogue.GetRoute("750");
+    const std::optional<domain::BusLine> route = transport_catalogue.GetBusLine("750");
 
     ASSERT_NE(route, std::nullopt);
     ASSERT_EQ(route->stops_count, 7);
