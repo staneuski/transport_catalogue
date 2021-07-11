@@ -49,6 +49,13 @@ struct Bus {
 };
 using BusPtr = std::shared_ptr<const Bus>;
 
+// ---------- BusTiming ---------------
+
+struct BusTiming {
+    int velocity; // [km/h]
+    int wait_time; // [min]
+};
+
 // ---------- Route -------------------
 
 struct Route {
@@ -71,12 +78,6 @@ struct StopStat {
 inline double ComputeDistance(const StopPtr current, const StopPtr next) {
     return geo::ComputeDistance(current->coords, next->coords);
 }
-
-std::ostream& operator<<(std::ostream& out,
-                         const std::optional<domain::Route>& route);
-
-std::ostream& operator<<(std::ostream& out,
-                         const std::optional<StopStat>& stop_stat);
 
 } // end namespace domain
 } // end namespace transport

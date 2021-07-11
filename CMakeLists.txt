@@ -16,7 +16,6 @@ set(GEO)
 set(SVG src/svg/svg.cpp)
 set(JSON src/json/json.cpp src/json/json_builder.cpp)
 set(TRANSPORT
-    src/transport/domain.cpp
     src/transport/map_renderer.cpp
     src/transport/json_reader.cpp
     src/transport/transport_catalogue.cpp)

@@ -169,6 +169,12 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
             request->at("is_roundtrip").AsBool()
         });
     }
+
+    if (const auto& handler = reader.GetRoutingSettings(); handler)
+        db.SetTiming({
+            handler->at("bus_velocity").AsInt(),
+            handler->at("bus_wait_time").AsInt()
+        });
 }
 
 json::Node ConstructNotFoundRequest(const int id) {

@@ -56,6 +56,10 @@ public:
         return stats_;
     }
 
+    inline const Request& GetRoutingSettings() const {
+        return settings_.routing;
+    }
+
 private:
     json::Dict requests_;
     std::vector<Request> buses_;

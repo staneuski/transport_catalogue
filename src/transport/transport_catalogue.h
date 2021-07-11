@@ -33,6 +33,10 @@ public:
 
     void AddBus(domain::Bus bus);
 
+    inline void SetTiming(domain::BusTiming timing) {
+        timing_ = std::move(timing);
+    }
+
     inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
                ? stop_names_.at(stop_name)
@@ -60,10 +64,12 @@ public:
 private:
     std::deque<domain::Stop> stops_;
     std::deque<domain::Bus> buses_;
+    domain::BusTiming timing_;
     std::unordered_map<std::string_view, domain::StopPtr> stop_names_;
     std::unordered_map<std::string_view, domain::BusPtr> bus_names_;
     std::unordered_map<domain::StopPtr, domain::SetPtr<domain::BusPtr>> stop_to_buses_;
     std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
+
 };
 
 } // end namespace catalogue
