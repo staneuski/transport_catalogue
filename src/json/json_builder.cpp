@@ -8,12 +8,12 @@ KeyItemContext Builder::Key(std::string key) {
     if (!nodes_stack_.back()->IsDict() || nodes_stack_.empty())
         throw std::logic_error("not a dict");
 
-    nodes_stack_.emplace_back(std::make_unique<Node>(key));
+    nodes_stack_.emplace_back(std::make_unique<Node>(std::move(key)));
     return KeyItemContext(*this);
 }
 
 Builder& Builder::Value(Node::Value value) {
-    Node node = std::visit(NodeGetter{}, value);
+    Node node = std::visit(NodeGetter{}, std::move(value));
 
     if (nodes_stack_.empty()) {
         nodes_stack_.emplace_back(std::make_unique<Node>(node));
