@@ -197,32 +197,33 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
     builder.StartArray();
 
     for (const auto& request : reader.GetStats()) {
-        const int id = request->at("id").AsInt();
+        const json::Node& type = request->at("type");
+        const int& id = request->at("id").AsInt();
 
-        if ("Bus" == request->at("type")) {
-            ProcessRouteRequest(
-                builder,
-                id,
-                handler.GetBusStat(request->at("name").AsString())
-            );
-        } else if ("Stop" == request->at("type")) {
-            ProcessStopRequest(
-                builder,
-                id,
-                handler.GetStopStat(request->at("name").AsString())
-            );
-        } else if ("Map" == request->at("type")) {
+        if ("Map" == type) {
             std::ostringstream out;
             handler.RenderMap().Render(out);
 
             builder.StartDict()
                 .Key("map").Value(out.str())
-                .Key("request_id").Value(request->at("id").AsInt())
+                .Key("request_id").Value(id)
             .EndDict();
+        } else if ("Bus" == type) {
+            ProcessRouteRequest(
+                builder,
+                id,
+                handler.GetBusStat(request->at("name").AsString())
+            );
+        } else if ("Stop" == type) {
+            ProcessStopRequest(
+                builder,
+                id,
+                handler.GetStopStat(request->at("name").AsString())
+            );
         } else {
             throw std::invalid_argument(
-                "unable to load stat request type '"
-                + request->at("type").AsString() + "'"
+                "unable to load request's type: '" + type.AsString()
+                + "' (id=" + std::to_string(id) + ")"
             );
         }
     }

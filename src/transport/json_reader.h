@@ -67,16 +67,6 @@ private:
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader);
 
-void ProcessNotFoundRequest(json::Builder& builder, const int id);
-
-void ProcessRouteRequest(json::Builder& builder,
-                         const int id,
-                         const std::optional<domain::Route>& route);
-
-void ProcessStopRequest(json::Builder& builder,
-                        const int id,
-                        const std::optional<domain::StopStat>& route);
-
 void Search(const RequestHandler& handler, const JsonReader& reader);
 
 } // end namespace io

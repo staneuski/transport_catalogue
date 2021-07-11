@@ -5,8 +5,10 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS_DEBUG -fsanitize=address)
 
 add_compile_options(-Wall -Wextra -Werror)
+
 
 include_directories(src tests)
 
@@ -21,12 +23,14 @@ set(TRANSPORT
 
 set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
 
+
 #######################################
 # APPS
 #######################################
 add_executable(main src/main.cpp ${SRC})
 add_executable(app-svg tests/app-svg.cpp ${SVG})
 add_executable(app-json tests/app-json.cpp ${JSON})
+add_executable(input_generator tests/input_generator.cpp)
 
 
 #######################################
