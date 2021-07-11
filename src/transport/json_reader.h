@@ -2,9 +2,10 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 
-#include "json/json.h"
+#include "json/json_builder.h"
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
@@ -12,17 +13,21 @@
 namespace transport {
 namespace io {
 
-static const int INDENT_SIZE = 2;
-
-enum class RequestType { BUS, STOP, };
-
-std::string ConvertRequestType(const RequestType request_t);
-
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
 
 public:
-    JsonReader(std::istream& input);
+    JsonReader(std::istream& input)
+            : requests_(json::Load(input).GetRoot().AsDict()) {
+        if (requests_.find("base_requests") != requests_.end()) {
+            ParseBuses();
+            ParseStops();
+        }
+        if (requests_.find("render_settings") != requests_.end())
+            ParseRenderSettings();
+        if (requests_.find("stat_requests") != requests_.end())
+            ParseStats();
+    }
 
     inline const std::vector<Request>& GetBuses() const {
         return buses_;
@@ -47,20 +52,30 @@ private:
 
     static svg::Color ConvertToColor(const json::Node node);
 
+    void ParseBuses();
+
+    void ParseStops();
+
     inline void ParseRenderSettings() {
         render_settings_ = std::make_unique<const json::Dict>(
-            requests_.at("render_settings").AsMap()
+            requests_.at("render_settings").AsDict()
         );
     }
 
-    void ParseBases(const RequestType type);
-
     void ParseStats();
-
-    void AppendBase(const json::Dict& request, const std::string& type_name);
 };
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader);
+
+void ProcessNotFoundRequest(json::Builder& builder, const int id);
+
+void ProcessRouteRequest(json::Builder& builder,
+                         const int id,
+                         const std::optional<domain::Route>& route);
+
+void ProcessStopRequest(json::Builder& builder,
+                        const int id,
+                        const std::optional<domain::StopStat>& route);
 
 void Search(const RequestHandler& handler, const JsonReader& reader);
 

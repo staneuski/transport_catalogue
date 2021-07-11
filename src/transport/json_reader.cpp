@@ -3,40 +3,38 @@
 namespace transport {
 namespace io {
 
-std::string ConvertRequestType(const RequestType request_e) {
-    switch (request_e) {
-    case RequestType::BUS:
-        return "Bus";
-    case RequestType::STOP:
-        return "Stop";
-    default:
-        throw std::invalid_argument("BaseRequest enumiration option");
-    }
-}
-
-JsonReader::JsonReader(std::istream& input) 
-        : requests_(json::Load(input).GetRoot().AsMap()) {
-    if (requests_.find("base_requests") != requests_.end()) {
-        ParseBases(RequestType::BUS);
-        ParseBases(RequestType::STOP);
-    }
-    if (requests_.find("render_settings") != requests_.end())
-        ParseRenderSettings();
-    if (requests_.find("stat_requests") != requests_.end())
-        ParseStats();
-}
-
-void JsonReader::ParseBases(const RequestType type_e) {
+void JsonReader::ParseBuses() {
     const json::Array& base_requests = requests_.at("base_requests").AsArray();
 
-    if (RequestType::BUS == type_e && !buses_.capacity())
-        buses_.reserve(base_requests.size()/2u);
-    if (RequestType::STOP == type_e && !stops_.capacity())
-        stops_.reserve(base_requests.size()/2u);
+    buses_.reserve(base_requests.size()/2u);
+    for (const auto& base_request : base_requests) {
+        const json::Dict& request = base_request.AsDict();
 
-    const std::string type_name = ConvertRequestType(type_e);
-    for (const auto& base_request : base_requests)
-        AppendBase(base_request.AsMap(), type_name);
+        if (request.at("type") == "Bus")
+            buses_.push_back(std::make_unique<const json::Dict>(request));
+        else if (request.at("type") != "Stop")
+            throw std::invalid_argument(
+                "unable to load base request type '" 
+                + request.at("type").AsString() + "'"
+            );
+    }
+}
+
+void JsonReader::ParseStops() {
+    const json::Array& base_requests = requests_.at("base_requests").AsArray();
+
+    stops_.reserve(base_requests.size()/2u);
+    for (const auto& base_request : base_requests) {
+        const json::Dict& request = base_request.AsDict();
+
+        if (request.at("type") == "Stop")
+            stops_.push_back(std::make_unique<const json::Dict>(request));
+        else if (request.at("type") != "Bus")
+            throw std::invalid_argument(
+                "unable to load base request type '" 
+                + request.at("type").AsString() + "'"
+            );
+    }
 }
 
 void JsonReader::ParseStats() {
@@ -44,29 +42,16 @@ void JsonReader::ParseStats() {
 
     stats_.reserve(stat_requests.size());
     for (const auto& request_node : stat_requests) {
-        const json::Dict& request = request_node.AsMap();
+        const json::Dict& request = request_node.AsDict();
 
-        const json::Node& type_node = request.at("type");
-        if (type_node == "Bus" || type_node == "Stop" || type_node == "Map")
+        const json::Node& type_name = request.at("type");
+        if ("Bus" == type_name || "Stop" == type_name || "Map" == type_name)
             stats_.push_back(std::make_unique<const json::Dict>(request));
         else
             throw std::invalid_argument(
-                "unable to load stat request type '" + type_node.AsString() + "'"
+                "unable to load stat request type '" + type_name.AsString() + "'"
             );
     }
-}
-
-void JsonReader::AppendBase(const json::Dict& request,
-                            const std::string& type_name) {
-    const json::Node& type_node = request.at("type");
-    if (type_node != "Stop" && type_node != "Bus" && type_node != "Map")
-        throw std::invalid_argument(
-            "unable to load request with type '" + type_node.AsString() + "'"
-        );
-    else if (type_name == "Bus" && type_name == type_node)
-        buses_.push_back(std::make_unique<const json::Dict>(request));
-    else if (type_name == "Stop" && type_name == type_node)
-        stops_.push_back(std::make_unique<const json::Dict>(request));
 }
 
 renderer::Settings JsonReader::GenerateMapSettings() const {
@@ -143,7 +128,7 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
         domain::StopPtr stop_ptr = db.SearchStop(
             request->at("name").AsString()
         );
-        for (const auto& [stop_name, distance] : request->at("road_distances").AsMap())
+        for (const auto& [stop_name, distance] : request->at("road_distances").AsDict())
             db.MakeAdjacent(
                 stop_ptr,
                 db.SearchStop(stop_name),
@@ -167,29 +152,73 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
     }
 }
 
-void Search(const RequestHandler& handler, const JsonReader& reader) {
-    std::cout << "[\n";
+void ProcessNotFoundRequest(json::Builder& builder, const int id) {
+    builder.StartDict()
+        .Key("error_message").Value("not found")
+        .Key("request_id").Value(id)
+    .EndDict();
+}
 
-    bool is_first = true;
+void ProcessRouteRequest(json::Builder& builder,
+                         const int id,
+                         const std::optional<domain::Route>& route) {
+    if (route)
+        builder.StartDict()
+            .Key("curvature").Value(route->curvature)
+            .Key("request_id").Value(id)
+            .Key("route_length").Value(route->length)
+            .Key("stop_count").Value(static_cast<int>(route->stops_count))
+            .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
+        .EndDict();
+    else
+        ProcessNotFoundRequest(builder, id);
+}
+
+void ProcessStopRequest(json::Builder& builder,
+                        const int id,
+                        const std::optional<domain::StopStat>& stop_stat) {
+    if (stop_stat) {
+        json::Array buses;
+        buses.reserve(stop_stat->unique_buses.size());
+        for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
+            buses.push_back(bus_ptr->name);
+
+        builder.StartDict()
+            .Key("buses").Value(buses)
+            .Key("request_id").Value(id)
+        .EndDict();
+    } else {
+        ProcessNotFoundRequest(builder, id);
+    }
+}
+
+void Search(const RequestHandler& handler, const JsonReader& reader) {
+    json::Builder builder = json::Builder{};
+    builder.StartArray();
+
     for (const auto& request : reader.GetStats()) {
-        if (is_first)
-            is_first = false;
-        else
-            std::cout << ",\n";
-        std::cout << std::string(INDENT_SIZE, ' ') << '{';
+        const int id = request->at("id").AsInt();
 
         if ("Bus" == request->at("type")) {
-            std::cout << handler.GetBusStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id") << '}';
+            ProcessRouteRequest(
+                builder,
+                id,
+                handler.GetBusStat(request->at("name").AsString())
+            );
         } else if ("Stop" == request->at("type")) {
-            std::cout << handler.GetStopStat(request->at("name").AsString())
-                      << ", \"request_id\": " << request->at("id") << '}';
+            ProcessStopRequest(
+                builder,
+                id,
+                handler.GetStopStat(request->at("name").AsString())
+            );
         } else if ("Map" == request->at("type")) {
             std::ostringstream out;
             handler.RenderMap().Render(out);
 
-            std::cout << "\"map\": " << json::Node(out.str())
-                      << ", \"request_id\": " << request->at("id") << '}';
+            builder.StartDict()
+                .Key("map").Value(out.str())
+                .Key("request_id").Value(request->at("id").AsInt())
+            .EndDict();
         } else {
             throw std::invalid_argument(
                 "unable to load stat request type '"
@@ -197,8 +226,10 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
             );
         }
     }
+    builder.EndArray();
 
-    std::cout << "\n]" << std::endl;
+    json::Print(json::Document(builder.Build()), std::cout);
+    std::cout << std::endl;
 }
 
 } // end namespace io
