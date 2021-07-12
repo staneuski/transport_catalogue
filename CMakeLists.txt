@@ -13,14 +13,15 @@ add_compile_options(-Wall -Wextra -Werror)
 include_directories(src tests)
 
 set(GEO)
-set(SVG src/svg/svg.cpp)
+set(HELPERS)
 set(JSON src/json/json.cpp src/json/json_builder.cpp)
+set(SVG src/svg/svg.cpp)
 set(TRANSPORT
     src/transport/map_renderer.cpp
     src/transport/json_reader.cpp
     src/transport/transport_catalogue.cpp)
 
-set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
+set(SRC ${GEO} ${JSON} ${HELPERS} ${SVG} ${TRANSPORT})
 
 
 #######################################
