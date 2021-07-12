@@ -1,4 +1,5 @@
 #pragma once
+#include "graph.h"
 
 #include <algorithm>
 #include <cassert>
@@ -10,15 +11,20 @@
 #include <utility>
 #include <vector>
 
-#include "graph.h"
-
-namespace geo {
 namespace graph {
 
 template <typename Weight>
 class Router {
 private:
     using Graph = DirectedWeightedGraph<Weight>;
+
+    struct RouteInternalData {
+        Weight weight;
+        std::optional<EdgeId> prev_edge;
+    };
+    using RoutesInternalData = std::vector<std::vector<std::optional<RouteInternalData>>>;
+
+    static constexpr Weight ZERO_WEIGHT{};
 
 public:
     explicit Router(const Graph& graph);
@@ -31,11 +37,8 @@ public:
     std::optional<RouteInfo> BuildRoute(VertexId from, VertexId to) const;
 
 private:
-    struct RouteInternalData {
-        Weight weight;
-        std::optional<EdgeId> prev_edge;
-    };
-    using RoutesInternalData = std::vector<std::vector<std::optional<RouteInternalData>>>;
+    const Graph& graph_;
+    RoutesInternalData routes_internal_data_;
 
     void InitializeRoutesInternalData(const Graph& graph) {
         const size_t vertex_count = graph.GetVertexCount();
@@ -84,10 +87,6 @@ private:
                     if (const auto& route_to = routes_internal_data_[vertex_through][vertex_to])
                         RelaxRoute(vertex_from, vertex_to, *route_from, *route_to);
     }
-
-    static constexpr Weight ZERO_WEIGHT{};
-    const Graph& graph_;
-    RoutesInternalData routes_internal_data_;
 };
 
 template <typename Weight>
@@ -130,4 +129,3 @@ std::optional<typename Router<Weight>::RouteInfo> Router<Weight>::BuildRoute(
 }
 
 }  // namespace graph
-} // namespace geo

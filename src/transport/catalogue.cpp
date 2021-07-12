@@ -1,5 +1,7 @@
 #include "catalogue.h"
 
+#include <algorithm>
+
 namespace transport {
 namespace catalogue {
 
@@ -16,6 +18,16 @@ void TransportCatalogue::AddStop(Stop stop) {
     stop_to_buses_[stop_ptr];
 }
 
+void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
+                                      const StopPtr& adjacent_stop,
+                                      const int metres) {
+    const auto it = stops_to_distance_.find({adjacent_stop, stop});
+    if (it != stops_to_distance_.end() && it->second == metres)
+        return;
+
+    stops_to_distance_[{stop, adjacent_stop}] = metres;
+}
+
 void TransportCatalogue::AddBus(Bus bus) {
     buses_.push_back(std::move(bus));
     const BusPtr& bus_ptr = std::make_shared<const Bus>(buses_.back());
@@ -25,14 +37,26 @@ void TransportCatalogue::AddBus(Bus bus) {
         stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
-void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
-                                      const StopPtr& adjacent_stop,
-                                      const int metres) {
-    const auto it = stops_to_distance_.find({adjacent_stop, stop});
-    if (it != stops_to_distance_.end() && it->second == metres)
-        return;
+std::vector<StopPtr> TransportCatalogue::GetStops() const {
+    std::vector<StopPtr> stops;
+    std::transform(
+        stop_names_.begin(),
+        stop_names_.end(),
+        std::back_inserter(stops),
+        [](const auto& name_to_holder){ return name_to_holder.second; }
+    );
+    return stops;
+}
 
-    stops_to_distance_[{stop, adjacent_stop}] = metres;
+std::vector<BusPtr> TransportCatalogue::GetBuses() const {
+    std::vector<BusPtr> buses;
+    std::transform(
+        bus_names_.begin(),
+        bus_names_.end(),
+        std::back_inserter(buses),
+        [](const auto& name_to_holder){ return name_to_holder.second; }
+    );
+    return buses;
 }
 
 std::optional<BusLine> TransportCatalogue::GetBusLine(

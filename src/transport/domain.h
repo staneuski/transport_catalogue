@@ -41,6 +41,21 @@ struct Stop {
 };
 using StopPtr = std::shared_ptr<const Stop>;
 
+// ---------- AdjacentStops -----------
+
+using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
+
+class AdjacentStopsHasher {
+public:
+    inline size_t operator()(const AdjacentStops adjacent_stops) const {
+        return hash_(adjacent_stops.first.get())
+                + hash_(adjacent_stops.first.get())*37;
+    }
+
+private:
+    std::hash<const void*> hash_;
+};
+
 // ---------- Bus ---------------------
 
 struct Bus {

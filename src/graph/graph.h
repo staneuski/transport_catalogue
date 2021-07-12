@@ -5,7 +5,6 @@
 
 #include "helpers/ranges.h"
 
-namespace geo {
 namespace graph {
 
 using VertexId = size_t;
@@ -26,23 +25,25 @@ private:
 
 public:
     DirectedWeightedGraph() = default;
-    explicit DirectedWeightedGraph(size_t vertex_count);
+
+    explicit DirectedWeightedGraph(size_t vertex_count)
+        : incidence_lists_(vertex_count) {
+    }
+
     EdgeId AddEdge(const Edge<Weight>& edge);
 
     size_t GetVertexCount() const;
+
     size_t GetEdgeCount() const;
+
     const Edge<Weight>& GetEdge(EdgeId edge_id) const;
+
     IncidentEdgesRange GetIncidentEdges(VertexId vertex) const;
 
 private:
     std::vector<Edge<Weight>> edges_;
     std::vector<IncidenceList> incidence_lists_;
 };
-
-template <typename Weight>
-DirectedWeightedGraph<Weight>::DirectedWeightedGraph(size_t vertex_count)
-    : incidence_lists_(vertex_count) {
-}
 
 template <typename Weight>
 EdgeId DirectedWeightedGraph<Weight>::AddEdge(const Edge<Weight>& edge) {
@@ -74,4 +75,3 @@ DirectedWeightedGraph<Weight>::GetIncidentEdges(VertexId vertex) const {
 }
 
 } // namespace graph
-} // namespace geo
