@@ -37,6 +37,7 @@ using SetStat = std::set<Stat, LessStat<Stat>>;
 struct Stop {
     std::string name;
     geo::Coordinates coords;
+    uint16_t wait_time; // [min]
 };
 using StopPtr = std::shared_ptr<const Stop>;
 
@@ -46,17 +47,11 @@ struct Bus {
     std::string name;
     std::vector<StopPtr> stops;
     bool is_roundtrip;
+    uint16_t velocity; // [km/h]
 };
 using BusPtr = std::shared_ptr<const Bus>;
 
-// ---------- BusTiming ---------------
-
-struct BusTiming {
-    int velocity; // [km/h]
-    int wait_time; // [min]
-};
-
-// ---------- BusLine -------------------
+// ---------- BusLine -----------------
 
 struct BusLine {
     BusPtr ptr;
@@ -73,7 +68,7 @@ struct StopStat {
     const SetPtr<BusPtr>& unique_buses;
 };
 
-// ---------- helpers -----------------
+// ------------------------------------
 
 inline double ComputeDistance(const StopPtr current, const StopPtr next) {
     return geo::ComputeDistance(current->coords, next->coords);

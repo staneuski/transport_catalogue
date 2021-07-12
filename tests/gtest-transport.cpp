@@ -37,7 +37,11 @@ TEST(TransportCatalogue, SearchStopNotExist) {
 
 TEST(TransportCatalogue, AddStop) {
     catalogue::TransportCatalogue transport_catalogue;
-    transport_catalogue.AddStop({"A", {55.611087, 37.208290}});
+    transport_catalogue.AddStop(domain::Stop{
+        .name = "A",
+        .coords = {55.611087, 37.208290}
+    });
+
     domain::StopPtr ptr{transport_catalogue.SearchStop("A")};
 
     ASSERT_NE(ptr, nullptr);

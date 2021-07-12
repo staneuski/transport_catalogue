@@ -111,7 +111,7 @@ void JsonReader::ParseSettings(const std::string& setting_key) {
     );
     if (setting_key == "render_settings")
         settings_.render = std::move(settings);
-    else if (setting_key == "routing_settings")
+    else if (setting_key == "routing")
         settings_.routing = std::move(settings);
 }
 
@@ -131,10 +131,18 @@ void JsonReader::ParseStats() {
 }
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
+    // if (const auto& handler = reader.GetRoutingSettings(); handler)
+    //     db.SetTiming({
+    //         handler->at("bus_velocity").AsInt(),
+    //         handler->at("bus_wait_time").AsInt()
+    //     });
+    const auto& routing = reader.GetRoutingSettings();
+
     for (const auto& request : reader.GetStops())
         db.AddStop({
             request->at("name").AsString(),
-            {request->at("latitude").AsDouble(), request->at("longitude").AsDouble()}
+            {request->at("latitude").AsDouble(), request->at("longitude").AsDouble()},
+            static_cast<uint16_t>(routing ? routing->at("bus_wait_time").AsInt() : 0)
         });
 
     for (const auto& request : reader.GetStops()) {
@@ -160,15 +168,10 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
         db.AddBus({
             request->at("name").AsString(),
             stops,
-            request->at("is_roundtrip").AsBool()
+            request->at("is_roundtrip").AsBool(),
+            static_cast<uint16_t>(routing ? routing->at("bus_velocity").AsInt() : 0)
         });
     }
-
-    if (const auto& handler = reader.GetRoutingSettings(); handler)
-        db.SetTiming({
-            handler->at("bus_velocity").AsInt(),
-            handler->at("bus_wait_time").AsInt()
-        });
 }
 
 json::Node ConstructNotFoundRequest(const int id) {
