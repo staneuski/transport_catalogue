@@ -19,7 +19,7 @@ set(SVG src/svg/svg.cpp)
 set(TRANSPORT
     src/transport/map_renderer.cpp
     src/transport/json_reader.cpp
-    src/transport/transport_catalogue.cpp)
+    src/transport/catalogue.cpp)
 
 set(SRC ${GEO} ${JSON} ${HELPERS} ${SVG} ${TRANSPORT})
 
@@ -45,7 +45,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 
-#- transport/transport_catalogue.h
+#- transport/catalogue.h
 add_executable(gtest-transport tests/gtest-transport.cpp ${SRC})
 target_link_libraries(gtest-transport gtest_main)
 add_test(NAME transport COMMAND gtest-transport)

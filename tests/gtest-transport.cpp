@@ -5,8 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include "transport/catalogue.h"
 #include "transport/json_reader.h"
-#include "transport/transport_catalogue.h"
 
 namespace {
 
