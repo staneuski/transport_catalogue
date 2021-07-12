@@ -13,7 +13,7 @@ void Graph::FillStopEdges(const std::vector<domain::StopPtr>& stops) {
 
     for (const auto& [stop_ptr, vertex_id] : stop_to_transfer_) {
         const double wait_time = stop_ptr->wait_time;
-        edges_.insert({
+        id_to_edge_.insert({
             AddEdge({vertex_id.second, vertex_id.first, wait_time}),
             Edge{.from = stop_ptr, .to = stop_ptr, .timerange = wait_time}
         });
@@ -30,6 +30,8 @@ void Graph::FillBusEdges(const std::vector<domain::BusPtr>& buses,
                          const Distances& stops_to_distance) {
     (void) buses;
     (void) stops_to_distance;
+
+
 }
 
 } // namespace transport

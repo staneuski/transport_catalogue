@@ -9,7 +9,7 @@ namespace io {
 
 class RequestHandler {
 public:
-    RequestHandler(const catalogue::TransportCatalogue& transport_catalogue,
+    RequestHandler(const Catalogue& transport_catalogue,
                    const renderer::MapRenderer& renderer)
             : db_(transport_catalogue)
             , renderer_(renderer) {
@@ -32,7 +32,7 @@ public:
     }
 
 private:
-    const catalogue::TransportCatalogue& db_;
+    const Catalogue& db_;
     const renderer::MapRenderer& renderer_;
 };
 

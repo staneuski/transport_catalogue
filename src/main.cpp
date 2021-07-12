@@ -10,7 +10,7 @@ int main() {
     using namespace std;
     using namespace transport;
 
-    catalogue::TransportCatalogue db;
+    transport::Catalogue db;
 
     io::JsonReader reader(cin);
     io::Populate(db, reader);

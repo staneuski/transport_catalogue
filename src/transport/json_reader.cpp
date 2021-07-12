@@ -130,7 +130,7 @@ void JsonReader::ParseStats() {
     }
 }
 
-void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
+void Populate(Catalogue& db, const JsonReader& reader) {
     const auto& routing = reader.GetRoutingSettings();
     const uint16_t bus_wait_time = routing ? routing->at("bus_wait_time").AsInt() : 0;
     const uint16_t bus_velocity = routing ? routing->at("bus_velocity").AsInt() : 0;

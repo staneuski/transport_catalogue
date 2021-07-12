@@ -31,7 +31,7 @@ public:
 
 private:
     std::unordered_map<domain::StopPtr, Transfer> stop_to_transfer_;
-    std::unordered_map<graph::EdgeId, Edge> edges_;
+    std::unordered_map<graph::EdgeId, Edge> id_to_edge_;
 
     void FillStopEdges(const std::vector<domain::StopPtr>& stops);
 

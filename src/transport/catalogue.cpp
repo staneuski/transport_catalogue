@@ -3,14 +3,13 @@
 #include <algorithm>
 
 namespace transport {
-namespace catalogue {
 
 using domain::Bus, domain::BusPtr, domain::BusLine;
 using domain::Stop, domain::StopPtr, domain::StopStat;
 
-// ---------- TransportCatalogue ------
+// ---------- Catalogue ---------------
 
-void TransportCatalogue::AddStop(Stop stop) {
+void Catalogue::AddStop(Stop stop) {
     stops_.push_back(std::move(stop));
     const StopPtr& stop_ptr = std::make_shared<const Stop>(stops_.back());
 
@@ -18,9 +17,9 @@ void TransportCatalogue::AddStop(Stop stop) {
     stop_to_buses_[stop_ptr];
 }
 
-void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
-                                      const StopPtr& adjacent_stop,
-                                      const int metres) {
+void Catalogue::MakeAdjacent(const StopPtr& stop,
+                             const StopPtr& adjacent_stop,
+                             const int metres) {
     const auto it = stops_to_distance_.find({adjacent_stop, stop});
     if (it != stops_to_distance_.end() && it->second == metres)
         return;
@@ -28,7 +27,7 @@ void TransportCatalogue::MakeAdjacent(const StopPtr& stop,
     stops_to_distance_[{stop, adjacent_stop}] = metres;
 }
 
-void TransportCatalogue::AddBus(Bus bus) {
+void Catalogue::AddBus(Bus bus) {
     buses_.push_back(std::move(bus));
     const BusPtr& bus_ptr = std::make_shared<const Bus>(buses_.back());
 
@@ -37,7 +36,7 @@ void TransportCatalogue::AddBus(Bus bus) {
         stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
-std::vector<StopPtr> TransportCatalogue::GetStops() const {
+std::vector<StopPtr> Catalogue::GetStops() const {
     std::vector<StopPtr> stops;
     std::transform(
         stop_names_.begin(),
@@ -48,7 +47,7 @@ std::vector<StopPtr> TransportCatalogue::GetStops() const {
     return stops;
 }
 
-std::vector<BusPtr> TransportCatalogue::GetBuses() const {
+std::vector<BusPtr> Catalogue::GetBuses() const {
     std::vector<BusPtr> buses;
     std::transform(
         bus_names_.begin(),
@@ -59,7 +58,7 @@ std::vector<BusPtr> TransportCatalogue::GetBuses() const {
     return buses;
 }
 
-std::optional<BusLine> TransportCatalogue::GetBusLine(
+std::optional<BusLine> Catalogue::GetBusLine(
     const std::string_view& bus_name
 ) const {
     const BusPtr& bus_ptr = SearchBus(bus_name);
@@ -99,7 +98,7 @@ std::optional<BusLine> TransportCatalogue::GetBusLine(
     return route;
 }
 
-std::optional<domain::StopStat> TransportCatalogue::GetStop(
+std::optional<domain::StopStat> Catalogue::GetStop(
     const std::string_view& stop_name
 ) const {
     const static domain::SetPtr<BusPtr> empty_stop;
@@ -114,14 +113,14 @@ std::optional<domain::StopStat> TransportCatalogue::GetStop(
     };
 }
 
-domain::SetStat<BusLine> TransportCatalogue::GetAllBusLines() const {
+domain::SetStat<BusLine> Catalogue::GetAllBusLines() const {
     domain::SetStat<BusLine> routes;
     for (const Bus& bus : buses_)
         routes.insert(*GetBusLine(bus.name));
     return routes;
 }
 
-domain::SetStat<StopStat> TransportCatalogue::GetAllStopStats() const {
+domain::SetStat<StopStat> Catalogue::GetAllStopStats() const {
     domain::SetStat<StopStat> stop_stats;
     for (const auto& [stop_ptr, buses] : stop_to_buses_)
         if (!buses.empty())
@@ -129,5 +128,4 @@ domain::SetStat<StopStat> TransportCatalogue::GetAllStopStats() const {
     return stop_stats;
 }
 
-} // namespace catalogue
 } // namespace transport

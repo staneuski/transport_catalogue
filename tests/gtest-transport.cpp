@@ -12,37 +12,32 @@ namespace {
 
 using namespace transport;
 
-catalogue::TransportCatalogue InitialiseDatabase() {
-    catalogue::TransportCatalogue transport_catalogue;
+transport::Catalogue InitialiseDatabase(
+    const std::string_view input_json = "../tests/input.json"
+) {
+    transport::Catalogue db;
 
-    if (std::ifstream file("../tests/input.json"); file) {
+    if (std::ifstream file(input_json); file) {
         std::stringstream buffer;
         buffer << file.rdbuf();
-
-        io::Populate(
-            transport_catalogue,
-            io::JsonReader{buffer}
-        );
+        io::Populate(db, io::JsonReader{buffer});
     } else {
-        throw std::invalid_argument("unable to get input.json file");
+        throw std::invalid_argument("unable to get input_json file");
     }
 
-    return transport_catalogue;
+    return db;
 }
 
 TEST(TransportCatalogue, SearchStopNotExist) {
-    catalogue::TransportCatalogue transport_catalogue;
-    ASSERT_EQ(transport_catalogue.SearchStop("A"), nullptr);
+    transport::Catalogue db;
+    ASSERT_EQ(db.SearchStop("A"), nullptr);
 }
 
 TEST(TransportCatalogue, AddStop) {
-    catalogue::TransportCatalogue transport_catalogue;
-    transport_catalogue.AddStop(domain::Stop{
-        .name = "A",
-        .coords = {55.611087, 37.208290}
-    });
+    transport::Catalogue db;
+    db.AddStop(domain::Stop{.name = "A", .coords = {55.611087, 37.208290}});
 
-    domain::StopPtr ptr{transport_catalogue.SearchStop("A")};
+    domain::StopPtr ptr{db.SearchStop("A")};
 
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(ptr->name, "A");
@@ -51,15 +46,15 @@ TEST(TransportCatalogue, AddStop) {
 }
 
 TEST(TransportCatalogue, GetBusLineNotExist) {
-    const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::BusLine> route = transport_catalogue.GetBusLine("751");
+    const transport::Catalogue db{InitialiseDatabase()};
+    const std::optional<domain::BusLine> route = db.GetBusLine("751");
 
     ASSERT_EQ(route, std::nullopt);
 }
 
 TEST(TransportCatalogue, GetBusLineCircular) {
-    const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::BusLine> route = transport_catalogue.GetBusLine("256");
+    const transport::Catalogue db{InitialiseDatabase()};
+    const std::optional<domain::BusLine> route = db.GetBusLine("256");
 
     ASSERT_NE(route, std::nullopt);
     ASSERT_EQ(route->stops_count, 6);
@@ -70,8 +65,8 @@ TEST(TransportCatalogue, GetBusLineCircular) {
 }
 
 TEST(TransportCatalogue, GetBusLineNotCircular) {
-    const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::BusLine> route = transport_catalogue.GetBusLine("750");
+    const transport::Catalogue db{InitialiseDatabase()};
+    const std::optional<domain::BusLine> route = db.GetBusLine("750");
 
     ASSERT_NE(route, std::nullopt);
     ASSERT_EQ(route->stops_count, 7);
@@ -81,15 +76,15 @@ TEST(TransportCatalogue, GetBusLineNotCircular) {
 }
 
 TEST(TransportCatalogue, GetStopNotExist) {
-    const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::StopStat> stop_stat = transport_catalogue.GetStop("Z");
+    const transport::Catalogue db{InitialiseDatabase()};
+    const std::optional<domain::StopStat> stop_stat = db.GetStop("Z");
 
     ASSERT_EQ(stop_stat, std::nullopt);
 }
 
 TEST(TransportCatalogue, GetStopWithoutBuses) {
-    const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::StopStat> stop_stat = transport_catalogue.GetStop("J");
+    const transport::Catalogue db{InitialiseDatabase()};
+    const std::optional<domain::StopStat> stop_stat = db.GetStop("J");
 
     ASSERT_NE(stop_stat, std::nullopt);
     ASSERT_EQ(stop_stat->ptr->name, "J");
@@ -97,8 +92,8 @@ TEST(TransportCatalogue, GetStopWithoutBuses) {
 }
 
 TEST(TransportCatalogue, GetStop) {
-    const catalogue::TransportCatalogue transport_catalogue{InitialiseDatabase()};
-    const std::optional<domain::StopStat> stop_stat = transport_catalogue.GetStop("D");
+    const transport::Catalogue db{InitialiseDatabase()};
+    const std::optional<domain::StopStat> stop_stat = db.GetStop("D");
 
     std::vector<std::string> bus_names;
     bus_names.reserve(stop_stat->unique_buses.size());
