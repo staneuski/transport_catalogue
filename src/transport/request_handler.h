@@ -36,5 +36,5 @@ private:
     const renderer::MapRenderer& renderer_;
 };
 
-} // end namespace io
-} // end namespace transport
+} // namespace io
+} // namespace transport

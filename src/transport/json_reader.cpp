@@ -131,18 +131,15 @@ void JsonReader::ParseStats() {
 }
 
 void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
-    // if (const auto& handler = reader.GetRoutingSettings(); handler)
-    //     db.SetTiming({
-    //         handler->at("bus_velocity").AsInt(),
-    //         handler->at("bus_wait_time").AsInt()
-    //     });
     const auto& routing = reader.GetRoutingSettings();
+    const uint16_t bus_wait_time = routing ? routing->at("bus_wait_time").AsInt() : 0;
+    const uint16_t bus_velocity = routing ? routing->at("bus_velocity").AsInt() : 0;
 
     for (const auto& request : reader.GetStops())
         db.AddStop({
             request->at("name").AsString(),
             {request->at("latitude").AsDouble(), request->at("longitude").AsDouble()},
-            static_cast<uint16_t>(routing ? routing->at("bus_wait_time").AsInt() : 0)
+            bus_wait_time
         });
 
     for (const auto& request : reader.GetStops()) {
@@ -169,7 +166,7 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
             request->at("name").AsString(),
             stops,
             request->at("is_roundtrip").AsBool(),
-            static_cast<uint16_t>(routing ? routing->at("bus_velocity").AsInt() : 0)
+            bus_velocity
         });
     }
 }
@@ -261,5 +258,5 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
     std::cout << std::endl;
 }
 
-} // end namespace io
-} // end namespace transport
+} // namespace io
+} // namespace transport

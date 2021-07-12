@@ -137,5 +137,5 @@ private:
     ) const;
 };
 
-} // end namespace renderer
-} // end namespace transport
+} // namespace renderer
+} // namespace transport

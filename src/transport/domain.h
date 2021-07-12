@@ -74,5 +74,5 @@ inline double ComputeDistance(const StopPtr current, const StopPtr next) {
     return geo::ComputeDistance(current->coords, next->coords);
 }
 
-} // end namespace domain
-} // end namespace transport
+} // namespace domain
+} // namespace transport

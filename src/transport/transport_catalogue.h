@@ -67,5 +67,5 @@ private:
 
 };
 
-} // end namespace catalogue
-} // end namespace transport
+} // namespace catalogue
+} // namespace transport
