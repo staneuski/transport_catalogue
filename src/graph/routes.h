@@ -120,9 +120,7 @@ std::optional<typename Router<Weight>::RouteInfo> Router<Weight>::BuildRoute(
     for (std::optional<EdgeId> edge_id = route_internal_data->prev_edge;
          edge_id;
          edge_id = routes_internal_data_[from][graph_.GetEdge(*edge_id).from]->prev_edge)
-    {
         edges.push_back(*edge_id);
-    }
     std::reverse(edges.begin(), edges.end());
 
     return RouteInfo{weight, std::move(edges)};

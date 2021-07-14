@@ -18,18 +18,12 @@ void Graph::FillStopEdges(const Catalogue& db) {
         const double wait_time = stop_ptr->wait_time;
         id_to_edge_.insert({
             AddEdge({vertex_id.second, vertex_id.first, wait_time}),
-            Edge{.from = stop_ptr, .to = stop_ptr, .timerange = wait_time}
+            Edge{.from = stop_ptr, .to = stop_ptr, .timedelta = wait_time}
         });
     }
 }
 
-namespace {
-
-
-
-} // namespace
-
-std::vector<Graph::Edge> Graph::CreateBusEdges(const Catalogue& db) {
+std::vector<Graph::Edge> Graph::CreateEdgesFromBusLines(const Catalogue& db) {
     const auto& stops_to_distance = db.GetDistances();
     const auto& convert_busline_to_edges = [&](auto first, auto last,
                                                const domain::BusPtr& bus_ptr) {
@@ -63,7 +57,7 @@ std::vector<Graph::Edge> Graph::CreateBusEdges(const Catalogue& db) {
                     .to = stop,
                     .bus = bus_ptr,
                     .stop_count = count++,
-                    .timerange = 60. * distance/bus_ptr->velocity // [h -> min]
+                    .timedelta = 60. * distance/bus_ptr->velocity // [h -> min]
                 });
             }
         }
@@ -84,7 +78,31 @@ std::vector<Graph::Edge> Graph::CreateBusEdges(const Catalogue& db) {
                                       std::make_move_iterator(redges.end()));
         }
     }
+
     return edges;
+}
+
+void Graph::FillBusEdges(const Catalogue& db) {
+    std::unordered_map<graph::VertexId, std::unordered_map<graph::VertexId, Graph::Edge>> vertex_to_edges;
+    for (Graph::Edge& edge : CreateEdgesFromBusLines(db)) {
+        const graph::VertexId from = stop_to_transfer_.at(edge.from).first;
+        const graph::VertexId to = stop_to_transfer_.at(edge.to).second;
+
+        if (vertex_to_edges.find(from) != vertex_to_edges.end()
+         && vertex_to_edges.at(from).find(to) != vertex_to_edges.at(from).end()) {
+            if (edge.timedelta < vertex_to_edges.at(from).at(to).timedelta)
+                vertex_to_edges.at(from).at(to) = std::move(edge);
+        } else {
+            vertex_to_edges[from].emplace(to, std::move(edge));
+        }
+    }
+
+    for (auto& [from, vertex_to_edge] : vertex_to_edges)
+        for (auto& [to, edge] : vertex_to_edge)
+            id_to_edge_.emplace(
+                AddEdge({from, to, edge.timedelta}),
+                std::move(edge)
+            );
 }
 
 } // namespace transport
