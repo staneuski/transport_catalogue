@@ -3,13 +3,12 @@
 
 #include <unordered_map>
 
-#include "domain.h"
+#include "catalogue.h"
 
 namespace transport {
 
 class Graph : public graph::DirectedWeightedGraph<double> {
     using Transfer = std::pair<graph::VertexId, graph::VertexId>;
-    using Distances = std::unordered_map<domain::AdjacentStops, int, domain::AdjacentStopsHasher>;
 
     struct Edge {
         domain::StopPtr from;
@@ -20,23 +19,24 @@ class Graph : public graph::DirectedWeightedGraph<double> {
     };
 
 public:
-    explicit Graph(
-        const std::vector<domain::StopPtr>& stops,
-        const std::vector<domain::BusPtr>& buses,
-        const Distances& stops_to_distance
-    ) : graph::DirectedWeightedGraph<double>(2*stops.size()) {
-        FillStopEdges(stops);
-        FillBusEdges(buses, stops_to_distance);
+    explicit Graph(const Catalogue& db)
+            : graph::DirectedWeightedGraph<double>(2*db.GetStops().size()) {
+        FillStopEdges(db);
+        // FillBusEdges(db);
     }
 
 private:
     std::unordered_map<domain::StopPtr, Transfer> stop_to_transfer_;
     std::unordered_map<graph::EdgeId, Edge> id_to_edge_;
 
-    void FillStopEdges(const std::vector<domain::StopPtr>& stops);
+    static std::vector<Graph::Edge> CreateBusEdges(const Catalogue& db);
 
-    void FillBusEdges(const std::vector<domain::BusPtr>& buses,
-                      const Distances& stops_to_distance);
+    void FillStopEdges(const Catalogue& db);
+
+    // void FillBusEdges(const Catalogue& db);
+
 };
+
+
 
 } // namespace transport

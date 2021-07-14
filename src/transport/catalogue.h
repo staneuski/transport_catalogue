@@ -11,6 +11,18 @@
 namespace transport {
 
 class Catalogue {
+    using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
+
+    class AdjacentStopsHasher {
+    public:
+        inline size_t operator()(const AdjacentStops adjacent_stops) const {
+            return hash_(adjacent_stops.first.get())
+                    + hash_(adjacent_stops.first.get())*37;
+        }
+    private:
+        std::hash<const void*> hash_;
+    };
+
 public:
     void AddStop(domain::Stop stop);
 
@@ -24,7 +36,7 @@ public:
 
     std::vector<domain::BusPtr> GetBuses() const;
 
-    inline std::unordered_map<domain::AdjacentStops, int, domain::AdjacentStopsHasher>
+    inline std::unordered_map<AdjacentStops, int, AdjacentStopsHasher>
     GetDistances() const {
         return stops_to_distance_;
     }
@@ -59,7 +71,7 @@ private:
     std::unordered_map<std::string_view, domain::StopPtr> stop_names_;
     std::unordered_map<std::string_view, domain::BusPtr> bus_names_;
     std::unordered_map<domain::StopPtr, domain::SetPtr<domain::BusPtr>> stop_to_buses_;
-    std::unordered_map<domain::AdjacentStops, int, domain::AdjacentStopsHasher> stops_to_distance_;
+    std::unordered_map<AdjacentStops, int, AdjacentStopsHasher> stops_to_distance_;
 };
 
 } // namespace transport
