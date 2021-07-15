@@ -51,6 +51,17 @@ struct Bus {
 };
 using BusPtr = std::shared_ptr<const Bus>;
 
+// ---------- Edge -------------------
+
+struct Edge {
+    domain::StopPtr from;
+    domain::StopPtr to;
+    domain::BusPtr bus;
+    size_t stop_count;
+    double timedelta;
+};
+using EdgePtr = std::shared_ptr<const Edge>;
+
 // ---------- BusLine -----------------
 
 struct BusLine {
