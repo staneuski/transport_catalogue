@@ -3,15 +3,17 @@
 #include "catalogue.h"
 #include "map_renderer.h"
 #include "request_handler.h"
+#include "router.h"
 
 namespace transport {
 namespace io {
 
 class RequestHandler {
 public:
-    RequestHandler(const Catalogue& transport_catalogue,
+    RequestHandler(const Catalogue& db,
                    const renderer::MapRenderer& renderer)
-            : db_(transport_catalogue)
+            : db_(db)
+            , router_(Router(db))
             , renderer_(renderer) {
     }
 
@@ -27,12 +29,26 @@ public:
         return db_.GetStop(stop_name);
     }
 
+    inline std::optional<domain::Route> GetRoute(
+        const std::string_view& start,
+        const std::string_view& finish
+    ) const {
+        const domain::StopPtr start_ptr = db_.SearchStop(start);
+        const domain::StopPtr finish_ptr = db_.SearchStop(finish);
+
+        if (!start_ptr || !finish_ptr)
+            return std::nullopt;
+
+        return router_.GetRoute(start_ptr, finish_ptr);
+    }
+
     inline svg::Document RenderMap() const {
         return renderer_.RenderMap(db_.GetAllBusLines(), db_.GetAllStopStats());
     }
 
 private:
     const Catalogue& db_;
+    const Router router_;
     const renderer::MapRenderer& renderer_;
 };
 

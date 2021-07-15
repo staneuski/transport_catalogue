@@ -30,6 +30,8 @@ public:
         : incidence_lists_(vertex_count) {
     }
 
+    void Reserve(const size_t size);
+
     EdgeId AddEdge(const Edge<Weight>& edge);
 
     size_t GetVertexCount() const;
@@ -44,6 +46,13 @@ private:
     std::vector<Edge<Weight>> edges_;
     std::vector<IncidenceList> incidence_lists_;
 };
+
+template <typename Weight>
+void DirectedWeightedGraph<Weight>::Reserve(const size_t size) {
+    if (edges_.capacity() < size)
+        edges_.reserve(size);
+    incidence_lists_.resize(size);
+}
 
 template <typename Weight>
 EdgeId DirectedWeightedGraph<Weight>::AddEdge(const Edge<Weight>& edge) {

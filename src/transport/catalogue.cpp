@@ -65,37 +65,37 @@ std::optional<BusLine> Catalogue::GetBusLine(
     if (!bus_ptr)
         return std::nullopt;
 
-    BusLine route;
-    route.ptr = bus_ptr;
+    BusLine bus_line;
+    bus_line.ptr = bus_ptr;
 
     const std::vector<StopPtr>& stops = bus_ptr->stops;
-    route.stops_count = stops.size();
+    bus_line.stops_count = stops.size();
 
     const std::unordered_set<StopPtr> unique_stops{stops.begin(), stops.end()};
-    route.unique_stop_count = unique_stops.size();
+    bus_line.unique_stop_count = unique_stops.size();
 
     double distance = 0;
-    const auto ComputeBusLine = [&](StopPtr stop, StopPtr next_stop) {
+    const auto compute_bus_line = [&](StopPtr stop, StopPtr next_stop) {
         distance += domain::ComputeDistance(stop, next_stop);
         if (stops_to_distance_.find({stop, next_stop}) != stops_to_distance_.end())
-            route.length += stops_to_distance_.at({stop, next_stop});
+            bus_line.length += stops_to_distance_.at({stop, next_stop});
         else if (stops_to_distance_.find({next_stop, stop}) != stops_to_distance_.end())
-            route.length += stops_to_distance_.at({next_stop, stop});
+            bus_line.length += stops_to_distance_.at({next_stop, stop});
         else
-            route.length -= 1;
+            bus_line.length -= 1;
     };
 
     for (auto it = stops.begin(); it + 1 != stops.end(); ++it)
-        ComputeBusLine(*it, *std::next(it));
+        compute_bus_line(*it, *std::next(it));
 
     if (!bus_ptr->is_roundtrip) {
-        route.stops_count = 2*route.stops_count - 1;
+        bus_line.stops_count = 2*bus_line.stops_count - 1;
         for (auto it = stops.rbegin(); it + 1 != stops.rend(); ++it)
-            ComputeBusLine(*it, *std::next(it));
+            compute_bus_line(*it, *std::next(it));
     }
-    route.curvature = route.length/distance;
+    bus_line.curvature = bus_line.length/distance;
 
-    return route;
+    return bus_line;
 }
 
 std::optional<domain::StopStat> Catalogue::GetStop(
@@ -114,10 +114,10 @@ std::optional<domain::StopStat> Catalogue::GetStop(
 }
 
 domain::SetStat<BusLine> Catalogue::GetAllBusLines() const {
-    domain::SetStat<BusLine> routes;
+    domain::SetStat<BusLine> bus_lines;
     for (const Bus& bus : buses_)
-        routes.insert(*GetBusLine(bus.name));
-    return routes;
+        bus_lines.insert(*GetBusLine(bus.name));
+    return bus_lines;
 }
 
 domain::SetStat<StopStat> Catalogue::GetAllStopStats() const {

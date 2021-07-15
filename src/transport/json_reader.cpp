@@ -111,7 +111,7 @@ void JsonReader::ParseSettings(const std::string& setting_key) {
     );
     if (setting_key == "render_settings")
         settings_.render = std::move(settings);
-    else if (setting_key == "routing")
+    else if (setting_key == "routing_settings")
         settings_.routing = std::move(settings);
 }
 
@@ -171,6 +171,8 @@ void Populate(Catalogue& db, const JsonReader& reader) {
     }
 }
 
+namespace {
+
 json::Node ConstructNotFoundRequest(const int id) {
     return json::Builder{}.StartDict()
         .Key("error_message").Value("not found")
@@ -183,8 +185,10 @@ json::Node ConstructBusLineRequest(
     const int id,
     const std::optional<domain::BusLine>& route
 ) {
-    if (route)
-        return json::Builder{}.StartDict()
+    if (!route)
+        return ConstructNotFoundRequest(id);
+
+    return json::Builder{}.StartDict()
             .Key("curvature").Value(route->curvature)
             .Key("request_id").Value(id)
             .Key("route_length").Value(route->length)
@@ -192,27 +196,59 @@ json::Node ConstructBusLineRequest(
             .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
         .EndDict()
         .Build();
-    else
-        return ConstructNotFoundRequest(id);
 }
 
 json::Node ConstructStopRequest(const int id,
                                 const std::optional<domain::StopStat>& stop_stat) {
-    if (stop_stat) {
-        json::Array buses;
-        buses.reserve(stop_stat->unique_buses.size());
-        for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
-            buses.push_back(bus_ptr->name);
-
-        return json::Builder{}.StartDict()
-            .Key("buses").Value(buses)
-            .Key("request_id").Value(id)
-        .EndDict()
-        .Build();
-    } else {
+    if (!stop_stat)
         return ConstructNotFoundRequest(id);
-    }
+
+    json::Array buses;
+    buses.reserve(stop_stat->unique_buses.size());
+    for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
+        buses.push_back(bus_ptr->name);
+
+    return json::Builder{}.StartDict()
+        .Key("buses").Value(buses)
+        .Key("request_id").Value(id)
+    .EndDict()
+    .Build();
 }
+
+json::Node ConstructRouteRequest(const int id,
+                                 const std::optional<domain::Route>& route) {
+    if (!route)
+        return ConstructNotFoundRequest(id);
+
+    json::Array items;
+    items.reserve(route->edges.size());
+    for (const domain::EdgePtr& edge : route->edges)
+        items.push_back(
+            (edge->bus)
+            ? json::Builder{}.StartDict()
+                    .Key("bus").Value(edge->bus->name)
+                    .Key("span_count").Value(edge->stop_count)
+                    .Key("time").Value(edge->timedelta)
+                    .Key("type").Value("Bus")
+                .EndDict()
+                .Build()
+            : json::Builder{}.StartDict()
+                    .Key("stop_name").Value(edge->from->name)
+                    .Key("time").Value(edge->timedelta)
+                    .Key("type").Value("Wait")
+                .EndDict()
+                .Build()
+        );
+
+    return json::Builder{}.StartDict()
+        .Key("items").Value(items)
+        .Key("request_id").Value(id)
+        .Key("total_time").Value(route->timedelta)
+    .EndDict()
+    .Build();
+}
+
+} // namespace
 
 void Search(const RequestHandler& handler, const JsonReader& reader) {
     std::vector<json::Node> nodes;
@@ -224,8 +260,7 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
         if (type_value == "Map") {
             std::ostringstream out;
             handler.RenderMap().Render(out);
-            nodes.push_back(
-                json::Builder{}.StartDict()
+            nodes.push_back(json::Builder{}.StartDict()
                     .Key("map").Value(out.str())
                     .Key("request_id").Value(id)
                 .EndDict()
@@ -236,15 +271,16 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
                 id,
                 handler.GetBusStat(request->at("name").AsString())
             ));
-        /*} else if (type_value == "Route") {
-            nodes.push_back(ConstructRouteRequest(
-                id,
-                handler.GetStopStat(request->at("name").AsString())
-            ));*/
         } else if (type_value == "Stop") {
             nodes.push_back(ConstructStopRequest(
                 id,
                 handler.GetStopStat(request->at("name").AsString())
+            ));
+        } else if (type_value == "Route") {
+            nodes.push_back(ConstructRouteRequest(
+                id,
+                handler.GetRoute(request->at("from").AsString(),
+                                 request->at("to").AsString())
             ));
         } else {
             ThrowInvalidRequest(std::to_string(id), type_value);

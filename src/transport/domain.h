@@ -56,8 +56,8 @@ using BusPtr = std::shared_ptr<const Bus>;
 struct Edge {
     domain::StopPtr from;
     domain::StopPtr to;
-    domain::BusPtr bus;
-    size_t stop_count;
+    domain::BusPtr bus = nullptr;
+    uint8_t stop_count = 0;
     double timedelta;
 };
 using EdgePtr = std::shared_ptr<const Edge>;
@@ -68,7 +68,7 @@ struct BusLine {
     BusPtr ptr;
     size_t stops_count;
     size_t unique_stop_count;
-    int length = 0;
+    int length = 0; // [m]
     double curvature = 1.;
 };
 
@@ -77,6 +77,13 @@ struct BusLine {
 struct StopStat {
     StopPtr ptr;
     const SetPtr<BusPtr>& unique_buses;
+};
+
+// ---------- Route -------------------
+
+struct Route {
+    std::vector<domain::EdgePtr> edges;
+    double timedelta;
 };
 
 // ------------------------------------
