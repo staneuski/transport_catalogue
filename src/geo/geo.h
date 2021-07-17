@@ -18,4 +18,4 @@ inline double ComputeDistance(Coordinates from, Coordinates to) {
     );
 }
 
-} // end namespace geo
+} // namespace geo

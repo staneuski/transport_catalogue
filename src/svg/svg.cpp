@@ -160,4 +160,4 @@ void Document::Render(std::ostream& out) const {
     out << "</svg>";
 }
 
-} // end namespace svg
+} // namespace svg

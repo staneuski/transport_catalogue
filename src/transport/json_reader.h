@@ -1,14 +1,16 @@
 #pragma once
+#include "json/json_builder.h"
 
 #include <iostream>
 #include <memory>
+#include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 
-#include "json/json_builder.h"
+#include "catalogue.h"
 #include "map_renderer.h"
 #include "request_handler.h"
-#include "transport_catalogue.h"
 
 namespace transport {
 namespace io {
@@ -16,18 +18,32 @@ namespace io {
 class JsonReader {
     using Request = std::unique_ptr<const json::Dict>;
 
+    enum class BaseType { BUS, STOP, ROUTE, };
+
+    struct Settings {
+        Request render;
+        Request routing;
+    };
+
 public:
     JsonReader(std::istream& input)
             : requests_(json::Load(input).GetRoot().AsDict()) {
         if (requests_.find("base_requests") != requests_.end()) {
-            ParseBuses();
-            ParseStops();
+            ParseBases(BaseType::BUS);
+            ParseBases(BaseType::STOP);
         }
+
         if (requests_.find("render_settings") != requests_.end())
-            ParseRenderSettings();
+            ParseSettings("render_settings");
+
+        if (requests_.find("routing_settings") != requests_.end())
+            ParseSettings("routing_settings");
+
         if (requests_.find("stat_requests") != requests_.end())
             ParseStats();
     }
+
+    renderer::Settings GenerateMapSettings() const;
 
     inline const std::vector<Request>& GetBuses() const {
         return buses_;
@@ -37,37 +53,37 @@ public:
         return stops_;
     }
 
-    renderer::Settings GenerateMapSettings() const;
-
     inline const std::vector<Request>& GetStats() const {
         return stats_;
     }
 
+    inline const Request& GetRoutingSettings() const {
+        return settings_.routing;
+    }
+
 private:
+    const std::set<std::string> type_names_{"Bus", "Map", "Route", "Stop"};
     json::Dict requests_;
     std::vector<Request> buses_;
     std::vector<Request> stops_;
+    std::vector<Request> routes_;
     std::vector<Request> stats_;
-    Request render_settings_;
+    Settings settings_;
 
     static svg::Color ConvertToColor(const json::Node node);
 
-    void ParseBuses();
+    static std::string ConvertRequestType(const BaseType type);
 
-    void ParseStops();
+    void ParseBases(const BaseType type);
 
-    inline void ParseRenderSettings() {
-        render_settings_ = std::make_unique<const json::Dict>(
-            requests_.at("render_settings").AsDict()
-        );
-    }
+    void ParseSettings(const std::string& setting_key);
 
     void ParseStats();
 };
 
-void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader);
+void Populate(Catalogue& db, const JsonReader& reader);
 
 void Search(const RequestHandler& handler, const JsonReader& reader);
 
-} // end namespace io
-} // end namespace transport
+} // namespace io
+} // namespace transport

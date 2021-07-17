@@ -72,4 +72,4 @@ KeyItemContext DictItemContext::Key(std::string value) {
     return Get().Key(std::move(value));
 }
 
-} // end namespace json
+} // namespace json

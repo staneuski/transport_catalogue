@@ -3,55 +3,10 @@
 namespace transport {
 namespace io {
 
-void JsonReader::ParseBuses() {
-    const json::Array& base_requests = requests_.at("base_requests").AsArray();
-
-    buses_.reserve(base_requests.size()/2u);
-    for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsDict();
-
-        if (request.at("type") == "Bus")
-            buses_.push_back(std::make_unique<const json::Dict>(request));
-        else if (request.at("type") != "Stop")
-            throw std::invalid_argument(
-                "unable to load base request type '" 
-                + request.at("type").AsString() + "'"
-            );
-    }
-}
-
-void JsonReader::ParseStops() {
-    const json::Array& base_requests = requests_.at("base_requests").AsArray();
-
-    stops_.reserve(base_requests.size()/2u);
-    for (const auto& base_request : base_requests) {
-        const json::Dict& request = base_request.AsDict();
-
-        if (request.at("type") == "Stop")
-            stops_.push_back(std::make_unique<const json::Dict>(request));
-        else if (request.at("type") != "Bus")
-            throw std::invalid_argument(
-                "unable to load base request type '" 
-                + request.at("type").AsString() + "'"
-            );
-    }
-}
-
-void JsonReader::ParseStats() {
-    const json::Array& stat_requests = requests_.at("stat_requests").AsArray();
-
-    stats_.reserve(stat_requests.size());
-    for (const auto& request_node : stat_requests) {
-        const json::Dict& request = request_node.AsDict();
-
-        const json::Node& type_name = request.at("type");
-        if ("Bus" == type_name || "Stop" == type_name || "Map" == type_name)
-            stats_.push_back(std::make_unique<const json::Dict>(request));
-        else
-            throw std::invalid_argument(
-                "unable to load stat request type '" + type_name.AsString() + "'"
-            );
-    }
+void ThrowInvalidRequest(const std::string& id, const std::string& type) {
+    throw std::invalid_argument(
+        "unable to load request " + id + " (type='" + type + "')"
+    );
 }
 
 renderer::Settings JsonReader::GenerateMapSettings() const {
@@ -59,9 +14,9 @@ renderer::Settings JsonReader::GenerateMapSettings() const {
 
     const auto fill = [&](renderer::Settings::Label& label,
                          const std::string& label_key) {
-        const json::Array& arr = render_settings_->at(label_key + "_offset").AsArray();
+        const json::Array& arr = settings_.render->at(label_key + "_offset").AsArray();
         label = {
-            render_settings_->at(label_key + "_font_size").AsInt(),
+            settings_.render->at(label_key + "_font_size").AsInt(),
             {arr.front().AsDouble(), arr.back().AsDouble()}
         };
     };
@@ -70,22 +25,22 @@ renderer::Settings JsonReader::GenerateMapSettings() const {
         return settings;
 
     settings.map_sizes = {
-        render_settings_->at("width").AsDouble(),
-        render_settings_->at("height").AsDouble()
+        settings_.render->at("width").AsDouble(),
+        settings_.render->at("height").AsDouble()
     };
-    settings.padding = render_settings_->at("padding").AsDouble();
-    settings.stop_radius = render_settings_->at("stop_radius").AsDouble();
-    settings.line_width = render_settings_->at("line_width").AsDouble();
+    settings.padding = settings_.render->at("padding").AsDouble();
+    settings.stop_radius = settings_.render->at("stop_radius").AsDouble();
+    settings.line_width = settings_.render->at("line_width").AsDouble();
 
     fill(settings.bus_label, "bus_label");
     fill(settings.stop_label, "stop_label");
 
     settings.underlayer = {
-        render_settings_->at("underlayer_width").AsDouble(),
-        ConvertToColor(render_settings_->at("underlayer_color")),
+        settings_.render->at("underlayer_width").AsDouble(),
+        ConvertToColor(settings_.render->at("underlayer_color")),
     };
 
-    const json::Array& color_palette = render_settings_->at("color_palette").AsArray();
+    const json::Array& color_palette = settings_.render->at("color_palette").AsArray();
     settings.palette.reserve(color_palette.size());
     for (const json::Node& color : color_palette)
         settings.palette.push_back(ConvertToColor(color));
@@ -112,16 +67,79 @@ svg::Color JsonReader::ConvertToColor(const json::Node node) {
             node.AsArray().at(3).AsDouble()
         );
     else
-        throw std::invalid_argument("unable to colvert node value to color");
+        throw std::invalid_argument("unable to convert node value to color");
 
     return color;
 }
 
-void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
+std::string JsonReader::ConvertRequestType(const JsonReader::BaseType type) {
+    switch (type) {
+    case JsonReader::BaseType::BUS:
+        return "Bus";
+    case JsonReader::BaseType::STOP:
+        return "Stop";
+    default:
+        throw std::invalid_argument("transport::io::BaseType: enum class");
+    }
+}
+
+void JsonReader::ParseBases(const BaseType type) {
+    const std::string type_s = ConvertRequestType(type);
+
+    std::vector<Request>* container = nullptr;
+    if (type == BaseType::BUS)
+        container = &buses_;
+    else if (type == BaseType::STOP)
+        container = &stops_;
+
+    const json::Array& base_requests = requests_.at("base_requests").AsArray();
+    container->reserve(base_requests.size()/2u);
+    for (const auto& base_request : base_requests) {
+        const json::Dict& request = base_request.AsDict();
+        const std::string& type_value = request.at("type").AsString();
+
+        if (type_value == type_s)
+            container->push_back(std::make_unique<const json::Dict>(request));
+        else if (type_names_.find(type_value) == type_names_.end())
+            ThrowInvalidRequest(request.at("id").AsString(), type_value);
+    }
+}
+
+void JsonReader::ParseSettings(const std::string& setting_key) {
+    Request settings = std::make_unique<const json::Dict>(
+        requests_.at(setting_key).AsDict()
+    );
+    if (setting_key == "render_settings")
+        settings_.render = std::move(settings);
+    else if (setting_key == "routing_settings")
+        settings_.routing = std::move(settings);
+}
+
+void JsonReader::ParseStats() {
+    const json::Array& stat_requests = requests_.at("stat_requests").AsArray();
+
+    stats_.reserve(stat_requests.size());
+    for (const auto& request_node : stat_requests) {
+        const json::Dict& request = request_node.AsDict();
+        const std::string& type_value = request.at("type").AsString();
+
+        if (type_names_.find(type_value) != type_names_.end())
+            stats_.push_back(std::make_unique<const json::Dict>(request));
+        else
+            ThrowInvalidRequest(request.at("id").AsString(), type_value);
+    }
+}
+
+void Populate(Catalogue& db, const JsonReader& reader) {
+    const auto& routing = reader.GetRoutingSettings();
+    const uint16_t bus_wait_time = routing ? routing->at("bus_wait_time").AsInt() : 0;
+    const uint16_t bus_velocity = routing ? routing->at("bus_velocity").AsInt() : 0;
+
     for (const auto& request : reader.GetStops())
         db.AddStop({
             request->at("name").AsString(),
-            {request->at("latitude").AsDouble(), request->at("longitude").AsDouble()}
+            {request->at("latitude").AsDouble(), request->at("longitude").AsDouble()},
+            bus_wait_time
         });
 
     for (const auto& request : reader.GetStops()) {
@@ -147,10 +165,13 @@ void Populate(catalogue::TransportCatalogue& db, const JsonReader& reader) {
         db.AddBus({
             request->at("name").AsString(),
             stops,
-            request->at("is_roundtrip").AsBool()
+            request->at("is_roundtrip").AsBool(),
+            bus_velocity
         });
     }
 }
+
+namespace {
 
 json::Node ConstructNotFoundRequest(const int id) {
     return json::Builder{}.StartDict()
@@ -160,10 +181,14 @@ json::Node ConstructNotFoundRequest(const int id) {
     .Build();
 }
 
-json::Node ConstructRouteRequest(const int id,
-                                 const std::optional<domain::Route>& route) {
-    if (route)
-        return json::Builder{}.StartDict()
+json::Node ConstructBusLineRequest(
+    const int id,
+    const std::optional<domain::BusLine>& route
+) {
+    if (!route)
+        return ConstructNotFoundRequest(id);
+
+    return json::Builder{}.StartDict()
             .Key("curvature").Value(route->curvature)
             .Key("request_id").Value(id)
             .Key("route_length").Value(route->length)
@@ -171,60 +196,94 @@ json::Node ConstructRouteRequest(const int id,
             .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
         .EndDict()
         .Build();
-    else
-        return ConstructNotFoundRequest(id);
 }
 
 json::Node ConstructStopRequest(const int id,
                                 const std::optional<domain::StopStat>& stop_stat) {
-    if (stop_stat) {
-        json::Array buses;
-        buses.reserve(stop_stat->unique_buses.size());
-        for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
-            buses.push_back(bus_ptr->name);
-
-        return json::Builder{}.StartDict()
-            .Key("buses").Value(buses)
-            .Key("request_id").Value(id)
-        .EndDict()
-        .Build();
-    } else {
+    if (!stop_stat)
         return ConstructNotFoundRequest(id);
-    }
+
+    json::Array buses;
+    buses.reserve(stop_stat->unique_buses.size());
+    for (const domain::BusPtr& bus_ptr : stop_stat->unique_buses)
+        buses.push_back(bus_ptr->name);
+
+    return json::Builder{}.StartDict()
+        .Key("buses").Value(buses)
+        .Key("request_id").Value(id)
+    .EndDict()
+    .Build();
 }
+
+json::Node ConstructRouteRequest(const int id,
+                                 const std::optional<domain::Route>& route) {
+    if (!route)
+        return ConstructNotFoundRequest(id);
+
+    json::Array items;
+    items.reserve(route->edges.size());
+    for (const domain::EdgePtr& edge : route->edges)
+        items.push_back(
+            (edge->bus)
+            ? json::Builder{}.StartDict()
+                    .Key("bus").Value(edge->bus->name)
+                    .Key("span_count").Value(edge->stop_count)
+                    .Key("time").Value(edge->timedelta)
+                    .Key("type").Value("Bus")
+                .EndDict()
+                .Build()
+            : json::Builder{}.StartDict()
+                    .Key("stop_name").Value(edge->from->name)
+                    .Key("time").Value(edge->timedelta)
+                    .Key("type").Value("Wait")
+                .EndDict()
+                .Build()
+        );
+
+    return json::Builder{}.StartDict()
+        .Key("items").Value(items)
+        .Key("request_id").Value(id)
+        .Key("total_time").Value(route->timedelta)
+    .EndDict()
+    .Build();
+}
+
+} // namespace
 
 void Search(const RequestHandler& handler, const JsonReader& reader) {
     std::vector<json::Node> nodes;
     nodes.reserve(reader.GetStats().size());
     for (const auto& request : reader.GetStats()) {
-        const std::string& type = request->at("type").AsString();
+        const std::string& type_value = request->at("type").AsString();
         const int& id = request->at("id").AsInt();
 
-        if ("Map" == type) {
+        if (type_value == "Map") {
             std::ostringstream out;
             handler.RenderMap().Render(out);
-            nodes.push_back(
-                json::Builder{}.StartDict()
+            nodes.push_back(json::Builder{}.StartDict()
                     .Key("map").Value(out.str())
                     .Key("request_id").Value(id)
                 .EndDict()
                 .Build()
             );
-        } else if ("Bus" == type) {
-            nodes.push_back(ConstructRouteRequest(
+        } else if (type_value == "Bus") {
+            nodes.push_back(ConstructBusLineRequest(
                 id,
                 handler.GetBusStat(request->at("name").AsString())
             ));
-        } else if ("Stop" == type) {
+        } else if (type_value == "Stop") {
             nodes.push_back(ConstructStopRequest(
                 id,
                 handler.GetStopStat(request->at("name").AsString())
             ));
+        } else if (type_value == "Route") {
+            nodes.push_back(ConstructRouteRequest(
+                id,
+                handler.GetRoute(request->at("from").AsString(),
+                                 request->at("to").AsString())
+            ));
         } else {
-            throw std::invalid_argument(
-                "unable to load request's type: '" + type
-                + "' (id=" + std::to_string(id) + ")"
-            );
+            ThrowInvalidRequest(std::to_string(id), type_value);
         }
     }
 
@@ -235,5 +294,5 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
     std::cout << std::endl;
 }
 
-} // end namespace io
-} // end namespace transport
+} // namespace io
+} // namespace transport
