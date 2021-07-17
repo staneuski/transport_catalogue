@@ -36,11 +36,6 @@ public:
 
     std::vector<domain::BusPtr> GetBuses() const;
 
-    inline std::unordered_map<AdjacentStops, int, AdjacentStopsHasher>
-    GetDistances() const {
-        return stops_to_distance_;
-    }
-
     std::optional<domain::BusLine> GetBusLine(
         const std::string_view& bus_name
     ) const;
@@ -52,6 +47,19 @@ public:
     domain::SetStat<domain::BusLine> GetAllBusLines() const;
 
     domain::SetStat<domain::StopStat> GetAllStopStats() const;
+
+    inline size_t GetStopCount() const {
+        return stops_.size();
+    }
+
+    inline size_t GetBusCount() const {
+        return buses_.size();
+    }
+
+    inline const std::unordered_map<AdjacentStops, int, AdjacentStopsHasher>&
+    GetDistances() const {
+        return stops_to_distance_;
+    }
 
     inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())

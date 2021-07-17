@@ -1,5 +1,5 @@
 #pragma once
-#include "graph/routes.h"
+#include "graph/router.h"
 
 #include <memory>
 #include <optional>
@@ -13,7 +13,7 @@ class Router {
     using Transfer = std::pair<graph::VertexId, graph::VertexId>;
 
 public:
-    explicit Router(const Catalogue& db) {
+    explicit Router(const Catalogue& db) : graph_(2*db.GetStopCount()) {
         FillStopEdges(db);
         FillBusEdges(db);
         router_ = std::make_unique<graph::Router<double>>(

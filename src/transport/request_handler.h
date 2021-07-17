@@ -13,8 +13,8 @@ public:
     RequestHandler(const Catalogue& db,
                    const renderer::MapRenderer& renderer)
             : db_(db)
-            , router_(Router(db))
-            , renderer_(renderer) {
+            , renderer_(renderer)
+            , router_(Router(db)) {
     }
 
     inline std::optional<domain::BusLine> GetBusStat(
@@ -48,8 +48,8 @@ public:
 
 private:
     const Catalogue& db_;
-    const Router router_;
     const renderer::MapRenderer& renderer_;
+    const Router router_;
 };
 
 } // namespace io

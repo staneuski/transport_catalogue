@@ -48,13 +48,6 @@ private:
 };
 
 template <typename Weight>
-void DirectedWeightedGraph<Weight>::Reserve(const size_t size) {
-    if (edges_.capacity() < size)
-        edges_.reserve(size);
-    incidence_lists_.resize(size);
-}
-
-template <typename Weight>
 EdgeId DirectedWeightedGraph<Weight>::AddEdge(const Edge<Weight>& edge) {
     edges_.push_back(edge);
     const EdgeId id = edges_.size() - 1;

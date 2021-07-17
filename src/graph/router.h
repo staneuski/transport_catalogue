@@ -51,16 +51,11 @@ private:
             for (const EdgeId edge_id : graph.GetIncidentEdges(vertex)) {
                 const auto& edge = graph.GetEdge(edge_id);
                 if (edge.weight < ZERO_WEIGHT)
-                    throw std::domain_error(
-                        "Edges' weights should be non-negative"
-                    );
+                    throw std::domain_error("Edges' weights should be non-negative");
 
                 auto& route_internal_data = routes_internal_data_[vertex][edge.to];
-                if (!route_internal_data
-                || route_internal_data->weight > edge.weight)
-                    route_internal_data = RouteInternalData{
-                        edge.weight, edge_id
-                    };
+                if (!route_internal_data || route_internal_data->weight > edge.weight)
+                    route_internal_data = RouteInternalData{edge.weight, edge_id};
             }
         }
     }
@@ -91,12 +86,11 @@ private:
 
 template <typename Weight>
 Router<Weight>::Router(const Graph& graph)
-    : graph_(graph)
-    , routes_internal_data_(
-        graph.GetVertexCount(),
-        std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount())
-    )
-{
+        : graph_(graph)
+        , routes_internal_data_(
+            graph.GetVertexCount(),
+            std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount())
+        ) {
     InitializeRoutesInternalData(graph);
 
     const size_t vertex_count = graph.GetVertexCount();
