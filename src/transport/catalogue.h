@@ -17,7 +17,7 @@ class Catalogue {
     public:
         inline size_t operator()(const AdjacentStops adjacent_stops) const {
             return hash_(adjacent_stops.first.get())
-                    + hash_(adjacent_stops.first.get())*37;
+                   + hash_(adjacent_stops.first.get())*37;
         }
     private:
         std::hash<const void*> hash_;
@@ -31,10 +31,6 @@ public:
                       const int distance);
 
     void AddBus(domain::Bus bus);
-
-    std::vector<domain::StopPtr> GetStops() const;
-
-    std::vector<domain::BusPtr> GetBuses() const;
 
     std::optional<domain::BusLine> GetBusLine(
         const std::string_view& bus_name
@@ -54,6 +50,16 @@ public:
 
     inline size_t GetBusCount() const {
         return buses_.size();
+    }
+
+    inline const std::unordered_map<std::string_view, domain::StopPtr>&
+    GetStopsHolder() const {
+        return stop_names_;
+    }
+
+    inline const std::unordered_map<std::string_view, domain::BusPtr>&
+    GetBusesHolder() const {
+        return bus_names_;
     }
 
     inline const std::unordered_map<AdjacentStops, int, AdjacentStopsHasher>&

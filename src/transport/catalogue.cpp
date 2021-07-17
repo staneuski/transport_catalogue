@@ -36,28 +36,6 @@ void Catalogue::AddBus(Bus bus) {
         stop_to_buses_.at(stop_ptr).insert(bus_ptr);
 }
 
-std::vector<StopPtr> Catalogue::GetStops() const {
-    std::vector<StopPtr> stops;
-    std::transform(
-        stop_names_.begin(),
-        stop_names_.end(),
-        std::back_inserter(stops),
-        [](const auto& name_to_holder){ return name_to_holder.second; }
-    );
-    return stops;
-}
-
-std::vector<BusPtr> Catalogue::GetBuses() const {
-    std::vector<BusPtr> buses;
-    std::transform(
-        bus_names_.begin(),
-        bus_names_.end(),
-        std::back_inserter(buses),
-        [](const auto& name_to_holder){ return name_to_holder.second; }
-    );
-    return buses;
-}
-
 std::optional<BusLine> Catalogue::GetBusLine(
     const std::string_view& bus_name
 ) const {

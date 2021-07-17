@@ -9,7 +9,7 @@ using graph::EdgeId, graph::VertexId;
 
 void Router::FillStopEdges(const Catalogue& db) {
     graph::VertexId vertex_id = {};
-    for (const domain::StopPtr& stop_ptr : db.GetStops()) {
+    for (const auto& [_, stop_ptr] : db.GetStopsHolder()) {
         stop_to_transfer_.emplace(stop_ptr, Transfer{vertex_id, vertex_id++});
         ++vertex_id;
     }
@@ -60,14 +60,18 @@ std::vector<domain::Edge> Router::CreateEdgesFromBusLines(const Catalogue& db) {
     };
 
     std::vector<domain::Edge> edges;
-    for (const domain::BusPtr& bus : db.GetBuses()) {
-        push_back_busline_edges(begin(bus->stops), end(bus->stops), edges, bus);
+    for (const auto& [_, bus_ptr] : db.GetBusesHolder()) {
+        push_back_busline_edges(
+            begin(bus_ptr->stops), end(bus_ptr->stops),
+            edges,
+            bus_ptr
+        );
 
-        if (!bus->is_roundtrip)
+        if (!bus_ptr->is_roundtrip)
             push_back_busline_edges(
-                rbegin(bus->stops), rend(bus->stops),
+                rbegin(bus_ptr->stops), rend(bus_ptr->stops),
                 edges,
-                bus
+                bus_ptr
             );
     }
 
@@ -96,6 +100,16 @@ void Router::FillBusEdges(const Catalogue& db) {
             );
 }
 
+std::vector<domain::EdgePtr> Router::ConvertToPtrs(
+    std::vector<graph::EdgeId> edge_ids
+) const {
+    std::vector<domain::EdgePtr> edges;
+    edges.reserve(edge_ids.size());
+    for (const graph::EdgeId id : edge_ids)
+        edges.emplace_back(std::make_shared<domain::Edge>(id_to_edge_.at(id)));
+    return edges;
+}
+
 std::optional<domain::Route> Router::GetRoute(
     const domain::StopPtr& start,
     const domain::StopPtr& finish
@@ -109,16 +123,6 @@ std::optional<domain::Route> Router::GetRoute(
         return std::nullopt;
 
     return domain::Route{ConvertToPtrs(route->edges), route->weight};
-}
-
-std::vector<domain::EdgePtr> Router::ConvertToPtrs(
-    std::vector<graph::EdgeId> edge_ids
-) const {
-    std::vector<domain::EdgePtr> edges;
-    edges.reserve(edge_ids.size());
-    for (const graph::EdgeId id : edge_ids)
-        edges.emplace_back(std::make_shared<domain::Edge>(id_to_edge_.at(id)));
-    return edges;
 }
 
 } // namespace transport

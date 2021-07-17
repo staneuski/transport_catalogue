@@ -34,13 +34,13 @@ private:
         const Catalogue& db
     );
 
-    void FillStopEdges(const Catalogue& db);
-
-    void FillBusEdges(const Catalogue& db);
-
     std::vector<domain::EdgePtr> ConvertToPtrs(
         std::vector<graph::EdgeId> edge_ids
     ) const;
+
+    void FillStopEdges(const Catalogue& db);
+
+    void FillBusEdges(const Catalogue& db);
 };
 
 } // namespace transport
