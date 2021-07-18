@@ -10,6 +10,8 @@
 
 namespace {
 
+static const double NEAR = 1e-5;
+
 using namespace transport;
 
 transport::Catalogue InitialiseDatabase(const std::string_view input_json) {
@@ -60,7 +62,7 @@ TEST(TransportCatalogue, GetBusLineCircular) {
     ASSERT_EQ(route->stops_count, 6);
     ASSERT_EQ(route->unique_stop_count, 5);
     ASSERT_EQ(route->length, 5950);
-    ASSERT_NEAR(route->curvature, 1.36124, 1e-5);
+    ASSERT_NEAR(route->curvature, 1.36124, NEAR);
 }
 
 TEST(TransportCatalogue, GetBusLineNotCircular) {
@@ -71,7 +73,7 @@ TEST(TransportCatalogue, GetBusLineNotCircular) {
     ASSERT_EQ(route->stops_count, 7);
     ASSERT_EQ(route->unique_stop_count, 3);
     ASSERT_EQ(route->length, 27400);
-    ASSERT_NEAR(route->curvature, 1.30853, 1e-5);
+    ASSERT_NEAR(route->curvature, 1.30853, NEAR);
 }
 
 TEST(TransportCatalogue, GetStopNotExist) {
@@ -113,7 +115,7 @@ void AssertRoute(const std::optional<domain::Route> route,
                  const size_t item_count,
                  const double total_time) {
     ASSERT_NE(route, std::nullopt);
-    ASSERT_NEAR(route->timedelta, total_time, 1e-5);
+    ASSERT_NEAR(route->timedelta, total_time, NEAR);
     ASSERT_EQ(route->edges.size(), item_count);
     ASSERT_EQ(route->edges.front().from->name, direction.first);
     ASSERT_EQ(route->edges.back().to->name, direction.second);
@@ -134,7 +136,7 @@ void AssertRouteBusEdge(const domain::Edge& edge,
     ASSERT_NE(edge.bus, nullptr);
     ASSERT_EQ(edge.bus->name, bus_name);
     ASSERT_EQ(edge.stop_count, span_count);
-    ASSERT_NEAR(edge.timedelta, ride_time, 1e-5);
+    ASSERT_NEAR(edge.timedelta, ride_time, NEAR);
 }
 
 TEST(TransportRouter, GetRouteNotExist) {
@@ -167,7 +169,7 @@ TEST(TransportRouter, GetRouteSameStop) {
     );
 
     ASSERT_NE(route, std::nullopt);
-    ASSERT_NEAR(route->timedelta, .0, 1e-5);
+    ASSERT_NEAR(route->timedelta, .0, NEAR);
     ASSERT_TRUE(route->edges.empty());
 }
 
@@ -328,15 +330,61 @@ void CompareOutputs(const std::string& json_path) {
     const json::Array expected_nodes = LoadJSON(json_path + ".out.json").GetRoot().AsArray();
     const json::Array nodes = ProcessTransport(json_path + ".json").GetRoot().AsArray();
 
-    ASSERT_EQ(nodes.size(), expected_nodes.size());
+
+    ASSERT_EQ(expected_nodes.size(), nodes.size());
     for (size_t i = 0; i < nodes.size(); ++i) {
-        std::stringstream out;
-        json::Print(json::Document(nodes.at(i)), out);
+        ASSERT_TRUE(expected_nodes.at(i).IsDict());
+        ASSERT_TRUE(nodes.at(i).IsDict());
 
-        std::stringstream expected_out;
-        json::Print(json::Document(expected_nodes.at(i)), expected_out);
+        const json::Dict& expected_dict = expected_nodes.at(i).AsDict();
+        const json::Dict& dict = nodes.at(i).AsDict();
 
-        EXPECT_EQ(expected_out.str(), out.str());
+        const std::string info = {
+            "id = " + std::to_string(dict.at("request_id").AsInt())
+            + " (with index=" + std::to_string(i) + ')'
+        };
+
+        const auto& ExpectEqInt = [&](const std::string_view type,
+                                      const std::string& key) {
+            EXPECT_EQ(
+                expected_dict.at(key).AsInt(),
+                dict.at(key).AsInt()
+            ) << "request type = " << type 
+              << ", key = " << key << ", " << info;
+        };
+        const auto& ExpectEqDouble = [&](const std::string_view type,
+                                         const std::string& key,
+                                         const double acc = NEAR) {
+                                             (void) acc;
+            EXPECT_NEAR(
+                expected_dict.at(key).AsDouble(),
+                dict.at(key).AsDouble(),
+                dict.at(key).AsDouble() < 1e+6 ? acc : 50
+            ) << "request type = " << type
+              << ", key = " << key << ", " << info;
+        };
+
+        if (dict.find("curvature") != dict.end()) { /* "type": "Bus" */
+            ExpectEqDouble("Bus", "curvature", 1e-2);
+            ExpectEqDouble("Bus", "route_length", 1e-2);
+            ExpectEqInt("Bus", "stop_count");
+            ExpectEqInt("Bus", "unique_stop_count");
+        } else if (dict.find("buses") != dict.end()) { /* "type": "Stop" */
+            const auto& expected_arr = expected_dict.at("buses").AsArray();
+            const auto& arr = dict.at("buses").AsArray();
+
+            EXPECT_EQ(
+                expected_dict.at("buses").AsArray().size(),
+                dict.at("buses").AsArray().size()
+            ) << "request type = Stop" << ", " << info;
+            for (size_t k = 0; k < arr.size(); ++k)
+                EXPECT_EQ(
+                    expected_arr.at(k).AsString(),
+                    arr.at(k).AsString()
+                ) << "request type = Stop" << ", " << info;
+        } else if (dict.find("total_time") != dict.end()) { /* "type": "Route" */
+            ExpectEqDouble("Route", "total_time", 1e-2);
+        }
     }
 }
 
