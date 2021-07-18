@@ -336,7 +336,7 @@ void CompareOutputs(const std::string& json_path) {
         std::stringstream expected_out;
         json::Print(json::Document(expected_nodes.at(i)), expected_out);
 
-        EXPECT_EQ(out.str(), expected_out.str());
+        EXPECT_EQ(expected_out.str(), out.str());
     }
 }
 

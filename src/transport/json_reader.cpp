@@ -183,17 +183,17 @@ json::Node ConstructNotFoundRequest(const int id) {
 
 json::Node ConstructBusLineRequest(
     const int id,
-    const std::optional<domain::BusLine>& route
+    const std::optional<domain::BusLine>& bus_line
 ) {
-    if (!route)
+    if (!bus_line)
         return ConstructNotFoundRequest(id);
 
     return json::Builder{}.StartDict()
-            .Key("curvature").Value(route->curvature)
+            .Key("curvature").Value(bus_line->curvature)
             .Key("request_id").Value(id)
-            .Key("route_length").Value(route->length)
-            .Key("stop_count").Value(static_cast<int>(route->stops_count))
-            .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
+            .Key("route_length").Value(bus_line->length)
+            .Key("stop_count").Value(static_cast<int>(bus_line->stops_count))
+            .Key("unique_stop_count").Value(static_cast<int>(bus_line->unique_stop_count))
         .EndDict()
         .Build();
 }
