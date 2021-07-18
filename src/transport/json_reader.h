@@ -83,7 +83,7 @@ private:
 
 void Populate(Catalogue& db, const JsonReader& reader);
 
-void Search(const RequestHandler& handler, const JsonReader& reader);
+json::Document Search(const RequestHandler& handler, const JsonReader& reader);
 
 } // namespace io
 } // namespace transport

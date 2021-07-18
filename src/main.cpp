@@ -25,7 +25,10 @@ int main() {
     // cout << map_renderer.RenderMap(db.GetAllBusLines(), db.GetAllStopStats()) << endl;
 
     io::RequestHandler handler{db, map_renderer};
-    io::Search(handler, reader);
+
+    json::Print(io::Search(handler, reader), std::cout);
+    std::cout << std::endl;
+
 
     return 0;
 }

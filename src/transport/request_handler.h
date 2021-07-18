@@ -33,8 +33,8 @@ public:
         const std::string_view& start,
         const std::string_view& finish
     ) const {
-        const domain::StopPtr start_ptr = db_.SearchStop(start);
-        const domain::StopPtr finish_ptr = db_.SearchStop(finish);
+        const domain::StopPtr& start_ptr = db_.SearchStop(start);
+        const domain::StopPtr& finish_ptr = db_.SearchStop(finish);
 
         if (!start_ptr || !finish_ptr)
             return std::nullopt;

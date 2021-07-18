@@ -250,7 +250,7 @@ json::Node ConstructRouteRequest(const int id,
 
 } // namespace
 
-void Search(const RequestHandler& handler, const JsonReader& reader) {
+json::Document Search(const RequestHandler& handler, const JsonReader& reader) {
     std::vector<json::Node> nodes;
     nodes.reserve(reader.GetStats().size());
     for (const auto& request : reader.GetStats()) {
@@ -287,11 +287,7 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
         }
     }
 
-    json::Print(
-        json::Document(json::Builder{}.Value(nodes).Build()),
-        std::cout
-    );
-    std::cout << std::endl;
+    return json::Document(json::Builder{}.Value(nodes).Build());
 }
 
 } // namespace io
