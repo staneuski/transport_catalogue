@@ -34,7 +34,7 @@ private:
         const Catalogue& db
     );
 
-    std::vector<domain::EdgePtr> ConvertToPtrs(
+    std::vector<domain::Edge> GetEdgesFromIds(
         std::vector<graph::EdgeId> edge_ids
     ) const;
 

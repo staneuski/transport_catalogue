@@ -82,7 +82,7 @@ struct StopStat {
 // ---------- Route -------------------
 
 struct Route {
-    std::vector<domain::EdgePtr> edges;
+    std::vector<domain::Edge> edges;
     double timedelta;
 };
 

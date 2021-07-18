@@ -222,19 +222,19 @@ json::Node ConstructRouteRequest(const int id,
 
     json::Array items;
     items.reserve(route->edges.size());
-    for (const domain::EdgePtr& edge : route->edges)
+    for (const domain::Edge& edge : route->edges)
         items.push_back(
-            (edge->bus)
+            (edge.bus)
             ? json::Builder{}.StartDict()
-                    .Key("bus").Value(edge->bus->name)
-                    .Key("span_count").Value(edge->stop_count)
-                    .Key("time").Value(edge->timedelta)
+                    .Key("bus").Value(edge.bus->name)
+                    .Key("span_count").Value(edge.stop_count)
+                    .Key("time").Value(edge.timedelta)
                     .Key("type").Value("Bus")
                 .EndDict()
                 .Build()
             : json::Builder{}.StartDict()
-                    .Key("stop_name").Value(edge->from->name)
-                    .Key("time").Value(edge->timedelta)
+                    .Key("stop_name").Value(edge.from->name)
+                    .Key("time").Value(edge.timedelta)
                     .Key("type").Value("Wait")
                 .EndDict()
                 .Build()

@@ -30,11 +30,6 @@ std::vector<domain::Edge> Router::CreateEdgesFromBusLines(const Catalogue& db) {
                                               const domain::BusPtr& bus_ptr) {
         using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
 
-        size_t capacity = edges.capacity();
-        for (int i = 1; i + 1 < std::distance(first, last); ++i)
-            capacity += i;
-        edges.reserve(capacity); // ∑(n - 1) from n=1 to n=distance
-
         for (auto from = first; from != last; ++from) {
             int distance = 0;
             for (auto to = std::next(from); to != last; ++to) {
@@ -100,13 +95,13 @@ void Router::FillBusEdges(const Catalogue& db) {
             );
 }
 
-std::vector<domain::EdgePtr> Router::ConvertToPtrs(
+std::vector<domain::Edge> Router::GetEdgesFromIds(
     std::vector<graph::EdgeId> edge_ids
 ) const {
-    std::vector<domain::EdgePtr> edges;
+    std::vector<domain::Edge> edges;
     edges.reserve(edge_ids.size());
     for (const graph::EdgeId id : edge_ids)
-        edges.emplace_back(std::make_shared<domain::Edge>(id_to_edge_.at(id)));
+        edges.push_back(id_to_edge_.at(id));
     return edges;
 }
 
@@ -122,7 +117,7 @@ std::optional<domain::Route> Router::GetRoute(
     if (!route)
         return std::nullopt;
 
-    return domain::Route{ConvertToPtrs(route->edges), route->weight};
+    return domain::Route{GetEdgesFromIds(route->edges), route->weight};
 }
 
 } // namespace transport

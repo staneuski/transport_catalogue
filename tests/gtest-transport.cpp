@@ -115,26 +115,26 @@ void AssertRoute(const std::optional<domain::Route> route,
     ASSERT_NE(route, std::nullopt);
     ASSERT_NEAR(route->timedelta, total_time, 1e-5);
     ASSERT_EQ(route->edges.size(), item_count);
-    ASSERT_EQ(route->edges.front()->from->name, direction.first);
-    ASSERT_EQ(route->edges.back()->to->name, direction.second);
+    ASSERT_EQ(route->edges.front().from->name, direction.first);
+    ASSERT_EQ(route->edges.back().to->name, direction.second);
 }
 
-void AssertRouteStopEdge(const domain::EdgePtr& edge,
+void AssertRouteStopEdge(const domain::Edge& edge,
                          const std::string_view stop_name,
                          const int wait_time) {
-    ASSERT_EQ(edge->bus, nullptr);
-    ASSERT_EQ(edge->from->name, stop_name);
-    ASSERT_EQ(edge->timedelta, wait_time);
+    ASSERT_EQ(edge.bus, nullptr);
+    ASSERT_EQ(edge.from->name, stop_name);
+    ASSERT_EQ(edge.timedelta, wait_time);
 }
 
-void AssertRouteBusEdge(const domain::EdgePtr& edge,
+void AssertRouteBusEdge(const domain::Edge& edge,
                         const std::string_view bus_name,
                         const size_t span_count,
                         const double ride_time) {
-    ASSERT_NE(edge->bus, nullptr);
-    ASSERT_EQ(edge->bus->name, bus_name);
-    ASSERT_EQ(edge->stop_count, span_count);
-    ASSERT_NEAR(edge->timedelta, ride_time, 1e-5);
+    ASSERT_NE(edge.bus, nullptr);
+    ASSERT_EQ(edge.bus->name, bus_name);
+    ASSERT_EQ(edge.stop_count, span_count);
+    ASSERT_NEAR(edge.timedelta, ride_time, 1e-5);
 }
 
 TEST(TransportRouter, GetRouteNotExist) {

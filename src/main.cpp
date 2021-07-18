@@ -1,7 +1,6 @@
 #include <cassert>
 #include <fstream>
 
-#include "transport/catalogue.h"
 #include "transport/json_reader.h"
 #include "transport/map_renderer.h"
 #include "transport/request_handler.h"
@@ -28,7 +27,6 @@ int main() {
 
     json::Print(io::Search(handler, reader), std::cout);
     std::cout << std::endl;
-
 
     return 0;
 }
