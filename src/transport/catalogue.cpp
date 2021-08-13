@@ -37,7 +37,7 @@ void Catalogue::AddBus(Bus bus) {
 }
 
 std::optional<BusLine> Catalogue::GetBusLine(
-    const std::string_view& bus_name
+    const std::string_view bus_name
 ) const {
     const BusPtr& bus_ptr = SearchBus(bus_name);
     if (!bus_ptr)
@@ -77,7 +77,7 @@ std::optional<BusLine> Catalogue::GetBusLine(
 }
 
 std::optional<domain::StopStat> Catalogue::GetStop(
-    const std::string_view& stop_name
+    const std::string_view stop_name
 ) const {
     const static domain::SetPtr<BusPtr> empty_stop;
 
