@@ -1,5 +1,5 @@
 #pragma once
-#include "geo/geo.h"
+#include "geo.h"
 
 #include <iomanip>
 #include <iostream>

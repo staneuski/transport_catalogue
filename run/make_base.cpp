@@ -1,9 +1,9 @@
 #include <cassert>
 #include <fstream>
 
-#include "transport/json_reader.h"
-#include "transport/map_renderer.h"
-#include "transport/request_handler.h"
+#include "json_reader.h"
+#include "map_renderer.h"
+#include "request_handler.h"
 
 int main() {
     using namespace std;

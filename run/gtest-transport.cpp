@@ -5,8 +5,8 @@
 
 #include <gtest/gtest.h>
 
-#include "transport/catalogue.h"
-#include "transport/json_reader.h"
+#include "catalogue.h"
+#include "json_reader.h"
 
 namespace {
 
@@ -48,14 +48,14 @@ TEST(TransportCatalogue, AddStop) {
 }
 
 TEST(TransportCatalogue, GetBusLineNotExist) {
-    const transport::Catalogue db{InitialiseDatabase("../resources/(Stop|Bus|Map).json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/(Stop|Bus|Map).json")};
     const std::optional<domain::BusLine> route = db.GetBusLine("751");
 
     ASSERT_EQ(route, std::nullopt);
 }
 
 TEST(TransportCatalogue, GetBusLineCircular) {
-    const transport::Catalogue db{InitialiseDatabase("../resources/(Stop|Bus|Map).json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/(Stop|Bus|Map).json")};
     const std::optional<domain::BusLine> route = db.GetBusLine("256");
 
     ASSERT_NE(route, std::nullopt);
@@ -66,7 +66,7 @@ TEST(TransportCatalogue, GetBusLineCircular) {
 }
 
 TEST(TransportCatalogue, GetBusLineNotCircular) {
-    const transport::Catalogue db{InitialiseDatabase("../resources/(Stop|Bus|Map).json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/(Stop|Bus|Map).json")};
     const std::optional<domain::BusLine> route = db.GetBusLine("750");
 
     ASSERT_NE(route, std::nullopt);
@@ -77,14 +77,14 @@ TEST(TransportCatalogue, GetBusLineNotCircular) {
 }
 
 TEST(TransportCatalogue, GetStopNotExist) {
-    const transport::Catalogue db{InitialiseDatabase("../resources/(Stop|Bus|Map).json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/(Stop|Bus|Map).json")};
     const std::optional<domain::StopStat> stop_stat = db.GetStop("Z");
 
     ASSERT_EQ(stop_stat, std::nullopt);
 }
 
 TEST(TransportCatalogue, GetStopWithoutBuses) {
-    const transport::Catalogue db{InitialiseDatabase("../resources/(Stop|Bus|Map).json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/(Stop|Bus|Map).json")};
     const std::optional<domain::StopStat> stop_stat = db.GetStop("J");
 
     ASSERT_NE(stop_stat, std::nullopt);
@@ -93,7 +93,7 @@ TEST(TransportCatalogue, GetStopWithoutBuses) {
 }
 
 TEST(TransportCatalogue, GetStop) {
-    const transport::Catalogue db{InitialiseDatabase("../resources/(Stop|Bus|Map).json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/(Stop|Bus|Map).json")};
     const std::optional<domain::StopStat> stop_stat = db.GetStop("D");
 
     std::vector<std::string> bus_names;
@@ -146,7 +146,7 @@ TEST(TransportRouter, GetRouteNotExist) {
         "Tolstopaltsevo"
     };
 
-    const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex2.json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex2.json")};
     const std::optional<domain::Route> route = Router(db).GetRoute(
         db.SearchStop(direction.first),
         db.SearchStop(direction.second)
@@ -162,7 +162,7 @@ TEST(TransportRouter, GetRouteSameStop) {
         "Lipetskaya ulitsa 40"
     };
 
-    const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex3.json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex3.json")};
     const std::optional<domain::Route> route = Router(db).GetRoute(
         db.SearchStop(direction.first),
         db.SearchStop(direction.second)
@@ -181,7 +181,7 @@ TEST(TransportRouter, GetDirectRoute) {
             "Pokrovskaya"
         };
 
-        const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex2.json")};
+        const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex2.json")};
         const std::optional<domain::Route> route = Router(db).GetRoute(
             db.SearchStop(direction.first),
             db.SearchStop(direction.second)
@@ -200,7 +200,7 @@ TEST(TransportRouter, GetDirectRoute) {
             "Prazhskaya"
         };
 
-        const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex2.json")};
+        const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex2.json")};
         const std::optional<domain::Route> route = Router(db).GetRoute(
             db.SearchStop(direction.first),
             db.SearchStop(direction.second)
@@ -219,7 +219,7 @@ TEST(TransportRouter, GetDirectRoute) {
             "Zagorye"
         };
 
-        const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex3.json")};
+        const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex3.json")};
         const std::optional<domain::Route> route = Router(db).GetRoute(
             db.SearchStop(direction.first),
             db.SearchStop(direction.second)
@@ -239,7 +239,7 @@ TEST(TransportRouter, GetRouteWithTransfer) {
         "Apteka"
     };
 
-    const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex2.json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex2.json")};
     const std::optional<domain::Route> route = Router(db).GetRoute(
         db.SearchStop(direction.first),
         db.SearchStop(direction.second)
@@ -261,7 +261,7 @@ TEST(TransportRouter, GetDirectRouteWithStop) {
         "Biryulyovo Tovarnaya"
     };
 
-    const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex2.json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex2.json")};
     const std::optional<domain::Route> route = Router(db).GetRoute(
         db.SearchStop(direction.first),
         db.SearchStop(direction.second)
@@ -283,7 +283,7 @@ TEST(TransportRouter, GetDirectRouteWithReverseSwitch) {
         "Moskvorechye"
     };
 
-    const transport::Catalogue db{InitialiseDatabase("../resources/Route-ex3.json")};
+    const transport::Catalogue db{InitialiseDatabase("../../resources/Route-ex3.json")};
     const std::optional<domain::Route> route = Router(db).GetRoute(
         db.SearchStop(direction.first),
         db.SearchStop(direction.second)
@@ -389,15 +389,15 @@ void CompareOutputs(const std::string& json_path) {
 }
 
 TEST(Transport, CompareJson2) {
-    CompareOutputs("../resources/Route-ex2");
+    CompareOutputs("../../resources/Route-ex2");
 }
 
 TEST(Transport, CompareJson3) {
-    CompareOutputs("../resources/Route-ex3");
+    CompareOutputs("../../resources/Route-ex3");
 }
 
 TEST(Transport, CompareJson4) {
-    CompareOutputs("../resources/Route-ex4");
+    CompareOutputs("../../resources/Route-ex4");
 }
 
 } // namespace gtest_transport

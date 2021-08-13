@@ -3,4 +3,5 @@
 
 build/
 
+*.bak
 tests/output.json

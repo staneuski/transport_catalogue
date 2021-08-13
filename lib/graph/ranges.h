@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace helpers {
+namespace graph {
 
 template <typename It>
 class Range {
@@ -32,4 +32,4 @@ auto AsRange(const C& container) {
     return Range{container.begin(), container.end()};
 }
 
-} // namespace helpers
+} // namespace graph
