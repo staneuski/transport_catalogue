@@ -37,6 +37,7 @@ using SetStat = std::set<Stat, LessStat<Stat>>;
 struct Stop {
     std::string name;
     geo::Coordinates coords;
+    uint16_t wait_time; // [min]
 };
 using StopPtr = std::shared_ptr<const Stop>;
 
@@ -46,16 +47,28 @@ struct Bus {
     std::string name;
     std::vector<StopPtr> stops;
     bool is_roundtrip;
+    uint16_t velocity; // [km/h]
 };
 using BusPtr = std::shared_ptr<const Bus>;
 
-// ---------- Route -------------------
+// ---------- Edge -------------------
 
-struct Route {
+struct Edge {
+    domain::StopPtr from;
+    domain::StopPtr to;
+    domain::BusPtr bus = nullptr;
+    uint8_t stop_count = 0;
+    double timedelta;
+};
+using EdgePtr = std::shared_ptr<const Edge>;
+
+// ---------- BusLine -----------------
+
+struct BusLine {
     BusPtr ptr;
     size_t stops_count;
     size_t unique_stop_count;
-    int length = 0;
+    double length = 0; // [m]
     double curvature = 1.;
 };
 
@@ -66,17 +79,18 @@ struct StopStat {
     const SetPtr<BusPtr>& unique_buses;
 };
 
-// ---------- helpers -----------------
+// ---------- Route -------------------
+
+struct Route {
+    std::vector<domain::Edge> edges;
+    double timedelta;
+};
+
+// ------------------------------------
 
 inline double ComputeDistance(const StopPtr current, const StopPtr next) {
     return geo::ComputeDistance(current->coords, next->coords);
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const std::optional<domain::Route>& route);
-
-std::ostream& operator<<(std::ostream& out,
-                         const std::optional<StopStat>& stop_stat);
-
-} // end namespace domain
-} // end namespace transport
+} // namespace domain
+} // namespace transport

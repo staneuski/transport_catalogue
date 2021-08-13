@@ -311,4 +311,4 @@ inline std::ostream& operator<<(std::ostream& out, const Document& document) {
     return out;
 }
 
-} // end namespace svg
+} // namespace svg

@@ -13,15 +13,17 @@ add_compile_options(-Wall -Wextra -Werror)
 include_directories(src tests)
 
 set(GEO)
-set(SVG src/svg/svg.cpp)
+set(GRAPH)
+set(HELPERS)
 set(JSON src/json/json.cpp src/json/json_builder.cpp)
+set(SVG src/svg/svg.cpp)
 set(TRANSPORT
-    src/transport/domain.cpp
-    src/transport/map_renderer.cpp
+    src/transport/catalogue.cpp
     src/transport/json_reader.cpp
-    src/transport/transport_catalogue.cpp)
+    src/transport/map_renderer.cpp
+    src/transport/router.cpp)
 
-set(SRC ${GEO} ${JSON} ${SVG} ${TRANSPORT})
+set(SRC ${GEO} ${GRAPH} ${JSON} ${HELPERS} ${SVG} ${TRANSPORT})
 
 
 #######################################
@@ -45,7 +47,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 
-#- transport/transport_catalogue.h
+#- transport/catalogue.h
 add_executable(gtest-transport tests/gtest-transport.cpp ${SRC})
 target_link_libraries(gtest-transport gtest_main)
 add_test(NAME transport COMMAND gtest-transport)
