@@ -17,7 +17,7 @@ class Catalogue {
     public:
         inline size_t operator()(const AdjacentStops adjacent_stops) const {
             return hash_(adjacent_stops.first.get())
-                    + hash_(adjacent_stops.first.get())*37;
+                   + hash_(adjacent_stops.first.get())*37;
         }
     private:
         std::hash<const void*> hash_;
@@ -32,16 +32,12 @@ public:
 
     void AddBus(domain::Bus bus);
 
-    std::vector<domain::StopPtr> GetStops() const;
-
-    std::vector<domain::BusPtr> GetBuses() const;
-
     std::optional<domain::BusLine> GetBusLine(
-        const std::string_view& bus_name
+        const std::string_view bus_name
     ) const;
 
     std::optional<domain::StopStat> GetStop(
-        const std::string_view& stop_name
+        const std::string_view stop_name
     ) const;
 
     domain::SetStat<domain::BusLine> GetAllBusLines() const;
@@ -56,18 +52,28 @@ public:
         return buses_.size();
     }
 
+    inline const std::unordered_map<std::string_view, domain::StopPtr>&
+    GetStopsHolder() const {
+        return stop_names_;
+    }
+
+    inline const std::unordered_map<std::string_view, domain::BusPtr>&
+    GetBusesHolder() const {
+        return bus_names_;
+    }
+
     inline const std::unordered_map<AdjacentStops, int, AdjacentStopsHasher>&
     GetDistances() const {
         return stops_to_distance_;
     }
 
-    inline domain::StopPtr SearchStop(const std::string_view& stop_name) const {
+    inline domain::StopPtr SearchStop(const std::string_view stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
                ? stop_names_.at(stop_name)
                : nullptr;
     }
 
-    inline domain::BusPtr SearchBus(const std::string_view& bus_name) const {
+    inline domain::BusPtr SearchBus(const std::string_view bus_name) const {
         return (bus_names_.find(bus_name) != bus_names_.end())
                ? bus_names_.at(bus_name)
                : nullptr;

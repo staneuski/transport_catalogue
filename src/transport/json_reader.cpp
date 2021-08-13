@@ -183,17 +183,17 @@ json::Node ConstructNotFoundRequest(const int id) {
 
 json::Node ConstructBusLineRequest(
     const int id,
-    const std::optional<domain::BusLine>& route
+    const std::optional<domain::BusLine>& bus_line
 ) {
-    if (!route)
+    if (!bus_line)
         return ConstructNotFoundRequest(id);
 
     return json::Builder{}.StartDict()
-            .Key("curvature").Value(route->curvature)
+            .Key("curvature").Value(bus_line->curvature)
             .Key("request_id").Value(id)
-            .Key("route_length").Value(route->length)
-            .Key("stop_count").Value(static_cast<int>(route->stops_count))
-            .Key("unique_stop_count").Value(static_cast<int>(route->unique_stop_count))
+            .Key("route_length").Value(bus_line->length)
+            .Key("stop_count").Value(static_cast<int>(bus_line->stops_count))
+            .Key("unique_stop_count").Value(static_cast<int>(bus_line->unique_stop_count))
         .EndDict()
         .Build();
 }
@@ -222,19 +222,19 @@ json::Node ConstructRouteRequest(const int id,
 
     json::Array items;
     items.reserve(route->edges.size());
-    for (const domain::EdgePtr& edge : route->edges)
+    for (const domain::Edge& edge : route->edges)
         items.push_back(
-            (edge->bus)
+            (edge.bus)
             ? json::Builder{}.StartDict()
-                    .Key("bus").Value(edge->bus->name)
-                    .Key("span_count").Value(edge->stop_count)
-                    .Key("time").Value(edge->timedelta)
+                    .Key("bus").Value(edge.bus->name)
+                    .Key("span_count").Value(edge.stop_count)
+                    .Key("time").Value(edge.timedelta)
                     .Key("type").Value("Bus")
                 .EndDict()
                 .Build()
             : json::Builder{}.StartDict()
-                    .Key("stop_name").Value(edge->from->name)
-                    .Key("time").Value(edge->timedelta)
+                    .Key("stop_name").Value(edge.from->name)
+                    .Key("time").Value(edge.timedelta)
                     .Key("type").Value("Wait")
                 .EndDict()
                 .Build()
@@ -250,7 +250,7 @@ json::Node ConstructRouteRequest(const int id,
 
 } // namespace
 
-void Search(const RequestHandler& handler, const JsonReader& reader) {
+json::Document Search(const RequestHandler& handler, const JsonReader& reader) {
     std::vector<json::Node> nodes;
     nodes.reserve(reader.GetStats().size());
     for (const auto& request : reader.GetStats()) {
@@ -287,11 +287,7 @@ void Search(const RequestHandler& handler, const JsonReader& reader) {
         }
     }
 
-    json::Print(
-        json::Document(json::Builder{}.Value(nodes).Build()),
-        std::cout
-    );
-    std::cout << std::endl;
+    return json::Document(json::Builder{}.Value(nodes).Build());
 }
 
 } // namespace io

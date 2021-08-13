@@ -18,28 +18,27 @@ public:
     }
 
     inline std::optional<domain::BusLine> GetBusStat(
-        const std::string_view& bus_name
+        const std::string_view bus_name
     ) const {
         return db_.GetBusLine(bus_name);
     }
 
     inline std::optional<domain::StopStat> GetStopStat(
-        const std::string_view& stop_name
+        const std::string_view stop_name
     ) const {
         return db_.GetStop(stop_name);
     }
 
     inline std::optional<domain::Route> GetRoute(
-        const std::string_view& start,
-        const std::string_view& finish
+        const std::string_view start,
+        const std::string_view finish
     ) const {
-        const domain::StopPtr start_ptr = db_.SearchStop(start);
-        const domain::StopPtr finish_ptr = db_.SearchStop(finish);
+        const domain::StopPtr& start_ptr = db_.SearchStop(start);
+        const domain::StopPtr& finish_ptr = db_.SearchStop(finish);
 
-        if (!start_ptr || !finish_ptr)
-            return std::nullopt;
-
-        return router_.GetRoute(start_ptr, finish_ptr);
+        return (start_ptr && finish_ptr)
+               ? router_.GetRoute(start_ptr, finish_ptr)
+               : std::nullopt;
     }
 
     inline svg::Document RenderMap() const {

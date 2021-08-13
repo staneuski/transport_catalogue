@@ -9,7 +9,7 @@ using graph::EdgeId, graph::VertexId;
 
 void Router::FillStopEdges(const Catalogue& db) {
     graph::VertexId vertex_id = {};
-    for (const domain::StopPtr& stop_ptr : db.GetStops()) {
+    for (const auto& [_, stop_ptr] : db.GetStopsHolder()) {
         stop_to_transfer_.emplace(stop_ptr, Transfer{vertex_id, vertex_id++});
         ++vertex_id;
     }
@@ -18,7 +18,7 @@ void Router::FillStopEdges(const Catalogue& db) {
         const double wait_time = stop_ptr->wait_time;
         id_to_edge_.emplace(
             graph_.AddEdge({transfer.second, transfer.first, wait_time}),
-            domain::Edge{.from = stop_ptr, .to = stop_ptr, .timedelta = wait_time}
+            domain::Edge{stop_ptr, stop_ptr, nullptr, 0, wait_time}
         );
     }
 }
@@ -29,11 +29,6 @@ std::vector<domain::Edge> Router::CreateEdgesFromBusLines(const Catalogue& db) {
                                               std::vector<domain::Edge>& edges,
                                               const domain::BusPtr& bus_ptr) {
         using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
-
-        size_t capacity = edges.capacity();
-        for (int i = 1; i + 1 < std::distance(first, last); ++i)
-            capacity += i;
-        edges.reserve(capacity); // ∑(n - 1) from n=1 to n=distance
 
         for (auto from = first; from != last; ++from) {
             int distance = 0;
@@ -49,25 +44,29 @@ std::vector<domain::Edge> Router::CreateEdgesFromBusLines(const Catalogue& db) {
                 );
 
                 edges.push_back(domain::Edge{
-                    .from = *from,
-                    .to = *to,
-                    .bus = bus_ptr,
-                    .stop_count = static_cast<uint8_t>(std::distance(from, to)),
-                    .timedelta = 60 * distance*1e-3/bus_ptr->velocity // [h]->[min]
+                    *from,
+                    *to,
+                    bus_ptr,
+                    static_cast<uint8_t>(std::distance(from, to)),
+                    60 * distance*1e-3/bus_ptr->velocity // [h]->[min]
                 });
             }
         }
     };
 
     std::vector<domain::Edge> edges;
-    for (const domain::BusPtr& bus : db.GetBuses()) {
-        push_back_busline_edges(begin(bus->stops), end(bus->stops), edges, bus);
+    for (const auto& [_, bus_ptr] : db.GetBusesHolder()) {
+        push_back_busline_edges(
+            begin(bus_ptr->stops), end(bus_ptr->stops),
+            edges,
+            bus_ptr
+        );
 
-        if (!bus->is_roundtrip)
+        if (!bus_ptr->is_roundtrip)
             push_back_busline_edges(
-                rbegin(bus->stops), rend(bus->stops),
+                rbegin(bus_ptr->stops), rend(bus_ptr->stops),
                 edges,
-                bus
+                bus_ptr
             );
     }
 
@@ -96,6 +95,16 @@ void Router::FillBusEdges(const Catalogue& db) {
             );
 }
 
+std::vector<domain::Edge> Router::GetEdgesFromIds(
+    std::vector<graph::EdgeId> edge_ids
+) const {
+    std::vector<domain::Edge> edges;
+    edges.reserve(edge_ids.size());
+    for (graph::EdgeId id : edge_ids)
+        edges.push_back(id_to_edge_.at(id));
+    return edges;
+}
+
 std::optional<domain::Route> Router::GetRoute(
     const domain::StopPtr& start,
     const domain::StopPtr& finish
@@ -108,17 +117,7 @@ std::optional<domain::Route> Router::GetRoute(
     if (!route)
         return std::nullopt;
 
-    return domain::Route{ConvertToPtrs(route->edges), route->weight};
-}
-
-std::vector<domain::EdgePtr> Router::ConvertToPtrs(
-    std::vector<graph::EdgeId> edge_ids
-) const {
-    std::vector<domain::EdgePtr> edges;
-    edges.reserve(edge_ids.size());
-    for (const graph::EdgeId id : edge_ids)
-        edges.emplace_back(std::make_shared<domain::Edge>(id_to_edge_.at(id)));
-    return edges;
+    return domain::Route{GetEdgesFromIds(route->edges), route->weight};
 }
 
 } // namespace transport

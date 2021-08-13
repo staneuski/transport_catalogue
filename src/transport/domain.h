@@ -68,7 +68,7 @@ struct BusLine {
     BusPtr ptr;
     size_t stops_count;
     size_t unique_stop_count;
-    int length = 0; // [m]
+    double length = 0; // [m]
     double curvature = 1.;
 };
 
@@ -82,7 +82,7 @@ struct StopStat {
 // ---------- Route -------------------
 
 struct Route {
-    std::vector<domain::EdgePtr> edges;
+    std::vector<domain::Edge> edges;
     double timedelta;
 };
 
