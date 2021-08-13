@@ -4,7 +4,7 @@ namespace transport {
 namespace renderer {
 
 svg::Document MapRenderer::RenderMap(
-    const domain::SetStat<domain::Route>& routes,
+    const domain::SetStat<domain::BusLine>& routes,
     const domain::SetStat<domain::StopStat>& stop_stats
 ) const {
     svg::Document document;
@@ -16,8 +16,8 @@ svg::Document MapRenderer::RenderMap(
         settings_.padding
     );
 
-    DrawRouteLines(document, projector, routes);
-    DrawRouteLabels(document, projector, routes);
+    DrawBusLineLines(document, projector, routes);
+    DrawBusLineLabels(document, projector, routes);
     DrawStops(document, projector, stop_stats);
     DrawStopLabels(document, projector, stop_stats);
 
@@ -35,13 +35,13 @@ std::vector<geo::Coordinates> MapRenderer::GetCoordinates(
     return coordinates;
 }
 
-void MapRenderer::DrawRouteLines(
+void MapRenderer::DrawBusLineLines(
     svg::Document& document,
     const SphereProjector& projector,
-    const domain::SetStat<domain::Route>& routes
+    const domain::SetStat<domain::BusLine>& routes
 ) const {
     size_t counter = 0;
-    for (const domain::Route& route : routes) {
+    for (const domain::BusLine& route : routes) {
         const std::vector<domain::StopPtr>& stops = route.ptr->stops;
 
         svg::Polyline polyline;
@@ -54,7 +54,7 @@ void MapRenderer::DrawRouteLines(
 
         document.Add(
             polyline
-                .SetStrokeColor(GetRouteColor(counter++))
+                .SetStrokeColor(GetBusLineColor(counter++))
                 .SetFillColor(svg::Color())
                 .SetStrokeWidth(settings_.line_width)
                 .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
@@ -92,16 +92,16 @@ void MapRenderer::DrawLabel(svg::Document& document,
     document.Add(text);
 }
 
-void MapRenderer::DrawRouteLabels(
+void MapRenderer::DrawBusLineLabels(
     svg::Document& document,
     const SphereProjector& projector,
-    const domain::SetStat<domain::Route>& routes
+    const domain::SetStat<domain::BusLine>& routes
 ) const {
     bool is_bold = true;
 
     size_t counter = 0;
-    for (const domain::Route& route : routes) {
-        svg::Color color = GetRouteColor(counter++);
+    for (const domain::BusLine& route : routes) {
+        svg::Color color = GetBusLineColor(counter++);
 
         if (!route.ptr->is_roundtrip
          && route.ptr->stops.front() != route.ptr->stops.back())
@@ -154,5 +154,5 @@ void MapRenderer::DrawStopLabels(
         );
 }
 
-} // end namespace renderer
-} // end namespace transport
+} // namespace renderer
+} // namespace transport

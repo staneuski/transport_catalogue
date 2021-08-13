@@ -1,36 +1,55 @@
 #pragma once
 
+#include "catalogue.h"
 #include "map_renderer.h"
 #include "request_handler.h"
-#include "transport_catalogue.h"
+#include "router.h"
 
 namespace transport {
 namespace io {
 
 class RequestHandler {
 public:
-    RequestHandler(const catalogue::TransportCatalogue& transport_catalogue,
+    RequestHandler(const Catalogue& db,
                    const renderer::MapRenderer& renderer)
-            : db_(transport_catalogue)
-            , renderer_(renderer) {
+            : db_(db)
+            , renderer_(renderer)
+            , router_(Router(db)) {
     }
 
-    inline std::optional<domain::Route> GetBusStat(const std::string_view& bus_name) const {
-        return db_.GetRoute(bus_name);
+    inline std::optional<domain::BusLine> GetBusStat(
+        const std::string_view bus_name
+    ) const {
+        return db_.GetBusLine(bus_name);
     }
 
-    inline std::optional<domain::StopStat> GetStopStat(const std::string_view& stop_name) const {
+    inline std::optional<domain::StopStat> GetStopStat(
+        const std::string_view stop_name
+    ) const {
         return db_.GetStop(stop_name);
     }
 
+    inline std::optional<domain::Route> GetRoute(
+        const std::string_view start,
+        const std::string_view finish
+    ) const {
+        const domain::StopPtr& start_ptr = db_.SearchStop(start);
+        const domain::StopPtr& finish_ptr = db_.SearchStop(finish);
+
+        return (start_ptr && finish_ptr)
+               ? router_.GetRoute(start_ptr, finish_ptr)
+               : std::nullopt;
+    }
+
     inline svg::Document RenderMap() const {
-        return renderer_.RenderMap(db_.GetAllRoutes(), db_.GetAllStopStats());
+        return renderer_.RenderMap(db_.GetAllBusLines(), db_.GetAllStopStats());
     }
 
 private:
-    const catalogue::TransportCatalogue& db_;
+    const Catalogue& db_;
     const renderer::MapRenderer& renderer_;
+    const Router router_;
 };
 
-} // end namespace io
-} // end namespace transport
+} // namespace io
+} // namespace transport
