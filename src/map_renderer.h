@@ -1,4 +1,5 @@
 #pragma once
+#include <geo/geo.h>
 #include <svg/svg.h>
 
 #include <algorithm>
@@ -6,7 +7,6 @@
 #include <vector>
 
 #include "domain.h"
-#include "geo.h"
 
 namespace transport {
 

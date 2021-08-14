@@ -68,6 +68,10 @@ public:
         return settings_.serialization;
     }
 
+    inline std::string GetDatabaseFileName() const {
+        return settings_.serialization->at("file").AsString();
+    }
+
 private:
     const std::set<std::string> type_names_{"Bus", "Map", "Route", "Stop"};
     json::Dict requests_;

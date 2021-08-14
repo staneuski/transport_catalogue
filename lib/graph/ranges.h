@@ -12,6 +12,7 @@ class Range {
 public:
     using ValueType = typename std::iterator_traits<It>::value_type;
 
+public:
     Range(It begin, It end) : begin_(begin), end_(end) {}
 
     inline It begin() const {
@@ -23,8 +24,7 @@ public:
     }
 
 private:
-    It begin_;
-    It end_;
+    It begin_, end_;
 };
 
 template <typename C>

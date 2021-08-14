@@ -10,31 +10,34 @@ namespace io {
 
 class RequestHandler {
 public:
-    RequestHandler(const Catalogue& db,
-                   const renderer::MapRenderer& renderer)
-            : db_(db)
-            , renderer_(renderer)
-            , router_(Router(db)) {
+    RequestHandler(Catalogue& catalogue, renderer::Settings render_settings)
+        : catalogue_(catalogue)
+        , renderer_(renderer::MapRenderer(render_settings))
+        , router_(Router(catalogue)) {
+    }
+
+    inline Catalogue& GetCatalogue() const {
+        return catalogue_;
     }
 
     inline std::optional<domain::BusLine> GetBusStat(
         const std::string_view bus_name
     ) const {
-        return db_.GetBusLine(bus_name);
+        return catalogue_.GetBusLine(bus_name);
     }
 
     inline std::optional<domain::StopStat> GetStopStat(
         const std::string_view stop_name
     ) const {
-        return db_.GetStop(stop_name);
+        return catalogue_.GetStop(stop_name);
     }
 
     inline std::optional<domain::Route> GetRoute(
         const std::string_view start,
         const std::string_view finish
     ) const {
-        const domain::StopPtr& start_ptr = db_.SearchStop(start);
-        const domain::StopPtr& finish_ptr = db_.SearchStop(finish);
+        const domain::StopPtr& start_ptr = catalogue_.SearchStop(start);
+        const domain::StopPtr& finish_ptr = catalogue_.SearchStop(finish);
 
         return (start_ptr && finish_ptr)
                ? router_.GetRoute(start_ptr, finish_ptr)
@@ -42,12 +45,15 @@ public:
     }
 
     inline svg::Document RenderMap() const {
-        return renderer_.RenderMap(db_.GetAllBusLines(), db_.GetAllStopStats());
+        return renderer_.RenderMap(
+            catalogue_.GetAllBusLines(),
+            catalogue_.GetAllStopStats()
+        );
     }
 
 private:
-    const Catalogue& db_;
-    const renderer::MapRenderer& renderer_;
+    Catalogue& catalogue_;
+    renderer::MapRenderer renderer_;
     const Router router_;
 };
 

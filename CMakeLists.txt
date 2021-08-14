@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(tarnsport_catalogue)
+project(transport_catalogue)
 
 add_subdirectory(run)

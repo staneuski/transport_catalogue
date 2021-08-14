@@ -11,6 +11,7 @@
 namespace transport {
 
 class Catalogue {
+public:
     using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
 
     class AdjacentStopsHasher {
@@ -24,26 +25,6 @@ class Catalogue {
     };
 
 public:
-    void AddStop(domain::Stop stop);
-
-    void MakeAdjacent(const domain::StopPtr& stop,
-                      const domain::StopPtr& adjacent_stop,
-                      const int distance);
-
-    void AddBus(domain::Bus bus);
-
-    std::optional<domain::BusLine> GetBusLine(
-        const std::string_view bus_name
-    ) const;
-
-    std::optional<domain::StopStat> GetStop(
-        const std::string_view stop_name
-    ) const;
-
-    domain::SetStat<domain::BusLine> GetAllBusLines() const;
-
-    domain::SetStat<domain::StopStat> GetAllStopStats() const;
-
     inline size_t GetStopCount() const {
         return stops_.size();
     }
@@ -66,6 +47,26 @@ public:
     GetDistances() const {
         return stops_to_distance_;
     }
+
+    void AddStop(domain::Stop stop);
+
+    void MakeAdjacent(const domain::StopPtr& stop,
+                      const domain::StopPtr& adjacent_stop,
+                      const int distance);
+
+    void AddBus(domain::Bus bus);
+
+    std::optional<domain::BusLine> GetBusLine(
+        const std::string_view bus_name
+    ) const;
+
+    std::optional<domain::StopStat> GetStop(
+        const std::string_view stop_name
+    ) const;
+
+    domain::SetStat<domain::BusLine> GetAllBusLines() const;
+
+    domain::SetStat<domain::StopStat> GetAllStopStats() const;
 
     inline domain::StopPtr SearchStop(const std::string_view stop_name) const {
         return (stop_names_.find(stop_name) != stop_names_.end())
