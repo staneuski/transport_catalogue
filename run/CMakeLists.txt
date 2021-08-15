@@ -27,7 +27,7 @@ set(SRC_FILES
     "${SRC}/database.proto"
     "${SRC}/domain.h" "${SRC}/domain.proto"
     "${SRC}/json_reader.h" "${SRC}/json_reader.cpp"
-    "${SRC}/map_renderer.h" "${SRC}/map_renderer.cpp"
+    "${SRC}/map_renderer.h" "${SRC}/map_renderer.cpp" "${SRC}/map_renderer.proto"
     "${SRC}/request_handler.h"
     "${SRC}/router.h" "${SRC}/router.cpp"
     "${SRC}/serialization.h" "${SRC}/serialization.cpp")
@@ -44,7 +44,8 @@ find_package(Threads REQUIRED)
 
 set(${Protobuf_IMPORT_DIRS} ${GEOLIB} ${JSONLIB} ${SVGLIB} ${GRAPHLIB})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-    "${GEOLIB}/geo.proto" "${SRC}/domain.proto" "${SRC}/catalogue.proto"
+    "${GEOLIB}/geo.proto" "${SVGLIB}/svg.proto"
+    "${SRC}/domain.proto" "${SRC}/catalogue.proto" "${SRC}/map_renderer.proto"
     "${SRC}/database.proto")
 
 string(REPLACE
@@ -54,12 +55,12 @@ string(REPLACE
     "protobuf.a" "protobufd.a"
     "Protobuf_LIBRARY_DEBUG" "${Protobuf_LIBRARY_DEBUG}")
 
-message( ${Protobuf_INCLUDE_DIRS} )
+
 # Executables
-add_executable(make_base make_base.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${SRCS})
-target_include_directories(make_base PUBLIC ${Protobuf_INCLUDE_DIRS})
-target_include_directories(make_base PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(make_base
+add_executable(main main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${SRCS})
+target_include_directories(main PUBLIC ${Protobuf_INCLUDE_DIRS})
+target_include_directories(main PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(main
     "$<IF:$<CONFIG:Debug>,${Protobuf_LIBRARY_DEBUG},${Protobuf_LIBRARY}>"
     Threads::Threads)
 
@@ -84,5 +85,11 @@ add_executable(app-svg app-svg.cpp ${SVGLIB_FILES})
 
 # #- catalogue.h
 # add_executable(gtest-transport gtest-transport.cpp ${SRCS})
+# target_include_directories(gtest-transport PUBLIC ${Protobuf_INCLUDE_DIRS})
+# target_include_directories(gtest-transport PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+# target_link_libraries(gtest-transport
+#     "$<IF:$<CONFIG:Debug>,${Protobuf_LIBRARY_DEBUG},${Protobuf_LIBRARY}>"
+#     Threads::Threads)
+
 # target_link_libraries(gtest-transport gtest_main)
 # add_test(NAME transport COMMAND gtest-transport)

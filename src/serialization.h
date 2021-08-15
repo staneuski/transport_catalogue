@@ -1,9 +1,11 @@
 #pragma once
 
-#include <database.pb.h>
 #include <catalogue.pb.h>
+#include <database.pb.h>
 #include <domain.pb.h>
 #include <geo.pb.h>
+
+#include <sstream>
 
 #include "request_handler.h"
 
@@ -12,7 +14,7 @@ namespace io {
 
 class Bufferiser {
 public:
-    Bufferiser(const RequestHandler& request_handler)
+    Bufferiser(RequestHandler& request_handler)
         : request_handler_(request_handler) {
     }
 
@@ -21,7 +23,22 @@ public:
     void Deserialize(std::istream& in);
 
 private:
-    const RequestHandler& request_handler_;
+    RequestHandler& request_handler_;
+
+    inline static svg::pb::Point Convert(const svg::Point& point) {
+        svg::pb::Point converted;
+        converted.set_x(point.x);
+        converted.set_y(point.y);
+        return converted;
+    }
+
+    inline static svg::pb::Color Convert(const svg::Color& color) {
+        svg::pb::Color converted;
+        std::stringstream ss;
+        ss << color;
+        converted.set_name(ss.str());
+        return converted;
+    }
 
     static pb::domain::Stop Convert(const domain::Stop& stop);
 
@@ -29,6 +46,10 @@ private:
         const Catalogue::AdjacentStops adjacent_stops,
         const int distance
     );
+
+    static pb::renderer::Settings Convert(const renderer::Settings& settings);
+
+    static renderer::Settings Convert(const pb::renderer::Settings& settings);
 
     pb::domain::Bus Convert(const domain::Bus& bus) const;
 

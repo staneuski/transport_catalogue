@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package svg.pb;
+
+message Point {
+    double x = 1;
+    double y = 2;
+}
+
+message Color {
+    string name = 1;
+}

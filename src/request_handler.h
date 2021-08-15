@@ -16,8 +16,16 @@ public:
         , router_(Router(catalogue)) {
     }
 
+    inline void SetRendererSettings(renderer::Settings settings) {
+        renderer_.SetSettings(settings);
+    }
+
     inline Catalogue& GetCatalogue() const {
         return catalogue_;
+    }
+
+    inline renderer::Settings GetRendererSettings() const {
+        return renderer_.GetSettings();
     }
 
     inline std::optional<domain::BusLine> GetBusStat(

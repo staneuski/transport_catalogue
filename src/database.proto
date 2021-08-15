@@ -3,7 +3,9 @@ syntax = "proto3";
 package transport.pb;
 
 import "catalogue.proto";
+import "map_renderer.proto";
 
 message DataBase {
     Catalogue catalogue = 1;
+    renderer.Settings map_settings = 2;
 }

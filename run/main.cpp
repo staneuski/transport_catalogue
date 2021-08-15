@@ -22,20 +22,26 @@ int main(int argc, char* argv[]) {
 
     const std::string_view mode(argv[1]);
 
-    io::JsonReader reader(std::cin);
     transport::Catalogue db;
+    // std::ifstream file("../../../resources/(Stop|Bus|Map).stat.json");
+    // std::stringstream buffer;
+    // buffer << file.rdbuf();
+    // io::JsonReader reader(buffer);
+    io::JsonReader reader(std::cin);
 
     if (mode == "make_base"sv) {
         io::Populate(db, reader);
-        io::RequestHandler handler{db, reader.GenerateMapSettings()};
 
+        io::RequestHandler handler{db, reader.GenerateMapSettings()};
         std::ofstream ofs(reader.GetDatabaseFileName(), std::ios::binary);
         io::Bufferiser(handler).Serialize(ofs);
-
     } else if (mode == "process_requests"sv) {
+        io::RequestHandler handler{db, reader.GenerateMapSettings()};
+        std::ifstream ifs(reader.GetDatabaseFileName(), std::ios::binary);
+        io::Bufferiser(handler).Deserialize(ifs);
 
-        // process requests here
-
+        json::Print(io::Search(handler, reader), std::cout);
+        std::cout << std::endl;
     } else {
         PrintUsage();
         return 1;
