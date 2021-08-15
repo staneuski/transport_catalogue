@@ -4,6 +4,7 @@
 #include <database.pb.h>
 #include <domain.pb.h>
 #include <geo.pb.h>
+#include <graph.pb.h>
 
 #include <sstream>
 
@@ -40,16 +41,24 @@ private:
         return converted;
     }
 
-    static pb::domain::Stop Convert(const domain::Stop& stop);
-
-    static pb::domain::AdjacentStops Convert(
-        const Catalogue::AdjacentStops adjacent_stops,
-        const int distance
-    );
-
     static pb::renderer::Settings Convert(const renderer::Settings& settings);
 
     static renderer::Settings Convert(const pb::renderer::Settings& settings);
+
+    static graph::pb::Graph Convert(
+        const graph::DirectedWeightedGraph<double>& graph
+    );
+
+    static graph::DirectedWeightedGraph<double> Convert(
+        const graph::pb::Graph& graph
+    );
+
+    pb::domain::Stop Convert(const domain::Stop& stop) const;
+
+    pb::domain::AdjacentStops Convert(
+        const Catalogue::AdjacentStops adjacent_stops,
+        const int distance
+    ) const;
 
     pb::domain::Bus Convert(const domain::Bus& bus) const;
 

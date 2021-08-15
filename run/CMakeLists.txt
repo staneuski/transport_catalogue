@@ -15,11 +15,12 @@ set(JSONLIB_FILES
     "${JSONLIB}/json_builder.h" "${JSONLIB}/json_builder.cpp")
 
 set(SVGLIB "${LIB}/svg")
-set(SVGLIB_FILES "${SVGLIB}/svg.h" "${SVGLIB}/svg.cpp")
+set(SVGLIB_FILES "${SVGLIB}/svg.h" "${SVGLIB}/svg.cpp" "${SVGLIB}/svg.proto")
 
 set(GRAPHLIB "${LIB}/graph")
 set(GRAPHLIB_FILES
-    "${GRAPHLIB}/graph.h" "${GRAPHLIB}/ranges.h" "${GRAPHLIB}/router.h")
+    "${GRAPHLIB}/graph.h" "${GRAPHLIB}/graph.proto"
+    "${GRAPHLIB}/ranges.h" "${GRAPHLIB}/router.h")
 
 set(SRC ../src)
 set(SRC_FILES
@@ -44,7 +45,7 @@ find_package(Threads REQUIRED)
 
 set(${Protobuf_IMPORT_DIRS} ${GEOLIB} ${JSONLIB} ${SVGLIB} ${GRAPHLIB})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-    "${GEOLIB}/geo.proto" "${SVGLIB}/svg.proto"
+    "${GEOLIB}/geo.proto" "${SVGLIB}/svg.proto" "${GRAPHLIB}/graph.proto"
     "${SRC}/domain.proto" "${SRC}/catalogue.proto" "${SRC}/map_renderer.proto"
     "${SRC}/database.proto")
 

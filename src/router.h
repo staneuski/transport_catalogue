@@ -10,6 +10,7 @@
 namespace transport {
 
 class Router {
+public:
     using Transfer = std::pair<graph::VertexId, graph::VertexId>;
 
 public:
@@ -19,6 +20,17 @@ public:
         router_ = std::make_unique<graph::Router<double>>(
             graph::Router<double>(graph_)
         );
+    }
+
+    explicit Router(const Catalogue& db,
+                    graph::DirectedWeightedGraph<double> graph)
+            : graph_(graph) {
+        FillStopEdges(db);
+        FillBusEdges(db);
+    }
+
+    inline const graph::DirectedWeightedGraph<double>& GetGraph() const {
+        return graph_;
     }
 
     std::optional<domain::Route> GetRoute(const domain::StopPtr& start,

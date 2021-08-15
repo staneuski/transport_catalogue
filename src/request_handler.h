@@ -16,16 +16,32 @@ public:
         , router_(Router(catalogue)) {
     }
 
+    RequestHandler(Catalogue& catalogue,
+                   renderer::Settings render_settings,
+                   Router router)
+        : catalogue_(catalogue)
+        , renderer_(renderer::MapRenderer(render_settings))
+        , router_(std::move(router)) {
+    }
+
+    inline renderer::Settings GetRendererSettings() const {
+        return renderer_.GetSettings();
+    }
+
     inline void SetRendererSettings(renderer::Settings settings) {
         renderer_.SetSettings(settings);
+    }
+
+    inline const Router& GetRouter() const {
+        return router_;
     }
 
     inline Catalogue& GetCatalogue() const {
         return catalogue_;
     }
 
-    inline renderer::Settings GetRendererSettings() const {
-        return renderer_.GetSettings();
+    inline void SetRouter(Router router) {
+        router_ = std::move(router);
     }
 
     inline std::optional<domain::BusLine> GetBusStat(
@@ -62,7 +78,7 @@ public:
 private:
     Catalogue& catalogue_;
     renderer::MapRenderer renderer_;
-    const Router router_;
+    Router router_;
 };
 
 } // namespace io

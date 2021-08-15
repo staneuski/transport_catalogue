@@ -5,20 +5,20 @@ package transport.pb.domain;
 import "geo.proto";
 
 message Stop {
-    string name = 1;
+    uint32 id = 1;
     geo.pb.Coordinates coords = 2;
     uint32 wait_time = 3;
 };
 
 message AdjacentStops {
-    string stop_name = 1;
-    string adjacent_stop_name = 2;
+    uint32 id = 1;
+    uint32 adjacent_id = 2;
     uint64 distance = 3;
 }
 
 message Bus {
     string name = 1;
-    repeated string stop_name = 2;
+    repeated uint32 stop_id = 2;
     bool is_roundtrip = 3;
     uint32 velocity = 4;
 };

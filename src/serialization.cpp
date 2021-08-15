@@ -43,6 +43,7 @@ void Bufferiser::Serialize(std::ostream& out) const {
     pb::DataBase db;
     *db.mutable_catalogue() = converted_catalogue;
     *db.mutable_map_settings() = Convert(request_handler_.GetRendererSettings());
+    *db.mutable_graph() = Convert(request_handler_.GetRouter().GetGraph());
     db.SerializeToOstream(&out);
 }
 
@@ -54,7 +55,7 @@ void Bufferiser::Deserialize(std::istream& in) {
     for (int i = 0; i < db.catalogue().stop_size(); ++i) {
         const pb::domain::Stop& stop = db.catalogue().stop(i);
         catalogue.AddStop({
-            stop.name(),
+            catalogue.GetStop(stop.id())->name,
             geo::Coordinates{stop.coords().lat(), stop.coords().lng()},
             static_cast<uint16_t>(stop.wait_time())
         });
@@ -62,8 +63,8 @@ void Bufferiser::Deserialize(std::istream& in) {
     for (int i = 0; i < db.catalogue().adjacent_stops_size(); ++i) {
         const auto& adjacent_stops = db.catalogue().adjacent_stops(i);
         catalogue.MakeAdjacent(
-            catalogue.SearchStop(adjacent_stops.stop_name()),
-            catalogue.SearchStop(adjacent_stops.adjacent_stop_name()),
+            catalogue.GetStop(adjacent_stops.id()),
+            catalogue.GetStop(adjacent_stops.adjacent_id()),
             adjacent_stops.distance()
         );
     }
@@ -71,33 +72,7 @@ void Bufferiser::Deserialize(std::istream& in) {
         catalogue.AddBus(Convert(db.catalogue().bus(i)));
 
     request_handler_.SetRendererSettings(Convert(db.map_settings()));
-}
-
-pb::domain::Stop Bufferiser::Convert(const domain::Stop& stop) {
-    pb::domain::Stop converted;
-
-    converted.set_name(stop.name);
-    converted.set_wait_time(stop.wait_time);
-
-    geo::pb::Coordinates coordinates;
-    coordinates.set_lat(stop.coords.lat);
-    coordinates.set_lng(stop.coords.lng);
-    *converted.mutable_coords() = coordinates;
-
-    return converted;
-}
-
-pb::domain::AdjacentStops Bufferiser::Convert(
-    const Catalogue::AdjacentStops adjacent_stops,
-    const int distance
-) {
-    pb::domain::AdjacentStops converted;
-
-    converted.set_stop_name(adjacent_stops.first->name);
-    converted.set_adjacent_stop_name(adjacent_stops.first->name);
-    converted.set_distance(distance);
-
-    return converted;
+    request_handler_.SetRouter(Router(catalogue, Convert(db.graph())));
 }
 
 pb::renderer::Settings Bufferiser::Convert(
@@ -176,6 +151,89 @@ renderer::Settings Bufferiser::Convert(
     return converted;
 }
 
+graph::pb::Graph Bufferiser::Convert(
+    const graph::DirectedWeightedGraph<double>& graph
+) {
+    graph::pb::Graph converted;
+
+    // edge = 1
+    for (graph::EdgeId edge_id = 0; edge_id < graph.GetEdgeCount(); ++edge_id) {
+        const auto& edge = graph.GetEdge(edge_id);
+
+        graph::pb::Edge converted_edge;
+        converted_edge.set_from(edge.from);
+        converted_edge.set_to(edge.to);
+        converted_edge.set_weight(edge.weight);
+        *converted.add_edge() = converted_edge;
+    }
+
+    // incidence_list = 2
+    for (graph::VertexId vertex = 0; vertex < graph.GetVertexCount(); ++vertex) {
+        graph::pb::IncidenceList edge_ids;
+        for (const graph::EdgeId id : graph.GetIncidentEdges(vertex))
+            edge_ids.add_edge_id(id);
+
+        *converted.add_incidence_list() = edge_ids;
+    }
+
+    return converted;
+}
+
+graph::DirectedWeightedGraph<double> Bufferiser::Convert(
+    const graph::pb::Graph& graph
+) {
+    // edge = 1
+    std::vector<graph::Edge<double>> edges;
+    edges.reserve(graph.edge_size());
+    for (int i = 0; i < graph.edge_size(); ++i) {
+        const auto& edge = graph.edge(i);
+        edges.push_back({edge.from(), edge.to(), edge.weight()});
+    }
+
+    // incidence_list = 2
+    std::vector<std::vector<graph::EdgeId>> incidence_lists;
+    incidence_lists.reserve(graph.incidence_list_size());
+    for (int i = 0; i < graph.incidence_list_size(); ++i) {
+        std::vector<graph::EdgeId> incidence_list;
+        incidence_list.reserve(graph.incidence_list(i).edge_id_size());
+        for (int j = 0; j < graph.incidence_list(i).edge_id_size(); ++j) {
+            const auto id = graph.incidence_list(i).edge_id(j);
+            incidence_list.push_back(id);
+        }
+        incidence_lists.push_back(incidence_list);
+    }
+
+    return {edges, incidence_lists};
+}
+
+pb::domain::Stop Bufferiser::Convert(const domain::Stop& stop) const {
+    pb::domain::Stop converted;
+
+    converted.set_id(request_handler_.GetCatalogue().GetStopId(stop.name));
+    converted.set_wait_time(stop.wait_time);
+
+    geo::pb::Coordinates coordinates;
+    coordinates.set_lat(stop.coords.lat);
+    coordinates.set_lng(stop.coords.lng);
+    *converted.mutable_coords() = coordinates;
+
+    return converted;
+}
+
+pb::domain::AdjacentStops Bufferiser::Convert(
+    const Catalogue::AdjacentStops adjacent_stops,
+    const int distance
+) const {
+    pb::domain::AdjacentStops converted;
+
+    const Catalogue& catalogue = request_handler_.GetCatalogue();
+    converted.set_id(catalogue.GetStopId(adjacent_stops.first->name));
+    converted.set_adjacent_id(catalogue.GetStopId(adjacent_stops.first->name));
+    converted.set_distance(distance);
+
+    return converted;
+}
+
 pb::domain::Bus Bufferiser::Convert(const domain::Bus& bus) const {
     pb::domain::Bus converted;
 
@@ -185,7 +243,7 @@ pb::domain::Bus Bufferiser::Convert(const domain::Bus& bus) const {
 
     const transport::Catalogue& catalogue = request_handler_.GetCatalogue();
     for (const domain::StopPtr& stop_ptr : bus.stops)
-        converted.add_stop_name(catalogue.SearchStop(stop_ptr->name)->name);
+        converted.add_stop_id(catalogue.GetStopId(stop_ptr->name));
 
     return converted;
 }
@@ -194,9 +252,9 @@ domain::Bus Bufferiser::Convert(const pb::domain::Bus& bus) const {
     const transport::Catalogue& catalogue = request_handler_.GetCatalogue();
 
     std::vector<domain::StopPtr> stops;
-    stops.reserve(bus.stop_name_size());
-    for (int i = 0; i < bus.stop_name_size(); ++i)
-        stops.push_back(catalogue.SearchStop(bus.stop_name(i)));
+    stops.reserve(bus.stop_id_size());
+    for (int i = 0; i < bus.stop_id_size(); ++i)
+        stops.push_back(catalogue.GetStop(bus.stop_id(i)));
 
     return {
         bus.name(),
