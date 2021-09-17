@@ -109,10 +109,13 @@ void JsonReader::ParseSettings(const std::string& setting_key) {
     Request settings = std::make_unique<const json::Dict>(
         requests_.at(setting_key).AsDict()
     );
+
     if (setting_key == "render_settings")
         settings_.render = std::move(settings);
     else if (setting_key == "routing_settings")
         settings_.routing = std::move(settings);
+    else if (setting_key == "serialization_settings")
+        settings_.serialization = std::move(settings);
 }
 
 void JsonReader::ParseStats() {

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package transport.pb;
+
+import "domain.proto";
+
+message Catalogue {
+    repeated domain.Stop stop = 1;
+    repeated domain.AdjacentStops adjacent_stops = 2;
+    repeated domain.Bus bus = 3;
+}

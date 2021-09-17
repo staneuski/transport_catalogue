@@ -1,5 +1,5 @@
 #pragma once
-#include "json/json_builder.h"
+#include <json/json_builder.h>
 
 #include <iostream>
 #include <memory>
@@ -23,24 +23,27 @@ class JsonReader {
     struct Settings {
         Request render;
         Request routing;
+        Request serialization;
     };
 
 public:
     JsonReader(std::istream& input)
             : requests_(json::Load(input).GetRoot().AsDict()) {
+        // Requests
         if (requests_.find("base_requests") != requests_.end()) {
             ParseBases(BaseType::BUS);
             ParseBases(BaseType::STOP);
         }
-
-        if (requests_.find("render_settings") != requests_.end())
-            ParseSettings("render_settings");
-
-        if (requests_.find("routing_settings") != requests_.end())
-            ParseSettings("routing_settings");
-
         if (requests_.find("stat_requests") != requests_.end())
             ParseStats();
+
+        // Settings
+        if (requests_.find("render_settings") != requests_.end())
+            ParseSettings("render_settings");
+        if (requests_.find("routing_settings") != requests_.end())
+            ParseSettings("routing_settings");
+        if (requests_.find("serialization_settings") != requests_.end())
+            ParseSettings("serialization_settings");
     }
 
     renderer::Settings GenerateMapSettings() const;
@@ -59,6 +62,14 @@ public:
 
     inline const Request& GetRoutingSettings() const {
         return settings_.routing;
+    }
+
+    inline const Request& GetSerializationSettings() const {
+        return settings_.serialization;
+    }
+
+    inline std::string GetDatabaseFileName() const {
+        return settings_.serialization->at("file").AsString();
     }
 
 private:

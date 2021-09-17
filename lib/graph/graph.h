@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <vector>
 
-#include "helpers/ranges.h"
+#include "ranges.h"
 
 namespace graph {
 
@@ -21,10 +21,17 @@ template <typename Weight>
 class DirectedWeightedGraph {
 private:
     using IncidenceList = std::vector<EdgeId>;
-    using IncidentEdgesRange = helpers::Range<typename IncidenceList::const_iterator>;
+    using IncidentEdgesRange = graph::Range<typename IncidenceList::const_iterator>;
 
 public:
     DirectedWeightedGraph() = default;
+
+    DirectedWeightedGraph(
+        std::vector<Edge<Weight>> edges,
+        std::vector<IncidenceList> incidence_lists)
+            : edges_(std::move(edges))
+            , incidence_lists_(std::move(incidence_lists)) {
+    }
 
     explicit DirectedWeightedGraph(size_t vertex_count)
         : incidence_lists_(vertex_count) {
@@ -73,7 +80,7 @@ const Edge<Weight>& DirectedWeightedGraph<Weight>::GetEdge(EdgeId edge_id) const
 template <typename Weight>
 typename DirectedWeightedGraph<Weight>::IncidentEdgesRange
 DirectedWeightedGraph<Weight>::GetIncidentEdges(VertexId vertex) const {
-    return helpers::AsRange(incidence_lists_.at(vertex));
+    return graph::AsRange(incidence_lists_.at(vertex));
 }
 
 } // namespace graph
