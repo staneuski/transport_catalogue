@@ -28,8 +28,6 @@ std::vector<domain::Edge> Router::CreateEdgesFromBusLines(const Catalogue& db) {
     const auto& push_back_busline_edges = [&](auto first, auto last,
                                               std::vector<domain::Edge>& edges,
                                               const domain::BusPtr& bus_ptr) {
-        using AdjacentStops = std::pair<domain::StopPtr, domain::StopPtr>;
-
         for (auto from = first; from != last; ++from) {
             int distance = 0;
             for (auto to = std::next(from); to != last; ++to) {
@@ -39,8 +37,8 @@ std::vector<domain::Edge> Router::CreateEdgesFromBusLines(const Catalogue& db) {
                 const domain::StopPtr& prev = *std::prev(to);
                 distance += stops_to_distance.at(
                     stops_to_distance.find({prev, *to}) != stops_to_distance.end()
-                    ? AdjacentStops(prev, *to)
-                    : AdjacentStops(*to, prev)
+                    ? Catalogue::AdjacentStops(prev, *to)
+                    : Catalogue::AdjacentStops(*to, prev)
                 );
 
                 edges.push_back(domain::Edge{

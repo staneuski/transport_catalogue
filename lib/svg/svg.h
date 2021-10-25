@@ -82,6 +82,7 @@ struct ColorPrinter {
     }
 };
 
+
 inline std::ostream& operator<<(std::ostream& out, const Color& color) {
     std::visit(ColorPrinter{out}, color);
     return out;

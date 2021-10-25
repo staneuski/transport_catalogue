@@ -1,11 +1,10 @@
 #pragma once
+#include <geo/geo.h>
+#include <svg/svg.h>
 
 #include <algorithm>
 #include <cmath>
 #include <vector>
-
-#include "geo/geo.h"
-#include "svg/svg.h"
 
 #include "domain.h"
 
@@ -94,6 +93,14 @@ struct Settings {
 class MapRenderer {
 public:
     MapRenderer(Settings settings) : settings_(std::move(settings)) {}
+
+    inline void SetSettings(Settings settings) {
+        settings_ = std::move(settings);
+    }
+
+    inline Settings GetSettings() const {
+        return settings_;
+    }
 
     svg::Document RenderMap(
         const domain::SetStat<domain::BusLine>& routes,
